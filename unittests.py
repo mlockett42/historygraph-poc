@@ -1,11 +1,16 @@
 import unittest
+from Document import Document
+from FieldInt import FieldInt
+from DocumentObject import DocumentObject
+from FieldList import FieldList
+import uuid
 
 class Covers(Document):
     covers = FieldInt()
 
 class SimpleCoversTestCase(unittest.TestCase):
     def setUp(self):
-        InitSessionTesting()
+        pass
 
     def runTest(self):
         #Test merging together simple covers documents
@@ -37,7 +42,7 @@ class SimpleCoversTestCase(unittest.TestCase):
     
 class MergeHistoryCoverTestCase(unittest.TestCase):
     def setUp(self):
-        InitSessionTesting()
+        pass
 
     def runTest(self):
         #Test merge together two simple covers objects
@@ -63,7 +68,7 @@ class TestPropertyOwner1(Document):
 
 class ListItemChangeHistoryTestCase(unittest.TestCase):
     def setUp(self):
-        InitSessionTesting()
+        pass
 
     def runTest(self):
         #Test that various types of changes create was changed events
@@ -71,18 +76,18 @@ class ListItemChangeHistoryTestCase(unittest.TestCase):
         test1.bWasChanged = False
         test2 = TestPropertyOwner2()
         test1.propertyowner2s.add(test2)
-        assert test1.bWasChanged = True
+        assert test1.bWasChanged == True
         test1.bWasChanged = False
         test2.cover = 1
-        assert test1.bWasChanged = True
+        assert test1.bWasChanged == True
         test1.bWasChanged = False
         test2.cover = 1
-        assert test1.bWasChanged = True
+        assert test1.bWasChanged == True
         test1.propertyowner2s.remove(test2)
 
 class SimpleItemTestCase(unittest.TestCase):
     def setUp(self):
-        InitSessionTesting()
+        pass
 
     def runTest(self):
         test1 = TestPropertyOwner1()
@@ -91,7 +96,7 @@ class SimpleItemTestCase(unittest.TestCase):
         testitem.cover = 1
         #Test semantics for retriving objects
         assert len(test1.propertyowner2s) == 1
-        for po2 in test1.propertyowner2s
+        for po2 in test1.propertyowner2s:
             assert po2.__class__.__name__ == TestPropertyOwner2.__name__
             assert po2.cover == 1
 
@@ -114,13 +119,13 @@ class SimpleItemTestCase(unittest.TestCase):
         test2 = test1.Clone()
         
         assert len(test2.propertyowner2s) == 1
-        for po2 in test2.propertyowner2s
+        for po2 in test2.propertyowner2s:
             assert po2.__class__.__name__ == TestPropertyOwner2.__name__
             assert po2.cover == 1
 
 class AdvancedItemTestCase(unittest.TestCase):
     def setUp(self):
-        InitSessionTesting()
+        pass
 
     def runTest(self):
         #Test changing them deleting a sub element
