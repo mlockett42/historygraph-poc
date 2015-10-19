@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '/home/mark/code/livewirepy/doop')
+
 import unittest
 from Document import Document
 from FieldInt import FieldInt
@@ -48,13 +51,13 @@ class MergeHistoryCoverTestCase(unittest.TestCase):
 
     def runTest(self):
         #Test merge together two simple covers objects
-        test = Covers()
+        test = Covers(None)
         test.covers = 1
         test2 = test.Clone()
         test.covers = 2
         test2.covers = 3
         test3 = test.Merge(test2)
-        #In a merge conflict between two integers to great one is 
+        #In a merge conflict between two integers the greater one is the winner
         assert test3.covers == 3
 
 class TestPropertyOwner2(DocumentObject):
@@ -215,7 +218,7 @@ class AdvancedItemTestCase(unittest.TestCase):
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(SimpleCoversTestCase())
-    #suite.addTest(MergeHistoryCoverTestCase())
+    suite.addTest(MergeHistoryCoverTestCase())
     #suite.addTest(ListItemChangeHistoryTestCase())
     #suite.addTest(SimpleItemTestCase())
     #suite.addTest(AdvancedItemTestCase())
