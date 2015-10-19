@@ -1,0 +1,4 @@
+PYTHONPATH="${PYTHONPATH}:./doop"
+export PYTHONPATH
+python -B unittests.py
+
