@@ -135,32 +135,32 @@ class AdvancedItemTestCase(unittest.TestCase):
 
     def runTest(self):
         #Test changing them deleting a sub element
-        test1 = TestPropertyOwner1()
-        testitem1 = TestPropertyOwner2()
+        test1 = TestPropertyOwner1(None)
+        testitem1 = TestPropertyOwner2(None)
         test1.propertyowner2s.add(testitem1)
         testitem1.cover = 1
         test2 = test1.Clone()
         testitem2 = test2.GetDocumentObject(testitem1.id)
         testitem2.cover = 2
-        test2.propertyowner2s.remove(testitem2)
+        test2.propertyowner2s.remove(testitem2.id)
         test3 = test1.Merge(test2)
         assert len(test3.propertyowner2s) == 0
 
         #Test changing them deleting a sub element. Test merging in the opposition order to previous test
-        test1 = TestPropertyOwner1()
-        testitem1 = TestPropertyOwner2()
+        test1 = TestPropertyOwner1(None)
+        testitem1 = TestPropertyOwner2(None)
         test1.propertyowner2s.add(testitem1)
         testitem1.cover = 1
         test2 = test1.Clone()
         testitem2 = test2.GetDocumentObject(testitem1.id)
         testitem2.cover = 2
-        test2.propertyowner2s.remove(testitem2)
+        test2.propertyowner2s.remove(testitem2.id)
         test3 = test2.Merge(test1)
         assert len(test3.propertyowner2s) == 0
 
         #Test merging changes to different objects in the same document works
-        test1 = TestPropertyOwner1()
-        testitem1 = TestPropertyOwner2()
+        test1 = TestPropertyOwner1(None)
+        testitem1 = TestPropertyOwner2(None)
         test1.propertyowner2s.add(testitem1)
         test2 = test1.Clone()
         testitem1.cover = 3
@@ -172,11 +172,11 @@ class AdvancedItemTestCase(unittest.TestCase):
         assert test3.covers == 2
 
         #Test changing different objects on different branches works
-        test1 = TestPropertyOwner1()
-        testitem1 = TestPropertyOwner2()
+        test1 = TestPropertyOwner1(None)
+        testitem1 = TestPropertyOwner2(None)
         id1 = testitem1.id
         test1.propertyowner2s.add(testitem1)
-        testitem2 = TestPropertyOwner2()
+        testitem2 = TestPropertyOwner2(None)
         test1.propertyowner2s.add(testitem2)
         id2 = testitem2.id
         test2 = test1.Clone()
@@ -194,11 +194,11 @@ class AdvancedItemTestCase(unittest.TestCase):
         assert testitem1.quantity == 3
         
         #Test changing different objects on different branches works reverse merge of above
-        test1 = TestPropertyOwner1()
-        testitem1 = TestPropertyOwner2()
+        test1 = TestPropertyOwner1(None)
+        testitem1 = TestPropertyOwner2(None)
         id1 = testitem1.id
         test1.propertyowner2s.add(testitem1)
-        testitem2 = TestPropertyOwner2()
+        testitem2 = TestPropertyOwner2(None)
         test1.propertyowner2s.add(testitem2)
         id2 = testitem2.id
         test2 = test1.Clone()
@@ -222,7 +222,7 @@ def suite():
     suite.addTest(MergeHistoryCoverTestCase())
     suite.addTest(ListItemChangeHistoryTestCase())
     suite.addTest(SimpleItemTestCase())
-    #suite.addTest(AdvancedItemTestCase())
+    suite.addTest(AdvancedItemTestCase())
     
     return suite
 
