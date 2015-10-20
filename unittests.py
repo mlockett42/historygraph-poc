@@ -67,7 +67,7 @@ class TestPropertyOwner2(DocumentObject):
 class TestPropertyOwner1(Document):
     covers = FieldInt()
     propertyowner2s = FieldList(TestPropertyOwner2)
-    def WasChanged(changetype, propertyowner, propertyname, propertyvalue, propertytype):
+    def WasChanged(self, changetype, propertyowner, propertyname, propertyvalue, propertytype):
         super(TestPropertyOwner1, self).WasChanged(changetype, propertyowner, propertyname, propertyvalue, propertytype)
         self.bWasChanged = True
 
@@ -77,9 +77,9 @@ class ListItemChangeHistoryTestCase(unittest.TestCase):
 
     def runTest(self):
         #Test that various types of changes create was changed events
-        test1 = TestPropertyOwner1()
+        test1 = TestPropertyOwner1(None)
         test1.bWasChanged = False
-        test2 = TestPropertyOwner2()
+        test2 = TestPropertyOwner2(None)
         test1.propertyowner2s.add(test2)
         assert test1.bWasChanged == True
         test1.bWasChanged = False
@@ -89,6 +89,7 @@ class ListItemChangeHistoryTestCase(unittest.TestCase):
         test2.cover = 1
         assert test1.bWasChanged == True
         test1.propertyowner2s.remove(test2)
+        assert len(test1.propertyowner2s) == 0
 
 class SimpleItemTestCase(unittest.TestCase):
     def setUp(self):
@@ -219,7 +220,7 @@ def suite():
     suite = unittest.TestSuite()
     suite.addTest(SimpleCoversTestCase())
     suite.addTest(MergeHistoryCoverTestCase())
-    #suite.addTest(ListItemChangeHistoryTestCase())
+    suite.addTest(ListItemChangeHistoryTestCase())
     #suite.addTest(SimpleItemTestCase())
     #suite.addTest(AdvancedItemTestCase())
     
