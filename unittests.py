@@ -88,7 +88,7 @@ class ListItemChangeHistoryTestCase(unittest.TestCase):
         test1.bWasChanged = False
         test2.cover = 1
         assert test1.bWasChanged == True
-        test1.propertyowner2s.remove(test2)
+        test1.propertyowner2s.remove(test2.id)
         assert len(test1.propertyowner2s) == 0
 
 class SimpleItemTestCase(unittest.TestCase):
@@ -96,8 +96,8 @@ class SimpleItemTestCase(unittest.TestCase):
         pass
 
     def runTest(self):
-        test1 = TestPropertyOwner1()
-        testitem = TestPropertyOwner2()
+        test1 = TestPropertyOwner1(None)
+        testitem = TestPropertyOwner2(None)
         test1.propertyowner2s.add(testitem)
         testitem.cover = 1
         #Test semantics for retriving objects
@@ -106,20 +106,20 @@ class SimpleItemTestCase(unittest.TestCase):
             assert po2.__class__.__name__ == TestPropertyOwner2.__name__
             assert po2.cover == 1
 
-        test1 = TestPropertyOwner1()
-        testitem = TestPropertyOwner2()
+        test1 = TestPropertyOwner1(None)
+        testitem = TestPropertyOwner2(None)
         test1.propertyowner2s.add(testitem)
         testitem.cover = 1
-        test1.propertyowner2s.remove(testitem)
+        test1.propertyowner2s.remove(testitem.id)
 
-        test2 = TestPropertyOwner1()
-        test1.GetHistory().Replay(test2)
+        test2 = TestPropertyOwner1(test1.id)
+        test1.history.Replay(test2)
 
         #Check that replaying correctly removes the object
         assert len(test2.propertyowner2s) == 0
 
-        test1 = TestPropertyOwner1()
-        testitem = TestPropertyOwner2()
+        test1 = TestPropertyOwner1(None)
+        testitem = TestPropertyOwner2(None)
         test1.propertyowner2s.add(testitem)
         testitem.cover = 1
         test2 = test1.Clone()
@@ -221,7 +221,7 @@ def suite():
     suite.addTest(SimpleCoversTestCase())
     suite.addTest(MergeHistoryCoverTestCase())
     suite.addTest(ListItemChangeHistoryTestCase())
-    #suite.addTest(SimpleItemTestCase())
+    suite.addTest(SimpleItemTestCase())
     #suite.addTest(AdvancedItemTestCase())
     
     return suite
