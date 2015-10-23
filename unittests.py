@@ -7,6 +7,7 @@ from FieldInt import FieldInt
 from DocumentObject import DocumentObject
 from FieldList import FieldList
 import uuid
+from FieldText import FieldText
 
 class Covers(Document):
     def __init__(self, id):
@@ -166,8 +167,8 @@ class AdvancedItemTestCase(unittest.TestCase):
         testitem1.cover = 3
         test2.covers=2
         test3 = test2.Merge(test1)
-        assert len(test1.propertyowner2s) == 1
-        for item1 in test1.propertyowner2s:
+        assert len(test3.propertyowner2s) == 1
+        for item1 in test3.propertyowner2s:
             assert item1.cover == 3
         assert test3.covers == 2
 
@@ -215,6 +216,37 @@ class AdvancedItemTestCase(unittest.TestCase):
         assert testitem1.cover == 2
         assert testitem1.quantity == 3
     
+class Comments(Document):
+    def __init__(self, id):
+        super(Comments, self).__init__(id)
+    comment = FieldText()
+
+class MergeHistoryCommentTestCase(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def runTest(self):
+        #Test merge together two simple covers objects
+        test = Comments(None)
+        test.comment = "AAA"
+        test2 = test.Clone()
+        test.comment = "BBB"
+        test2.comment = "CCC"
+        test3 = test.Merge(test2)
+        #In a merge conflict between two string the one that is sooner in alphabetical order is the winner
+        assert test3.comment == "CCC"
+
+        #Test merge together two simple covers objects
+        test = Comments(None)
+        test.comment = "AAA"
+        test2 = test.Clone()
+        test.comment = "CCC"
+        test2.comment = "BBB"
+        test3 = test.Merge(test2)
+        #In a merge conflict between two string the one that is sooner in alphabetical order is the winner
+        assert test3.comment == "CCC"
+
+
     
 def suite():
     suite = unittest.TestSuite()
@@ -223,6 +255,7 @@ def suite():
     suite.addTest(ListItemChangeHistoryTestCase())
     suite.addTest(SimpleItemTestCase())
     suite.addTest(AdvancedItemTestCase())
+    suite.addTest(MergeHistoryCommentTestCase())
     
     return suite
 
