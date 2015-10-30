@@ -8,6 +8,7 @@ from DocumentObject import DocumentObject
 from FieldList import FieldList
 import uuid
 from FieldText import FieldText
+import DocumentCollection
 
 class Covers(Document):
     def __init__(self, id):
@@ -16,7 +17,7 @@ class Covers(Document):
 
 class SimpleCoversTestCase(unittest.TestCase):
     def setUp(self):
-        pass
+        DocumentCollection.InitialiseDocumentCollection()
 
     def runTest(self):
         #Test merging together simple covers documents
@@ -48,7 +49,7 @@ class SimpleCoversTestCase(unittest.TestCase):
     
 class MergeHistoryCoverTestCase(unittest.TestCase):
     def setUp(self):
-        pass
+        DocumentCollection.InitialiseDocumentCollection()
 
     def runTest(self):
         #Test merge together two simple covers objects
@@ -74,7 +75,7 @@ class TestPropertyOwner1(Document):
 
 class ListItemChangeHistoryTestCase(unittest.TestCase):
     def setUp(self):
-        pass
+        DocumentCollection.InitialiseDocumentCollection()
 
     def runTest(self):
         #Test that various types of changes create was changed events
@@ -94,7 +95,7 @@ class ListItemChangeHistoryTestCase(unittest.TestCase):
 
 class SimpleItemTestCase(unittest.TestCase):
     def setUp(self):
-        pass
+        DocumentCollection.InitialiseDocumentCollection()
 
     def runTest(self):
         test1 = TestPropertyOwner1(None)
@@ -132,7 +133,7 @@ class SimpleItemTestCase(unittest.TestCase):
 
 class AdvancedItemTestCase(unittest.TestCase):
     def setUp(self):
-        pass
+        DocumentCollection.InitialiseDocumentCollection()
 
     def runTest(self):
         #Test changing them deleting a sub element
@@ -223,7 +224,7 @@ class Comments(Document):
 
 class MergeHistoryCommentTestCase(unittest.TestCase):
     def setUp(self):
-        pass
+        DocumentCollection.InitialiseDocumentCollection()
 
     def runTest(self):
         #Test merge together two simple covers objects
@@ -246,16 +247,59 @@ class MergeHistoryCommentTestCase(unittest.TestCase):
         #In a merge conflict between two string the one that is sooner in alphabetical order is the winner
         assert test3.comment == "CCC"
 
+class StoreObjectsInDatabaseTestCase(unittest.TestCase):
+    def setUp(self):
+        DocumentCollection.InitialiseDocumentCollection()
 
+    def runTest(self):
+        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
+        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+
+        #Test writing the history to a sql lite database
+        test1 = TestPropertyOwner1(None)
+        test1id = test1.id
+        testitem1 = TestPropertyOwner2(None)
+        testitem1id = testitem1.id
+        test1.propertyowner2s.add(testitem1)
+        test2 = test1.Clone()
+        testitem1.cover = 3
+        test2.covers=2        
+        assert len(test1.propertyowner2s) == 1
+
+        test3 = test2.Merge(test1)
+        assert len(test3.propertyowner2s) == 1
+        for item1 in test3.propertyowner2s:
+            assert item1.cover == 3
+        assert test3.covers == 2
+        DocumentCollection.documentcollection.AddDocumentObject(test3)
+
+        test1s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        assert len(test1s) == 1
+
+        DocumentCollection.documentcollection.Save('test.history.db')
+        DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
+        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+        DocumentCollection.documentcollection.Load('test.history.db')
+        test1s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        assert len(test1s) == 1
+        test1 = test1s[0]
+        test1id = test1.id
+        assert len(test1.propertyowner2s) == 1
+        for testitem1 in test3.propertyowner2s:
+            assert testitem1id == testitem1.id
+            assert testitem1.cover == 3
+        assert test1.covers == 2
     
 def suite():
     suite = unittest.TestSuite()
-    suite.addTest(SimpleCoversTestCase())
-    suite.addTest(MergeHistoryCoverTestCase())
-    suite.addTest(ListItemChangeHistoryTestCase())
-    suite.addTest(SimpleItemTestCase())
-    suite.addTest(AdvancedItemTestCase())
-    suite.addTest(MergeHistoryCommentTestCase())
+    #suite.addTest(SimpleCoversTestCase())
+    #suite.addTest(MergeHistoryCoverTestCase())
+    #suite.addTest(ListItemChangeHistoryTestCase())
+    #suite.addTest(SimpleItemTestCase())
+    #suite.addTest(AdvancedItemTestCase())
+    #suite.addTest(MergeHistoryCommentTestCase())
+    suite.addTest(StoreObjectsInDatabaseTestCase())
     
     return suite
 
