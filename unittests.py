@@ -291,15 +291,60 @@ class StoreObjectsInDatabaseTestCase(unittest.TestCase):
             assert testitem1.cover == 3
         assert test1.covers == 2
     
+class StoreObjectsInJSONTestCase(unittest.TestCase):
+    def setUp(self):
+        DocumentCollection.InitialiseDocumentCollection()
+
+    def runTest(self):
+        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
+        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+
+        #Test writing the history to a sql lite database
+        test1 = TestPropertyOwner1(None)
+        test1id = test1.id
+        testitem1 = TestPropertyOwner2(None)
+        testitem1id = testitem1.id
+        test1.propertyowner2s.add(testitem1)
+        test2 = test1.Clone()
+        testitem1.cover = 3
+        test2.covers=2        
+        assert len(test1.propertyowner2s) == 1
+
+        test3 = test2.Merge(test1)
+        assert len(test3.propertyowner2s) == 1
+        for item1 in test3.propertyowner2s:
+            assert item1.cover == 3
+        assert test3.covers == 2
+        DocumentCollection.documentcollection.AddDocumentObject(test3)
+
+        test1s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        assert len(test1s) == 1
+
+        jsontext = DocumentCollection.documentcollection.asJSON()
+        DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
+        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+        DocumentCollection.documentcollection.LoadFromJSON(jsontext)
+        test1s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        assert len(test1s) == 1
+        test1 = test1s[0]
+        test1id = test1.id
+        assert len(test1.propertyowner2s) == 1
+        for testitem1 in test3.propertyowner2s:
+            assert testitem1id == testitem1.id
+            assert testitem1.cover == 3
+        assert test1.covers == 2
+    
 def suite():
     suite = unittest.TestSuite()
-    #suite.addTest(SimpleCoversTestCase())
-    #suite.addTest(MergeHistoryCoverTestCase())
-    #suite.addTest(ListItemChangeHistoryTestCase())
-    #suite.addTest(SimpleItemTestCase())
-    #suite.addTest(AdvancedItemTestCase())
-    #suite.addTest(MergeHistoryCommentTestCase())
+    suite.addTest(SimpleCoversTestCase())
+    suite.addTest(MergeHistoryCoverTestCase())
+    suite.addTest(ListItemChangeHistoryTestCase())
+    suite.addTest(SimpleItemTestCase())
+    suite.addTest(AdvancedItemTestCase())
+    suite.addTest(MergeHistoryCommentTestCase())
     suite.addTest(StoreObjectsInDatabaseTestCase())
+    suite.addTest(StoreObjectsInJSONTestCase())
     
     return suite
 
