@@ -276,11 +276,20 @@ class StoreObjectsInDatabaseTestCase(unittest.TestCase):
         test1s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
         assert len(test1s) == 1
 
-        DocumentCollection.documentcollection.Save('test.history.db')
+        DocumentCollection.documentcollection.Save('test.history.db', 'test.content.db')
+
+        matches = DocumentCollection.documentcollection.GetSQLObjects("SELECT id FROM TestPropertyOwner1 WHERE covers > 1")
+        assert len(matches) == 1
+        assert matches[0].__class__ == TestPropertyOwner1
+        assert matches[0].id == test1id
+        matches = DocumentCollection.documentcollection.GetSQLObjects("SELECT id FROM TestPropertyOwner1 WHERE covers > 5")
+        assert len(matches) == 0
+
         DocumentCollection.InitialiseDocumentCollection()
         DocumentCollection.documentcollection.Register(TestPropertyOwner1)
         DocumentCollection.documentcollection.Register(TestPropertyOwner2)
-        DocumentCollection.documentcollection.Load('test.history.db')
+
+        DocumentCollection.documentcollection.Load('test.history.db', 'test.content.db')
         test1s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
         assert len(test1s) == 1
         test1 = test1s[0]
@@ -290,6 +299,13 @@ class StoreObjectsInDatabaseTestCase(unittest.TestCase):
             assert testitem1id == testitem1.id
             assert testitem1.cover == 3
         assert test1.covers == 2
+
+        matches = DocumentCollection.documentcollection.GetSQLObjects("SELECT id FROM TestPropertyOwner1 WHERE covers > 1")
+        assert len(matches) == 1
+        assert matches[0].__class__ == TestPropertyOwner1
+        assert matches[0].id == test1id
+        matches = DocumentCollection.documentcollection.GetSQLObjects("SELECT id FROM TestPropertyOwner1 WHERE covers > 5")
+        assert len(matches) == 0
     
 class StoreObjectsInJSONTestCase(unittest.TestCase):
     def setUp(self):
