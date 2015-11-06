@@ -351,6 +351,72 @@ class StoreObjectsInJSONTestCase(unittest.TestCase):
             assert testitem1.cover == 3
         assert test1.covers == 2
     
+class MergeChangesMadeInJSONTestCase(unittest.TestCase):
+    def setUp(self):
+        DocumentCollection.InitialiseDocumentCollection()
+
+    def runTest(self):
+        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
+        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+
+        #Create an object and set some values
+        test1 = TestPropertyOwner1(None)
+        test1id = test1.id
+        testitem1 = TestPropertyOwner2(None)
+        testitem1id = testitem1.id
+        test1.propertyowner2s.add(testitem1)
+        testitem1.cover = 3
+        test1.covers=2        
+
+        DocumentCollection.documentcollection.AddDocumentObject(test1)
+
+        #Simulate sending the object to another user via conversion to JSON and emailing
+        jsontext = DocumentCollection.documentcollection.asJSON()
+
+        #Make some local changes
+        test1.covers = 4
+
+        #Simulate the other user (who received the email with the edges) getting the document and loading it into memory
+        DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
+        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+        DocumentCollection.documentcollection.LoadFromJSON(jsontext)
+        tpo1s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        assert len(tpo1s) == 1
+        test2 = tpo1s[0]
+
+        assert len(test2.propertyowner2s) == 1
+
+        #The second user makes some changes and sends them back to the first
+        for testitem2 in test2.propertyowner2s:
+            testitem2.cover = 4
+
+        test2.covers = 3
+        
+        jsontext = DocumentCollection.documentcollection.asJSON()
+        
+        #Simulate the first user received the second users changes
+        DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
+        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+        DocumentCollection.documentcollection.LoadFromJSON(jsontext)
+        test2s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        assert len(test2s) == 1
+        test2 = test2s[0]
+
+        assert test2.covers == 3
+        for testitem2 in test2.propertyowner2s:
+            assert testitem2.cover == 4
+        assert testitem2.cover == 4
+         
+        #The first user merges the changes back with his own
+        test3 = test2.Merge(test1)
+        assert len(test3.propertyowner2s) == 1
+        for testitem3 in test3.propertyowner2s:
+            assert testitem3.cover == 4
+        assert test3.covers == 4
+
+    
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(SimpleCoversTestCase())
@@ -361,6 +427,7 @@ def suite():
     suite.addTest(MergeHistoryCommentTestCase())
     suite.addTest(StoreObjectsInDatabaseTestCase())
     suite.addTest(StoreObjectsInJSONTestCase())
+    suite.addTest(MergeChangesMadeInJSONTestCase())
     
     return suite
 
