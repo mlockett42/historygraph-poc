@@ -9,6 +9,22 @@ from FieldList import FieldList
 import uuid
 from FieldText import FieldText
 import DocumentCollection
+from messagefilterdatetime import MessageFilterDateTime
+from messagefiltersubject import MessageFilterSubject
+from messagefilterbody import MessageFilterBody
+from messagefilterand import MessageFilterAnd
+from messagefilteror import MessageFilterOr
+import datetime
+from messagefilterfromaddress import MessageFilterFromAddress
+from messagefiltertoaddress import MessageFilterByToAddress
+from messagefilterccaddress import MessageFilterByCCAddress
+from messagefilterbccaddress import MessageFilterByBCCAddress
+from messagefiltertag import MessageFilterByTag
+import mockpoplib
+import mocksmtplib
+from email.mime.text import MIMEText
+from contactfilteremailaddress import ContactFilterEmailAddress
+from messagestore import *
 
 class Covers(Document):
     def __init__(self, id):
@@ -417,6 +433,525 @@ class MergeChangesMadeInJSONTestCase(unittest.TestCase):
         self.assertEqual(test3.covers, 4)
 
     
+class AddMessageToMessageStoreTestCase(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        message = Message()
+        message.fromaddress = "Mark_Lockett@hotmail.com"
+        message.datetime = datetime.datetime(2013,10,31,12,0,0)
+        GetGlobalMessageStore().AddMessage(message)
+
+        assert GetGlobalMessageStore().GetMessages().count() == 1, "Not one message in messagestore"
+        assert GetGlobalMessageStore().GetMessages().first().id == message.id, "Message id's don't match"
+        assert GetGlobalContactStore().GetContacts().count() == 1, "Not one contact in contactstore"
+        assert GetGlobalContactStore().GetContacts().first().emailaddress == message.fromaddress, "Contact email address not correct"
+
+class FilterByDateTestCase(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        message1 = Message()
+        message1.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message2 = Message()
+        message2.datetime = datetime.datetime(2013,11,1,12,0,0)
+        message3 = Message()
+        message3.datetime = datetime.datetime(2013,10,30,12,0,0)
+        GetGlobalMessageStore().AddMessage(message1)
+        GetGlobalMessageStore().AddMessage(message2)
+        GetGlobalMessageStore().AddMessage(message3)
+
+        f = MessageFilterDateTime(datetime.datetime(2013,10,31,0,0,0), datetime.datetime(2013,10,31,23,59,59))
+        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+
+        assert len(l) == 1, "Not one message in messagestore"
+        assert l[0].id == message1.id, "Message id's don't match"
+
+class FilterBySubjectCase(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        message1 = Message()
+        message1.subject = "Hello1"
+        message1.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message2 = Message()
+        message2.subject = "Hello2"
+        message2.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message3 = Message()
+        message3.subject = "Hello3"
+        message3.datetime = datetime.datetime(2013,10,31,12,0,0)
+        GetGlobalMessageStore().AddMessage(message1)
+        GetGlobalMessageStore().AddMessage(message2)
+        GetGlobalMessageStore().AddMessage(message3)
+
+        f = MessageFilterSubject("Hello2")
+        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+
+        assert len(l) == 1, "Not one message in messagestore"
+        assert l[0].id == message2.id, "Message id's don't match"
+
+class FilterByBodyCase(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        message1 = Message()
+        message1.body = "Hello1"
+        message1.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message2 = Message()
+        message2.body = "Hello2"
+        message2.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message3 = Message()
+        message3.body = "Hello3"
+        message3.datetime = datetime.datetime(2013,10,31,12,0,0)
+        GetGlobalMessageStore().AddMessage(message1)
+        GetGlobalMessageStore().AddMessage(message2)
+        GetGlobalMessageStore().AddMessage(message3)
+
+        f = MessageFilterBody("Hello2")
+        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+
+        assert len(l) == 1, "Not one message in messagestore"
+        assert l[0].id == message2.id, "Message id's don't match"
+
+class FilterAndCase(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        message1 = Message()
+        message1.body = "Hello1"
+        message1.subject = "blarg"
+        message1.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message2 = Message()
+        message2.body = "Hello2"
+        message2.subject = "blarg"
+        message2.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message3 = Message()
+        message3.body = "Hello3"
+        message3.subject = "blarg"
+        message3.datetime = datetime.datetime(2013,10,31,12,0,0)
+        GetGlobalMessageStore().AddMessage(message1)
+        GetGlobalMessageStore().AddMessage(message2)
+        GetGlobalMessageStore().AddMessage(message3)
+
+        f1 = MessageFilterBody("Hello2")
+        f2 = MessageFilterSubject("blarg")
+        f = MessageFilterAnd(f1, f2)
+        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+
+        assert len(l) == 1, "Not one message in messagestore"
+        assert l[0].id == message2.id, "Message id's don't match"
+
+class FilterOrCase(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        message1 = Message()
+        message1.body = "Hello1"
+        message1.subject = "blarg1"
+        message1.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message2 = Message()
+        message2.body = "Hello2"
+        message2.subject = "blarg2"
+        message2.datetime = datetime.datetime(2013,11,1,12,0,0)
+        message3 = Message()
+        message3.body = "Hello3"
+        message3.subject = "blarg3"
+        message3.datetime = datetime.datetime(2013,1,2,12,0,0)
+        GetGlobalMessageStore().AddMessage(message1)
+        GetGlobalMessageStore().AddMessage(message2)
+        GetGlobalMessageStore().AddMessage(message3)
+
+        f1 = MessageFilterBody("Hello2")
+        f2 = MessageFilterSubject("blarg1")
+        f = MessageFilterOr(f1, f2)
+        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+
+        assert len(l) == 2, "Not one message in messagestore"
+        assert l[0].id == message1.id, "Message id's don't match"
+        assert l[1].id == message2.id, "Message id's don't match"
+
+class FilterByFromAddressCase(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+        
+    def runTest(self):
+        message1 = Message()
+        message1.body = "Hello1"
+        message1.fromaddress = "mlockett@bigpond.com"
+        message1.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message2 = Message()
+        message2.body = "Hello2"
+        message2.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message2.fromaddress = "no-one@example.com"
+        message3 = Message()
+        message3.body = "Hello3"
+        message3.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message3.fromaddress = "hello@example.com"
+        GetGlobalMessageStore().AddMessage(message1)
+        GetGlobalMessageStore().AddMessage(message2)
+        GetGlobalMessageStore().AddMessage(message3)
+
+        f = MessageFilterFromAddress("mlockett@bigpond.com")
+        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+
+        assert len(l) == 1, "Not one message in messagestore"
+        assert l[0].id == message1.id, "Message id's don't match"
+        
+class FilterByToAddressCase(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        message1 = Message()
+        message1.body = "Hello1"
+        addr1 = Address()
+        addr1.email_address = "Mark_Lockett@hotmail.com"
+        addr1.message_id = message1.id
+        addr1.addresstype = "To"
+        message1.fromaddress = "mlockett@bigpond.com"
+        message1.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message1.addresses.append(addr1)
+        message2 = Message()
+        message2.body = "Hello2"
+        message2.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message2.fromaddress = "no-one@example.com"
+        addr2 = Address()
+        addr2.email_address = "goblin@example.com"
+        addr2.message_id = message2.id
+        addr2.addresstype = "To"
+        message2.addresses.append(addr2)
+        GetGlobalMessageStore().AddMessage(message1)
+        GetGlobalMessageStore().AddMessage(message2)
+
+        f = MessageFilterByToAddress("Mark_Lockett@hotmail.com")
+        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+
+        assert len(l) == 1, "Not one message in messagestore"
+        assert l[0].id == message1.id, "Message id's don't match"
+        
+class FilterByCCAddressCase(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        message1 = Message()
+        message1.body = "Hello1"
+        addr1 = Address()
+        addr1.email_address = "Mark_Lockett@hotmail.com"
+        addr1.message_id = message1.id
+        addr1.addresstype = "To"
+        addr3 = Address()
+        addr3.email_address = "cc1@example.com"
+        addr3.message_id = message1.id
+        addr3.addresstype = "CC"
+        message1.fromaddress = "mlockett@bigpond.com"
+        message1.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message1.addresses.append(addr1)
+        message1.addresses.append(addr3)
+        message2 = Message()
+        message2.body = "Hello2"
+        message2.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message2.fromaddress = "no-one@example.com"
+        addr2 = Address()
+        addr2.email_address = "goblin@example.com"
+        addr2.message_id = message2.id
+        addr2.addresstype = "To"
+        message2.addresses.append(addr2)
+        addr4 = Address()
+        addr4.email_address = "tornado@example.com"
+        addr4.message_id = message2.id
+        addr4.addresstype = "CC"
+        message2.addresses.append(addr4)
+        GetGlobalMessageStore().AddMessage(message1)
+        GetGlobalMessageStore().AddMessage(message2)
+
+        f = MessageFilterByCCAddress("cc1@example.com")
+        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+
+        assert len(l) == 1, "Not one message in messagestore"
+        assert l[0].id == message1.id, "Message id's don't match"
+
+        f = MessageFilterByCCAddress("goblin@example.com")
+        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+
+        assert len(l) == 0, "Not zero messages in messagestore"
+
+class FilterByBCCAddressCase(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        message1 = Message()
+        message1.body = "Hello1"
+        addr1 = Address()
+        addr1.email_address = "Mark_Lockett@hotmail.com"
+        addr1.message_id = message1.id
+        addr1.addresstype = "To"
+        addr3 = Address()
+        addr3.email_address = "cc1@example.com"
+        addr3.message_id = message1.id
+        addr3.addresstype = "CC"
+        addr5 = Address()
+        addr5.email_address = "bcc1@example.com"
+        addr5.message_id = message1.id
+        addr5.addresstype = "BCC"
+        message1.fromaddress = "mlockett@bigpond.com"
+        message1.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message1.addresses.append(addr1)
+        message1.addresses.append(addr3)
+        message1.addresses.append(addr5)
+        message2 = Message()
+        message2.body = "Hello2"
+        message2.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message2.fromaddress = "no-one@example.com"
+        addr2 = Address()
+        addr2.email_address = "goblin@example.com"
+        addr2.message_id = message2.id
+        addr2.addresstype = "To"
+        message2.addresses.append(addr2)
+        addr4 = Address()
+        addr4.email_address = "tornado@example.com"
+        addr4.message_id = message2.id
+        addr4.addresstype = "CC"
+        message2.addresses.append(addr4)
+        addr6 = Address()
+        addr6.email_address = "wr@example.com"
+        addr6.message_id = message2.id
+        addr6.addresstype = "BCC"
+        message2.addresses.append(addr4)
+        GetGlobalMessageStore().AddMessage(message1)
+        GetGlobalMessageStore().AddMessage(message2)
+
+        f = MessageFilterByBCCAddress("bcc1@example.com")
+        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+
+        assert len(l) == 1, "Not one message in messagestore"
+        assert l[0].id == message1.id, "Message id's don't match"
+
+        f = MessageFilterByBCCAddress("cc1@example.com")
+        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+
+        assert len(l) == 0, "Not zero messages in messagestore"
+
+class AddContactToContactStoreTestCase(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        contact = Contact()
+        contact.name = "Mark Lockett"
+        contact.emailaddress = "mlockett@bigpond.com"
+        GetGlobalContactStore().AddContact(contact)
+
+        assert GetGlobalContactStore().GetContacts().count() == 1, "Not one message in messagestore"
+        assert GetGlobalContactStore().GetContacts().first().id == contact.id, "Message id's don't match"
+
+class FilterContactsByEmailAddressCase(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        contact1 = Contact()
+        contact1.name = "Mark Lockett"
+        contact1.emailaddress = "mlockett@bigpond.com"
+        contact2 = Contact()
+        contact2.name = "Johnny Hello"
+        contact2.emailaddress = "hello@example.com"
+        GetGlobalContactStore().AddContact(contact1)
+        GetGlobalContactStore().AddContact(contact2)
+
+        f = ContactFilterEmailAddress("hello@example.com")
+        l = GetGlobalContactStore().GetContactsByFilter(f)
+
+        assert len(l) == 1, "Not one contact in contactstore"
+        assert l[0].id == contact2.id, "Contact id's don't match"
+        
+class FilterByTagCase(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        message1 = Message()
+        message1.body = "Hello1"
+        addr1 = Address()
+        addr1.email_address = "Mark_Lockett@hotmail.com"
+        addr1.message_id = message1.id
+        addr1.addresstype = "To"
+        tag1 = Tag()
+        tag1.tagname = "Awesome"
+        message1.fromaddress = "mlockett@bigpond.com"
+        message1.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message1.addresses.append(addr1)
+        message1.tags.append(tag1)
+        message2 = Message()
+        message2.body = "Hello2"
+        message2.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message2.fromaddress = "no-one@example.com"
+        addr2 = Address()
+        addr2.email_address = "goblin@example.com"
+        addr2.message_id = message2.id
+        addr2.addresstype = "To"
+        message2.addresses.append(addr2)
+        GetGlobalMessageStore().AddMessage(message1)
+        GetGlobalMessageStore().AddMessage(message2)
+
+        f = MessageFilterByTag("Awesome")
+        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+
+        assert len(l) == 1, "Not one message in messagestore"
+        assert l[0].id == message1.id, "Message id's don't match"
+        
+class ReceiveEmailByPOPTestCase(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        pop = mockpoplib.POP3("mail.example.com", 0)
+        pop.user("mlockett")
+        pop.pass_("password")
+        numMessages = len(pop.list()[1])
+        assert numMessages == 1,"Not one message waiting on pop server"
+        rawbody = pop.retr(1)[1]
+
+        message = Message.fromrawbodytest(rawbody)
+
+        assert message.subject == "Hello world", "Incorrect subject"
+        assert message.body == """
+test body
+hello
+
+""", "Incorrect body"
+        assert message.senderislivewireenabled == False, "Sender not livewire enabled"
+        
+class SendEmailBySMTPTestCase(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        #Is this actually testing anything? Probably not
+        message1 = Message()
+        message1.body = "Hello1"
+        message1.subject = "Test"
+        addr1 = Address()
+        addr1.email_address = "Mark_Lockett@hotmail.com"
+        addr1.message_id = message1.id
+        addr1.addresstype = "To"
+        message1.fromaddress = "mlockett@bigpond.com"
+        message1.datetime = datetime.datetime(2013,10,31,12,0,0)
+        message1.addresses.append(addr1)
+
+        msg = MIMEText(message1.body)
+        msg['Subject'] = message1.subject
+        msg['From'] = message1.fromaddress
+        msg['To'] = addr1.email_address
+
+        
+        smtp = mocksmtplib.SMTP("mail.example.com")
+        smtp.sendmail(message1.fromaddress, [addr1.email_address], msg.as_string())
+        smtp.quit()
+
+class AddMessageDoesNotDuplicateContacts(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        contact = Contact()
+        contact.name = "Mark Lockett"
+        contact.emailaddress = "Mark_Lockett@hotmail.com"
+        GetGlobalContactStore().AddContact(contact)
+
+        message = Message()
+        message.fromaddress = "Mark_Lockett@hotmail.com"
+        message.datetime = datetime.datetime(2013,10,31,12,0,0)
+        GetGlobalMessageStore().AddMessage(message)
+
+        assert GetGlobalMessageStore().GetMessages().count() == 1, "Not one message in messagestore"
+        assert GetGlobalMessageStore().GetMessages().first().id == message.id, "Message id's don't match"
+        assert GetGlobalContactStore().GetContacts().count() == 1, "Not one contact in contactstore"
+        assert GetGlobalContactStore().GetContacts().first().emailaddress == message.fromaddress, "Contact email address not correct"
+
+class DetectsLivewireEnabledSender(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        pop = mockpoplib.POP3("mail.example.com", 1)
+        pop.user("mlockett")
+        pop.pass_("password")
+        numMessages = len(pop.list()[1])
+        assert numMessages == 1,"Not one message waiting on pop server"
+        rawbody = pop.retr(1)[1]
+
+        message = Message.fromrawbodytest(rawbody)
+        GetGlobalMessageStore().AddMessage(message)
+
+        assert message.senderislivewireenabled == True, "Sender not livewire enabled"
+        assert GetGlobalContactStore().GetContacts().first().islivewire == True, "Contact not set up to be livewire"
+        
+class DetectsLivewireEnabledSenderExistingContact(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        contact = Contact()
+        contact.name = "Mark Lockett"
+        contact.emailaddress = "mlockett42@gmail.com"
+        GetGlobalContactStore().AddContact(contact)
+
+        pop = mockpoplib.POP3("mail.example.com", 1)
+        pop.user("mlockett")
+        pop.pass_("password")
+        numMessages = len(pop.list()[1])
+        assert numMessages == 1,"Not one message waiting on pop server"
+        rawbody = pop.retr(1)[1]
+
+        message = Message.fromrawbodytest(rawbody)
+        GetGlobalMessageStore().AddMessage(message)
+
+        assert message.senderislivewireenabled == True, "Sender not livewire enabled"
+        assert GetGlobalContactStore().GetContacts().first().islivewire == True, "Contact not set up to be livewire"
+        
+class AddSettingToSettingStoreTestCase(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        setting = Setting()
+        setting.name = "TestMe"
+        setting.value = "Test value"
+        GetGlobalSettingStore().AddSetting(setting)
+
+        setting2 = GetGlobalSettingStore().GetSetting("TestMe")
+        assert setting2.value == "Test value", "Setting value didn't match"
+        setting3 = GetGlobalSettingStore().GetSetting("TestMe2")
+        assert setting3 == None, "Unknown setting returning incorrect value"
+
+class FastSettingAccessFunctionsTestCase(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        GetGlobalSettingStore().SaveSetting("TestMe2", "Blah")
+
+        assert GetGlobalSettingStore().LoadSetting("TestMe2") == "Blah", "Setting value didn't match"
+        assert GetGlobalSettingStore().LoadSetting("TestMe") == "", "Unknown setting returning incorrect value"
+
+class FastSettingChangeValueTestCase(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        GetGlobalSettingStore().SaveSetting("TestMe2", "Blah")
+        GetGlobalSettingStore().SaveSetting("TestMe2", "Blah2")
+
+        assert GetGlobalSettingStore().LoadSetting("TestMe2") == "Blah2", "Setting value didn't match"
+
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(SimpleCoversTestCase())
@@ -428,6 +963,29 @@ def suite():
     suite.addTest(StoreObjectsInDatabaseTestCase())
     suite.addTest(StoreObjectsInJSONTestCase())
     suite.addTest(MergeChangesMadeInJSONTestCase())
+
+    suite.addTest(FastSettingChangeValueTestCase())
+    suite.addTest(FastSettingAccessFunctionsTestCase())
+    suite.addTest(AddSettingToSettingStoreTestCase())
+    suite.addTest(DetectsLivewireEnabledSenderExistingContact())
+    suite.addTest(DetectsLivewireEnabledSender())
+    suite.addTest(AddMessageDoesNotDuplicateContacts())
+    suite.addTest(SendEmailBySMTPTestCase())
+    suite.addTest(ReceiveEmailByPOPTestCase())
+    suite.addTest(FilterByTagCase())
+    suite.addTest(FilterContactsByEmailAddressCase())
+    suite.addTest(AddContactToContactStoreTestCase())
+    suite.addTest(FilterByBCCAddressCase())
+    suite.addTest(FilterByCCAddressCase())
+    suite.addTest(FilterByToAddressCase())
+    suite.addTest(FilterByFromAddressCase())
+    suite.addTest(FilterOrCase())
+    suite.addTest(FilterAndCase())
+    suite.addTest(FilterByBodyCase())
+    suite.addTest(FilterBySubjectCase())
+    suite.addTest(FilterByDateTestCase())
+    suite.addTest(AddMessageToMessageStoreTestCase())
+
     #suite.addTest(SendAndReceiveUnencryptedEmail())
     
     return suite
