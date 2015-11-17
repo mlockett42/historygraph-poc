@@ -443,10 +443,10 @@ class AddMessageToMessageStoreTestCase(unittest.TestCase):
         message.datetime = datetime.datetime(2013,10,31,12,0,0)
         GetGlobalMessageStore().AddMessage(message)
 
-        assert GetGlobalMessageStore().GetMessages().count() == 1, "Not one message in messagestore"
-        assert GetGlobalMessageStore().GetMessages().first().id == message.id, "Message id's don't match"
-        assert GetGlobalContactStore().GetContacts().count() == 1, "Not one contact in contactstore"
-        assert GetGlobalContactStore().GetContacts().first().emailaddress == message.fromaddress, "Contact email address not correct"
+        self.assertEquals(GetGlobalMessageStore().GetMessages().count(), 1, "Not one message in messagestore")
+        self.assertEquals(GetGlobalMessageStore().GetMessages().first().id, message.id, "Message id's don't match")
+        self.assertEquals(GetGlobalContactStore().GetContacts().count(), 1, "Not one contact in contactstore")
+        self.assertEquals(GetGlobalContactStore().GetContacts().first().emailaddress, message.fromaddress, "Contact email address not correct")
 
 class FilterByDateTestCase(unittest.TestCase):
     def setUp(self):
@@ -466,8 +466,8 @@ class FilterByDateTestCase(unittest.TestCase):
         f = MessageFilterDateTime(datetime.datetime(2013,10,31,0,0,0), datetime.datetime(2013,10,31,23,59,59))
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
 
-        assert len(l) == 1, "Not one message in messagestore"
-        assert l[0].id == message1.id, "Message id's don't match"
+        self.assertEquals(len(l), 1, "Not one message in messagestore")
+        self.assertEquals(l[0].id, message1.id, "Message id's don't match")
 
 class FilterBySubjectCase(unittest.TestCase):
     def setUp(self):
@@ -490,8 +490,8 @@ class FilterBySubjectCase(unittest.TestCase):
         f = MessageFilterSubject("Hello2")
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
 
-        assert len(l) == 1, "Not one message in messagestore"
-        assert l[0].id == message2.id, "Message id's don't match"
+        self.assertEquals(len(l), 1, "Not one message in messagestore")
+        self.assertEquals(l[0].id, message2.id, "Message id's don't match")
 
 class FilterByBodyCase(unittest.TestCase):
     def setUp(self):
@@ -514,8 +514,8 @@ class FilterByBodyCase(unittest.TestCase):
         f = MessageFilterBody("Hello2")
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
 
-        assert len(l) == 1, "Not one message in messagestore"
-        assert l[0].id == message2.id, "Message id's don't match"
+        self.assertEquals(len(l), 1, "Not one message in messagestore")
+        self.assertEquals(l[0].id, message2.id, "Message id's don't match")
 
 class FilterAndCase(unittest.TestCase):
     def setUp(self):
@@ -543,8 +543,8 @@ class FilterAndCase(unittest.TestCase):
         f = MessageFilterAnd(f1, f2)
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
 
-        assert len(l) == 1, "Not one message in messagestore"
-        assert l[0].id == message2.id, "Message id's don't match"
+        self.assertEquals(len(l), 1, "Not one message in messagestore")
+        self.assertEquals(l[0].id, message2.id, "Message id's don't match")
 
 class FilterOrCase(unittest.TestCase):
     def setUp(self):
@@ -572,9 +572,9 @@ class FilterOrCase(unittest.TestCase):
         f = MessageFilterOr(f1, f2)
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
 
-        assert len(l) == 2, "Not one message in messagestore"
-        assert l[0].id == message1.id, "Message id's don't match"
-        assert l[1].id == message2.id, "Message id's don't match"
+        self.assertEquals(len(l), 2, "Not one message in messagestore")
+        self.assertEquals(l[0].id, message1.id, "Message id's don't match")
+        self.assertEquals(l[1].id, message2.id, "Message id's don't match")
 
 class FilterByFromAddressCase(unittest.TestCase):
     def setUp(self):
@@ -600,8 +600,8 @@ class FilterByFromAddressCase(unittest.TestCase):
         f = MessageFilterFromAddress("mlockett@bigpond.com")
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
 
-        assert len(l) == 1, "Not one message in messagestore"
-        assert l[0].id == message1.id, "Message id's don't match"
+        self.assertEquals(len(l), 1, "Not one message in messagestore")
+        self.assertEquals(l[0].id, message1.id, "Message id's don't match")
         
 class FilterByToAddressCase(unittest.TestCase):
     def setUp(self):
@@ -632,8 +632,8 @@ class FilterByToAddressCase(unittest.TestCase):
         f = MessageFilterByToAddress("Mark_Lockett@hotmail.com")
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
 
-        assert len(l) == 1, "Not one message in messagestore"
-        assert l[0].id == message1.id, "Message id's don't match"
+        self.assertEquals(len(l), 1, "Not one message in messagestore")
+        self.assertEquals(l[0].id, message1.id, "Message id's don't match")
         
 class FilterByCCAddressCase(unittest.TestCase):
     def setUp(self):
@@ -674,13 +674,13 @@ class FilterByCCAddressCase(unittest.TestCase):
         f = MessageFilterByCCAddress("cc1@example.com")
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
 
-        assert len(l) == 1, "Not one message in messagestore"
-        assert l[0].id == message1.id, "Message id's don't match"
+        self.assertEquals(len(l), 1, "Not one message in messagestore")
+        self.assertEquals(l[0].id, message1.id, "Message id's don't match")
 
         f = MessageFilterByCCAddress("goblin@example.com")
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
 
-        assert len(l) == 0, "Not zero messages in messagestore"
+        self.assertEquals(len(l), 0, "Not zero messages in messagestore")
 
 class FilterByBCCAddressCase(unittest.TestCase):
     def setUp(self):
@@ -731,13 +731,13 @@ class FilterByBCCAddressCase(unittest.TestCase):
         f = MessageFilterByBCCAddress("bcc1@example.com")
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
 
-        assert len(l) == 1, "Not one message in messagestore"
-        assert l[0].id == message1.id, "Message id's don't match"
+        self.assertEquals(len(l), 1, "Not one message in messagestore")
+        self.assertEquals(l[0].id, message1.id, "Message id's don't match")
 
         f = MessageFilterByBCCAddress("cc1@example.com")
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
 
-        assert len(l) == 0, "Not zero messages in messagestore"
+        self.assertEquals(len(l), 0, "Not zero messages in messagestore")
 
 class AddContactToContactStoreTestCase(unittest.TestCase):
     def setUp(self):
@@ -749,8 +749,8 @@ class AddContactToContactStoreTestCase(unittest.TestCase):
         contact.emailaddress = "mlockett@bigpond.com"
         GetGlobalContactStore().AddContact(contact)
 
-        assert GetGlobalContactStore().GetContacts().count() == 1, "Not one message in messagestore"
-        assert GetGlobalContactStore().GetContacts().first().id == contact.id, "Message id's don't match"
+        self.assertEquals(GetGlobalContactStore().GetContacts().count(), 1, "Not one message in messagestore")
+        self.assertEquals(GetGlobalContactStore().GetContacts().first().id, contact.id, "Message id's don't match")
 
 class FilterContactsByEmailAddressCase(unittest.TestCase):
     def setUp(self):
@@ -769,8 +769,8 @@ class FilterContactsByEmailAddressCase(unittest.TestCase):
         f = ContactFilterEmailAddress("hello@example.com")
         l = GetGlobalContactStore().GetContactsByFilter(f)
 
-        assert len(l) == 1, "Not one contact in contactstore"
-        assert l[0].id == contact2.id, "Contact id's don't match"
+        self.assertEquals(len(l), 1, "Not one contact in contactstore")
+        self.assertEquals(l[0].id, contact2.id, "Contact id's don't match")
         
 class FilterByTagCase(unittest.TestCase):
     def setUp(self):
@@ -804,8 +804,8 @@ class FilterByTagCase(unittest.TestCase):
         f = MessageFilterByTag("Awesome")
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
 
-        assert len(l) == 1, "Not one message in messagestore"
-        assert l[0].id == message1.id, "Message id's don't match"
+        self.assertEquals(len(l), 1, "Not one message in messagestore")
+        self.assertEquals(l[0].id, message1.id, "Message id's don't match")
         
 class ReceiveEmailByPOPTestCase(unittest.TestCase):
     def setUp(self):
@@ -816,18 +816,18 @@ class ReceiveEmailByPOPTestCase(unittest.TestCase):
         pop.user("mlockett")
         pop.pass_("password")
         numMessages = len(pop.list()[1])
-        assert numMessages == 1,"Not one message waiting on pop server"
+        self.assertEquals(numMessages, 1,"Not one message waiting on pop server")
         rawbody = pop.retr(1)[1]
 
         message = Message.fromrawbodytest(rawbody)
 
-        assert message.subject == "Hello world", "Incorrect subject"
-        assert message.body == """
+        self.assertEquals(message.subject, "Hello world", "Incorrect subject")
+        self.assertEquals(message.body, """
 test body
 hello
 
-""", "Incorrect body"
-        assert message.senderislivewireenabled == False, "Sender not livewire enabled"
+""", "Incorrect body")
+        self.assertFalse(message.senderislivewireenabled, "Sender not livewire enabled")
         
 class SendEmailBySMTPTestCase(unittest.TestCase):
     def setUp(self):
@@ -871,10 +871,10 @@ class AddMessageDoesNotDuplicateContacts(unittest.TestCase):
         message.datetime = datetime.datetime(2013,10,31,12,0,0)
         GetGlobalMessageStore().AddMessage(message)
 
-        assert GetGlobalMessageStore().GetMessages().count() == 1, "Not one message in messagestore"
-        assert GetGlobalMessageStore().GetMessages().first().id == message.id, "Message id's don't match"
-        assert GetGlobalContactStore().GetContacts().count() == 1, "Not one contact in contactstore"
-        assert GetGlobalContactStore().GetContacts().first().emailaddress == message.fromaddress, "Contact email address not correct"
+        self.assertEquals(GetGlobalMessageStore().GetMessages().count(), 1, "Not one message in messagestore")
+        self.assertEquals(GetGlobalMessageStore().GetMessages().first().id, message.id, "Message id's don't match")
+        self.assertEquals(GetGlobalContactStore().GetContacts().count(), 1, "Not one contact in contactstore")
+        self.assertEquals(GetGlobalContactStore().GetContacts().first().emailaddress, message.fromaddress, "Contact email address not correct")
 
 class DetectsLivewireEnabledSender(unittest.TestCase):
     def setUp(self):
@@ -885,14 +885,14 @@ class DetectsLivewireEnabledSender(unittest.TestCase):
         pop.user("mlockett")
         pop.pass_("password")
         numMessages = len(pop.list()[1])
-        assert numMessages == 1,"Not one message waiting on pop server"
+        self.assertEquals(numMessages, 1,"Not one message waiting on pop server")
         rawbody = pop.retr(1)[1]
 
         message = Message.fromrawbodytest(rawbody)
         GetGlobalMessageStore().AddMessage(message)
 
-        assert message.senderislivewireenabled == True, "Sender not livewire enabled"
-        assert GetGlobalContactStore().GetContacts().first().islivewire == True, "Contact not set up to be livewire"
+        self.assertTrue(message.senderislivewireenabled, "Sender not livewire enabled")
+        self.assertTrue(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
         
 class DetectsLivewireEnabledSenderExistingContact(unittest.TestCase):
     def setUp(self):
@@ -908,14 +908,14 @@ class DetectsLivewireEnabledSenderExistingContact(unittest.TestCase):
         pop.user("mlockett")
         pop.pass_("password")
         numMessages = len(pop.list()[1])
-        assert numMessages == 1,"Not one message waiting on pop server"
+        self.assertEquals(numMessages, 1,"Not one message waiting on pop server")
         rawbody = pop.retr(1)[1]
 
         message = Message.fromrawbodytest(rawbody)
         GetGlobalMessageStore().AddMessage(message)
 
-        assert message.senderislivewireenabled == True, "Sender not livewire enabled"
-        assert GetGlobalContactStore().GetContacts().first().islivewire == True, "Contact not set up to be livewire"
+        self.assertTrue(message.senderislivewireenabled, "Sender not livewire enabled")
+        self.v(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
         
 class AddSettingToSettingStoreTestCase(unittest.TestCase):
     def setUp(self):
@@ -928,9 +928,9 @@ class AddSettingToSettingStoreTestCase(unittest.TestCase):
         GetGlobalSettingStore().AddSetting(setting)
 
         setting2 = GetGlobalSettingStore().GetSetting("TestMe")
-        assert setting2.value == "Test value", "Setting value didn't match"
+        self.assertEquals(setting2.value, "Test value", "Setting value didn't match")
         setting3 = GetGlobalSettingStore().GetSetting("TestMe2")
-        assert setting3 == None, "Unknown setting returning incorrect value"
+        self.assertNone(setting3, None, "Unknown setting returning incorrect value")
 
 class FastSettingAccessFunctionsTestCase(unittest.TestCase):
     def setUp(self):
@@ -939,8 +939,8 @@ class FastSettingAccessFunctionsTestCase(unittest.TestCase):
     def runTest(self):
         GetGlobalSettingStore().SaveSetting("TestMe2", "Blah")
 
-        assert GetGlobalSettingStore().LoadSetting("TestMe2") == "Blah", "Setting value didn't match"
-        assert GetGlobalSettingStore().LoadSetting("TestMe") == "", "Unknown setting returning incorrect value"
+        self.assertEquals(GetGlobalSettingStore().LoadSetting("TestMe2"), "Blah", "Setting value didn't match")
+        self.assertEquals(GetGlobalSettingStore().LoadSetting("TestMe"), "", "Unknown setting returning incorrect value")
 
 class FastSettingChangeValueTestCase(unittest.TestCase):
     def setUp(self):
@@ -950,7 +950,7 @@ class FastSettingChangeValueTestCase(unittest.TestCase):
         GetGlobalSettingStore().SaveSetting("TestMe2", "Blah")
         GetGlobalSettingStore().SaveSetting("TestMe2", "Blah2")
 
-        assert GetGlobalSettingStore().LoadSetting("TestMe2") == "Blah2", "Setting value didn't match"
+        self.assertEquals(GetGlobalSettingStore().LoadSetting("TestMe2"), "Blah2", "Setting value didn't match")
 
 def suite():
     suite = unittest.TestSuite()
