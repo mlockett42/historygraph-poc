@@ -915,7 +915,7 @@ class DetectsLivewireEnabledSenderExistingContact(unittest.TestCase):
         GetGlobalMessageStore().AddMessage(message)
 
         self.assertTrue(message.senderislivewireenabled, "Sender not livewire enabled")
-        self.v(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
+        self.assertTrue(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
         
 class AddSettingToSettingStoreTestCase(unittest.TestCase):
     def setUp(self):
@@ -930,7 +930,7 @@ class AddSettingToSettingStoreTestCase(unittest.TestCase):
         setting2 = GetGlobalSettingStore().GetSetting("TestMe")
         self.assertEquals(setting2.value, "Test value", "Setting value didn't match")
         setting3 = GetGlobalSettingStore().GetSetting("TestMe2")
-        self.assertNone(setting3, None, "Unknown setting returning incorrect value")
+        self.assertIsNone(setting3, "Unknown setting returning incorrect value")
 
 class FastSettingAccessFunctionsTestCase(unittest.TestCase):
     def setUp(self):
