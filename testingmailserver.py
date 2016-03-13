@@ -72,24 +72,6 @@ class SMTPFactory(protocol.ServerFactory):
         smtpProtocol.factory = self
         return smtpProtocol
 
-def StartTestingMailServer(domain, mailnames):
-    #This function starts the mail server reactor up in a seperate thread
-    #domain = the internet domain to accept mail for a serve mail for
-    #mailnames = a set of allowed mail names
-    #only one email server can be run inside our program at a time because the reactor is a global variable
-    global validDomain
-    global validMailnames
-    validDomain = domain
-    validMailnames = mailnames
-    mailDict = defaultdict(list)
-    reactor.listenTCP(10025, SMTPFactory())
-    from twisted.internet import ssl
-    # SSL stuff here... and certificates...
-    Thread(target=reactor.run, args=(False,)).start()
-
-def StopTestingMailServer():
-    reactor.callFromThread(reactor.stop)
-
 
 
 
@@ -110,93 +92,189 @@ def StopTestingMailServer():
 
 
 #Twisted pop3 client to merge in with the SMTP server above
-#From: http://pepijndevos.nl/twisted-pop3-example-server/
-"""
-An example pop3 server
-"""
+#From http://www.siafoo.net/snippet/331
+# Copyright (c) 2010 David Isaacson <david@icapsid.net>
+# Portions from 'twimapd' copyright (c) 2010 Dav Glass <davglass@gmail.com>
+# New BSD License
 
-from twisted.application import internet, service
-from twisted.cred.portal import Portal, IRealm
-from twisted.internet.protocol import ServerFactory
+import StringIO
+from md5 import md5
+from twisted.cred import checkers, credentials, portal
+from twisted.cred.error import 
+from twisted.internet import defer, reactor, protocol
 from twisted.mail import pop3
-from twisted.mail.pop3 import IMailbox
-from twisted.cred.checkers import InMemoryUsernamePasswordDatabaseDontUse
 from zope.interface import implements
-from itertools import repeat
-from hashlib import md5
-from StringIO import StringIO
 
-class SimpleMailbox:
-    implements(IMailbox)
+from somewhere import authenticate, get_messages
 
-    def __init__(self):
-        message = """From: me
-To: you
-Subject: A test mail
-
-Hello world!"""
-        self.messages = [m for m in repeat(message, 20)]
-
-
-    def listMessages(self, index=None):
-        if index != None:
-            return len(self.messages[index])
-        else:
-            return [len(m) for m in self.messages]
-
-    def getMessage(self, index):
-        return StringIO(self.messages[index])
-
-    def getUidl(self, index):
-        return md5(self.messages[index]).hexdigest()
-
-    def deleteMessage(self, index):
+class WallMailbox(object):
+    ''' an avatar representing a per-user mailbox '''
+    
+    implements(pop3.IMailbox)
+    
+    def __init__(self,id,cache):
+        self.id = id
+        self.cache = cache
+    
+    def listMessages(self, i=None):
+        global mailDict
+        if i is None:
+            return [self.listMessages(i) for i in mailDict[self.id]]
+        elif i >= len(mailDict[self.id]):
+            raise ValueError
+        return len(mailDict[self.id][i])
+    
+    def getMessage(self, i):
+        if i >= len(mailDict[self.id]):
+            raise ValueError
+        return StringIO.StringIO(mailDict[self.id])
+    
+    def getUidl(self, i):
+        if i >= len(mailDict[self.id]):
+            raise ValueError
+        return md5(mailDict[self.id][i]).hexdigest()
+    
+    def deleteMessage(self):
         pass
-
-    def undeleteMessages(self):
+    
+    def undeleteMessage(self):
         pass
-
+    
     def sync(self):
         pass
 
+class WallCredentialsChecker(object):
+    
+    ''' authentication: given credentials, returns an avatar id (a reference to a
+        particular user and possibly their mailbox)'''
 
-class SimpleRealm:
-    implements(IRealm)
+    implements(checkers.ICredentialsChecker)
+    credentialInterfaces = (credentials.IUsernamePassword,)
+
+    def __init__(self, cache):
+        self.cache = cache
+
+    def requestAvatarId(self, creds):
+        # do authentication here with creds.username, creds.password
+        user_id = authenticate(creds.username, creds.password)
+        if not user_id:
+             return defer.fail(UnauthorizedLogin("Bad username or password"))
+        return defer.succeed(user_id)
+
+class WallUserRealm(object):
+    ''' given an interface (type of avatar) and an avatar id (a reference to a user),
+        returns the correct sort of avatar for the correct user'''
+    
+    implements(portal.IRealm)
+    avatarInterfaces = {
+        pop3.IMailbox: WallMailbox,
+    }
+
+    def __init__(self, cache):
+        self.cache = cache
 
     def requestAvatar(self, avatarId, mind, *interfaces):
-        if IMailbox in interfaces:
-            return IMailbox, SimpleMailbox(), lambda: None
-        else:
-            raise NotImplementedError()
+        for requestedInterface in interfaces:
+            if self.avatarInterfaces.has_key(requestedInterface):
+                # return an instance of the correct class
+                avatarClass = self.avatarInterfaces[requestedInterface]
+                avatar = avatarClass(avatarId, self.cache)
+                # null logout function: take no arguments and do nothing
+                logout = lambda: None
+                return defer.succeed((requestedInterface, avatar, logout))
 
-portal = Portal(SimpleRealm())
+            # none of the requested interfaces was supported
+        raise KeyError("None of the requested interfaces is supported")
+    
 
-checker = InMemoryUsernamePasswordDatabaseDontUse()
-checker.addUser("guest", "password")
-portal.registerChecker(checker)
+class POP3Debug(pop3.POP3):
+    ''' the server '''
+    
+    def connectionMade(self):
+        print "Connection Made"
+        return pop3.POP3.connectionMade(self)
+    
+    
+class POP3Factory(protocol.Factory):
+    ''' creates and initializes the server '''
+    
+    protocol = POP3Debug
+    portal = None # placeholder
 
-application = service.Application("example pop3 server")
+    def buildProtocol(self, address):
+        p = self.protocol()
+        p.portal = self.portal
+        p.factory = self
+        return p
 
-f = ServerFactory()
-f.protocol = pop3.POP3
-f.protocol.portal = portal
-internet.TCPServer(1230, f).setServiceParent(application)
+class ObjCache(object):
+    def __init__(self):
+        self.cache = {}
 
+    def get(self, item):
+        return self.cache[item]
 
-
-
-
-
-
-
-
-
-
+    def set(self, item, value):
+        self.cache[item] = value
 
 
+if __name__ == "__main__":
+
+    cache = ObjCache() #just a simple way to have 'global' variables for now
+
+    portal = portal.Portal(WallUserRealm(cache))
+    portal.registerChecker(WallCredentialsChecker(cache))
+
+    factory = POP3Factory()
+    factory.portal = portal
+
+    reactor.listenTCP(1110, factory)
+    reactor.run()
 
 
 
+
+
+
+
+
+
+
+
+
+
+#Because we are not running full async in the server is run in a seperate tread
+
+def StartTestingMailServer(domain, mailnames):
+    #This function starts the mail server reactor up in a seperate thread
+    #domain = the internet domain to accept mail for a serve mail for
+    #mailnames = a dict of allowed mail names and passwords. k = mail name, v = password
+    #only one email server can be run inside our program at a time because the reactor is a global variable
+    global validDomain
+    global validMailnames
+    #Set up the SMTP server
+    validDomain = domain
+    validMailnames = mailnames
+    mailDict = defaultdict(list)
+    reactor.listenTCP(10025, SMTPFactory())
+
+    #Setup up the POP server
+    cache = ObjCache() #just a simple way to have 'global' variables for now
+
+    portal = portal.Portal(WallUserRealm(cache))
+    portal.registerChecker(WallCredentialsChecker(cache))
+
+    factory = POP3Factory()
+    factory.portal = portal
+
+    reactor.listenTCP(10026, factory)
+
+    from twisted.internet import ssl
+    # SSL stuff here... and certificates...
+    Thread(target=reactor.run, args=(False,)).start()
+
+def StopTestingMailServer():
+    reactor.callFromThread(reactor.stop)
 
 
 
