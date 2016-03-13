@@ -25,6 +25,7 @@ import mocksmtplib
 from email.mime.text import MIMEText
 from contactfilteremailaddress import ContactFilterEmailAddress
 from messagestore import *
+import testingmailserver
 
 class Covers(Document):
     def __init__(self, id):
@@ -952,8 +953,20 @@ class FastSettingChangeValueTestCase(unittest.TestCase):
 
         self.assertEquals(GetGlobalSettingStore().LoadSetting("TestMe2"), "Blah2", "Setting value didn't match")
 
+class SendAndReceiveUnencryptedEmail(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+        testingmailserver.StartTestingMailServer("localhost", {"mlockett":""})
+
+    def runTest(self):
+        self.assertEquals(1, 1, "Dummy test")
+
+    def tearDown(self):
+        testingmailserver.StopTestingMailServer()
+
 def suite():
     suite = unittest.TestSuite()
+    
     suite.addTest(SimpleCoversTestCase())
     suite.addTest(MergeHistoryCoverTestCase())
     suite.addTest(ListItemChangeHistoryTestCase())
@@ -987,7 +1000,7 @@ def suite():
     suite.addTest(AddMessageToMessageStoreTestCase())
 
     suite.addTest(SendAndReceiveUnencryptedEmail())
-    
+
     return suite
 
 

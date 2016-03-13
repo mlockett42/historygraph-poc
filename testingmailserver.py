@@ -55,7 +55,7 @@ class LocalDelivery(object):
         if user.dest.local not in validMailnames:
             raise smtp.SMTPBadRcpt(user)
         print "Accepting mail for %s..." % user.dest
-        return lambda: DictMessageWriter(user.dest))
+        return lambda: DictMessageWriter(user.dest)
 
     def validateFrom(self, helo, originAddress):
         # accept mail from anywhere. To reject an address, raise
@@ -100,12 +100,18 @@ class SMTPFactory(protocol.ServerFactory):
 import StringIO
 from md5 import md5
 from twisted.cred import checkers, credentials, portal
-from twisted.cred.error import 
+from twisted.cred.error import *
 from twisted.internet import defer, reactor, protocol
 from twisted.mail import pop3
 from zope.interface import implements
 
-from somewhere import authenticate, get_messages
+def authenticate(username, password):
+    if username not in validMailnames:
+        return False
+    if validMailnames[username] == password:
+        return username
+    else:
+        return False
 
 class WallMailbox(object):
     ''' an avatar representing a per-user mailbox '''
@@ -218,19 +224,6 @@ class ObjCache(object):
         self.cache[item] = value
 
 
-if __name__ == "__main__":
-
-    cache = ObjCache() #just a simple way to have 'global' variables for now
-
-    portal = portal.Portal(WallUserRealm(cache))
-    portal.registerChecker(WallCredentialsChecker(cache))
-
-    factory = POP3Factory()
-    factory.portal = portal
-
-    reactor.listenTCP(1110, factory)
-    reactor.run()
-
 
 
 
@@ -261,11 +254,11 @@ def StartTestingMailServer(domain, mailnames):
     #Setup up the POP server
     cache = ObjCache() #just a simple way to have 'global' variables for now
 
-    portal = portal.Portal(WallUserRealm(cache))
-    portal.registerChecker(WallCredentialsChecker(cache))
+    portal1 = portal.Portal(WallUserRealm(cache))
+    portal1.registerChecker(WallCredentialsChecker(cache))
 
     factory = POP3Factory()
-    factory.portal = portal
+    factory.portal = portal1
 
     reactor.listenTCP(10026, factory)
 
