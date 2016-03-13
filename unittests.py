@@ -986,7 +986,7 @@ def suite():
     suite.addTest(FilterByDateTestCase())
     suite.addTest(AddMessageToMessageStoreTestCase())
 
-    #suite.addTest(SendAndReceiveUnencryptedEmail())
+    suite.addTest(SendAndReceiveUnencryptedEmail())
     
     return suite
 
