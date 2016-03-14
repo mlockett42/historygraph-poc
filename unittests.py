@@ -27,6 +27,7 @@ from contactfilteremailaddress import ContactFilterEmailAddress
 from messagestore import *
 import testingmailserver
 import smtplib
+import poplib
 
 class Covers(Document):
     def __init__(self, id):
@@ -973,6 +974,21 @@ class SendAndReceiveUnencryptedEmail(unittest.TestCase):
         smtpObj = smtplib.SMTP('localhost', 10025)
         smtpObj.sendmail(sender, receivers, message)         
         print "Successfully sent email"
+
+        M = poplib.POP3('localhost', 10026)
+        M.user("mlockett")
+        M.pass_("")
+        numMessages = len(M.list()[1])
+        self.assertEquals(numMessages, 1, "Test number of messages")
+        for i in range(numMessages):
+            messages = M.retr(i+1)[1]
+            self.assertEquals(len(messages), 1, "Test number of messages")
+            for j in messages:
+                k = j.find('\\n') #The POP3 - SMTP cycle adds some extra formatting clean it up
+                message2 = j[k + 2:]
+                message2 = message2.replace('\\n', '\n')
+                message2 = message2[:len(message)]
+                self.assertEquals(message, message2, "Test message received was correct")
 
     def tearDown(self):
         testingmailserver.StopTestingMailServer()

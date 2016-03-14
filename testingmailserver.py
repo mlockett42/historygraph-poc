@@ -15,7 +15,7 @@ class DictMessageWriter(object):
     implements(smtp.IMessage)
 
     def __init__(self, username):
-        self.username = str(username)
+        self.username = username.local
         self.lines = []
 
     def lineReceived(self, line):
@@ -126,7 +126,7 @@ class WallMailbox(object):
     def listMessages(self, i=None):
         global mailDict
         if i is None:
-            return [self.listMessages(i) for i in mailDict[self.id]]
+            return [self.listMessages(i) for i in range(len(mailDict[self.id]))]
         elif i >= len(mailDict[self.id]):
             raise ValueError
         return len(mailDict[self.id][i])
