@@ -26,6 +26,7 @@ from email.mime.text import MIMEText
 from contactfilteremailaddress import ContactFilterEmailAddress
 from messagestore import *
 import testingmailserver
+import smtplib
 
 class Covers(Document):
     def __init__(self, id):
@@ -959,7 +960,19 @@ class SendAndReceiveUnencryptedEmail(unittest.TestCase):
         testingmailserver.StartTestingMailServer("localhost", {"mlockett":""})
 
     def runTest(self):
-        self.assertEquals(1, 1, "Dummy test")
+        sender = 'mark@livewire.io'
+        receivers = ['mlockett@localhost']
+
+        message = """From: Mark Lockett <mark@livewire.io>
+        To: Mark Lockett <mlockett@localhost>
+        Subject: SMTP e-mail test
+
+        Frist post!!!!!!
+        """
+
+        smtpObj = smtplib.SMTP('localhost', 10025)
+        smtpObj.sendmail(sender, receivers, message)         
+        print "Successfully sent email"
 
     def tearDown(self):
         testingmailserver.StopTestingMailServer()

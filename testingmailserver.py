@@ -15,7 +15,7 @@ class DictMessageWriter(object):
     implements(smtp.IMessage)
 
     def __init__(self, username):
-        self.username = username
+        self.username = str(username)
         self.lines = []
 
     def lineReceived(self, line):
@@ -28,6 +28,7 @@ class DictMessageWriter(object):
         messageData = '\n'.join(self.lines)
         global mailDict
         mailDict[self.username].append(messageData)
+        return defer.succeed(None)
 
     def connectionLost(self):
         print "Connection lost unexpectedly!"
@@ -245,6 +246,7 @@ def StartTestingMailServer(domain, mailnames):
     #only one email server can be run inside our program at a time because the reactor is a global variable
     global validDomain
     global validMailnames
+    global mailDict
     #Set up the SMTP server
     validDomain = domain
     validMailnames = mailnames
