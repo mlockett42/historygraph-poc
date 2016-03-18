@@ -271,5 +271,9 @@ def StartTestingMailServer(domain, mailnames):
 def StopTestingMailServer():
     reactor.callFromThread(reactor.stop)
 
+def ResetMailDict():
+    global mailDict
+    mailDict = defaultdict(list)
+
 
 

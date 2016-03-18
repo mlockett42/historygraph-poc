@@ -28,6 +28,9 @@ from messagestore import *
 import testingmailserver
 import smtplib
 import poplib
+from Crypto.PublicKey import RSA
+from Crypto import Random
+import base64
 
 class Covers(Document):
     def __init__(self, id):
@@ -991,6 +994,58 @@ class SendAndReceiveUnencryptedEmail(unittest.TestCase):
                 self.assertEquals(message, message2, "Test message received was correct")
 
     def tearDown(self):
+        testingmailserver.ResetMailDict()
+        #testingmailserver.StopTestingMailServer()
+
+class SendAndReceiveEncryptedEmail(unittest.TestCase):
+    #Example implementation from http://www.laurentluce.com/posts/python-and-cryptography-with-pycrypto/
+    def setUp(self):
+        InitSessionTesting()
+        #testingmailserver.StartTestingMailServer("localhost", {"mlockett":""})
+
+    def runTest(self):
+        random_generator = Random.new().read
+        key = RSA.generate(1024, random_generator)
+
+        sender = 'mark@livewire.io'
+        receivers = ['mlockett@localhost']
+
+        secretmessage = "Frist post!!!!!!"
+        public_key = key.publickey()
+        enc_data = public_key.encrypt(secretmessage, 32)[0]
+        #print(enc_data)
+
+        message = """From: Mark Lockett <mark@livewire.io>
+        To: Mark Lockett <mlockett@localhost>
+        Subject: SMTP e-mail test
+
+        """ + base64.b64encode(enc_data)
+
+        smtpObj = smtplib.SMTP('localhost', 10025)
+        smtpObj.sendmail(sender, receivers, message)         
+        print "Successfully sent email"
+
+        M = poplib.POP3('localhost', 10026)
+        M.user("mlockett")
+        M.pass_("")
+        numMessages = len(M.list()[1])
+        self.assertEquals(numMessages, 1, "Test number of messages")
+        for i in range(numMessages):
+            messages = M.retr(i+1)[1]
+            self.assertEquals(len(messages), 1, "Test number of messages")
+            for j in messages:
+                k = j.find('\\n') #The POP3 - SMTP cycle adds some extra formatting clean it up
+                message2 = j[k + 2:]
+                message2 = message2.replace('\\n', '\n')
+                message2 = message2[:len(message)]
+                lines = message2.split("\n")
+                enc_data2 = "\n".join(lines[4:])
+                enc_data2 = base64.b64decode(enc_data2)
+                self.assertEquals(enc_data, enc_data2, "Encrypted data matches")
+                secretmessage2 = key.decrypt(enc_data2)
+                self.assertEquals(secretmessage, secretmessage2, "Secret message received was correct")
+
+    def tearDown(self):
         testingmailserver.StopTestingMailServer()
 
 def suite():
@@ -1029,6 +1084,7 @@ def suite():
     suite.addTest(AddMessageToMessageStoreTestCase())
 
     suite.addTest(SendAndReceiveUnencryptedEmail())
+    suite.addTest(SendAndReceiveEncryptedEmail())
 
     return suite
 
