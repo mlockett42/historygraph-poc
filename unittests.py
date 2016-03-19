@@ -31,6 +31,7 @@ import poplib
 from Crypto.PublicKey import RSA
 from Crypto import Random
 import base64
+import time
 
 class Covers(Document):
     def __init__(self, id):
@@ -961,7 +962,7 @@ class FastSettingChangeValueTestCase(unittest.TestCase):
 class SendAndReceiveUnencryptedEmail(unittest.TestCase):
     def setUp(self):
         InitSessionTesting()
-        testingmailserver.StartTestingMailServer("localhost", {"mlockett":""})
+        testingmailserver.ResetMailDict()
 
     def runTest(self):
         sender = 'mark@livewire.io'
@@ -993,15 +994,12 @@ class SendAndReceiveUnencryptedEmail(unittest.TestCase):
                 message2 = message2[:len(message)]
                 self.assertEquals(message, message2, "Test message received was correct")
 
-    def tearDown(self):
-        testingmailserver.ResetMailDict()
-        #testingmailserver.StopTestingMailServer()
-
 class SendAndReceiveEncryptedEmail(unittest.TestCase):
     #Example implementation from http://www.laurentluce.com/posts/python-and-cryptography-with-pycrypto/
     def setUp(self):
         InitSessionTesting()
-        #testingmailserver.StartTestingMailServer("localhost", {"mlockett":""})
+        testingmailserver.ResetMailDict()
+
 
     def runTest(self):
         random_generator = Random.new().read
@@ -1045,12 +1043,10 @@ class SendAndReceiveEncryptedEmail(unittest.TestCase):
                 secretmessage2 = key.decrypt(enc_data2)
                 self.assertEquals(secretmessage, secretmessage2, "Secret message received was correct")
 
-    def tearDown(self):
-        testingmailserver.StopTestingMailServer()
-
 class EstablishLivewireEncryptedLink(unittest.TestCase):
     def setUp(self):
         InitSessionTesting()
+        testingmailserver.ResetMailDict()
 
     def runTest(self):
         #Test not complete yet
@@ -1072,6 +1068,19 @@ class EstablishLivewireEncryptedLink(unittest.TestCase):
         self.assertTrue(message.senderislivewireenabled, "Sender not livewire enabled")
         self.assertTrue(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
         
+class StartTestingMailServerDummyTest(unittest.TestCase):
+    def setUp(self):
+        testingmailserver.StartTestingMailServer("localhost", {"mlockett":""})
+
+    def runTest(self):
+        pass        
+
+class StopTestingMailServerDummyTest(unittest.TestCase):
+    def setUp(self):
+        testingmailserver.StopTestingMailServer()
+
+    def runTest(self):
+        pass        
 
 def suite():
     suite = unittest.TestSuite()
@@ -1108,9 +1117,12 @@ def suite():
     suite.addTest(FilterByDateTestCase())
     suite.addTest(AddMessageToMessageStoreTestCase())
 
+    suite.addTest(StartTestingMailServerDummyTest())
     suite.addTest(SendAndReceiveUnencryptedEmail())
     suite.addTest(SendAndReceiveEncryptedEmail())
     #suite.addTest(EstablishLivewireEncryptedLink())
+
+    suite.addTest(StopTestingMailServerDummyTest())
 
     return suite
 
