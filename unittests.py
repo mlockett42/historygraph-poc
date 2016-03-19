@@ -1048,6 +1048,31 @@ class SendAndReceiveEncryptedEmail(unittest.TestCase):
     def tearDown(self):
         testingmailserver.StopTestingMailServer()
 
+class EstablishLivewireEncryptedLink(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+    def runTest(self):
+        #Test not complete yet
+        contact = Contact()
+        contact.name = "Mark Lockett"
+        contact.emailaddress = "mlockett42@gmail.com"
+        GetGlobalContactStore().AddContact(contact)
+
+        pop = mockpoplib.POP3("mail.example.com", 1)
+        pop.user("mlockett")
+        pop.pass_("password")
+        numMessages = len(pop.list()[1])
+        self.assertEquals(numMessages, 1,"Not one message waiting on pop server")
+        rawbody = pop.retr(1)[1]
+
+        message = Message.fromrawbodytest(rawbody)
+        GetGlobalMessageStore().AddMessage(message)
+
+        self.assertTrue(message.senderislivewireenabled, "Sender not livewire enabled")
+        self.assertTrue(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
+        
+
 def suite():
     suite = unittest.TestSuite()
     
@@ -1085,6 +1110,7 @@ def suite():
 
     suite.addTest(SendAndReceiveUnencryptedEmail())
     suite.addTest(SendAndReceiveEncryptedEmail())
+    #suite.addTest(EstablishLivewireEncryptedLink())
 
     return suite
 
