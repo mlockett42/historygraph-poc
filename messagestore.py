@@ -17,6 +17,7 @@ import time
 import sqlalchemy
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime
+import datetime
 
 Base = declarative_base()
 
@@ -44,7 +45,7 @@ class Message(Base):
         #self.bcc = list()
         self.body = ""
         self.subject = ""
-        self.datetime = time.localtime()
+        self.datetime = datetime.datetime.now()
         self.senderislivewireenabled = False
 
     @staticmethod
@@ -59,7 +60,6 @@ class Message(Base):
         toaddress.addresstype = "To"
         ret.addresses.append(toaddress)
         ret.datetime = parser.parse(emailmsg["date"])
-        print str(ret.datetime)
         if emailmsg.is_multipart() == False:
             ret.body = emailmsg.get_payload()
         else:
@@ -104,7 +104,8 @@ class Message(Base):
             if inbody == False and line[:7] == "Sender:":
                 ret.fromaddress = line[8:]
             if inbody == False and line[:5] == "Date:":
-                ret.datetime = parser.parse(line[5:])
+                dt = parser.parse(line[5:])
+                ret.datetime = dt
             if inbody == False and line[:8] == "Subject:":
                 ret.subject = line[9:]
             if inbody == False and line[:3] == "To:":
@@ -125,7 +126,7 @@ class Message(Base):
                         foundfirstsigline = True
                 elif foundfirstsigline == True and foundsecondsigline == False \
                     and foundthirdsigline == False:
-                    if re.match("^Livewire enabled emailer http://wwww.livewirecommunicator.org \([a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\)$", line):
+                    if re.match("^Livewire enabled emailer http:\/\/wwww.livewirecommunicator.org \([a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\)$", line):
                         foundsecondsigline = True
                     else:
                         foundfirstsigline = False
@@ -271,7 +272,7 @@ def InitSessionTesting():
     global globalcontactstore
     global globalmessagestore
     global globalsettingstore
-    engine = create_engine('sqlite:///:memory:', echo=True)
+    engine = create_engine('sqlite:///:memory:', echo=False)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     globalsession = Session()
@@ -284,7 +285,7 @@ def InitSession():
     global globalcontactstore
     global globalmessagestore
     global globalsettingstore
-    engine = create_engine('sqlite:///livewire.db', echo=True)
+    engine = create_engine('sqlite:///livewire.db', echo=False)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     globalsession = Session()

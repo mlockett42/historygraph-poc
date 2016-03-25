@@ -23,7 +23,6 @@ class DictMessageWriter(object):
 
     def eomReceived(self):
         # message is complete, store it
-        print "Message data complete."
         self.lines.append('') # add a trailing newline
         messageData = '\n'.join(self.lines)
         global mailDict
@@ -55,7 +54,6 @@ class LocalDelivery(object):
             raise smtp.SMTPBadRcpt(user)
         if user.dest.local not in validMailnames:
             raise smtp.SMTPBadRcpt(user)
-        print "Accepting mail for %s..." % user.dest
         return lambda: DictMessageWriter(user.dest)
 
     def validateFrom(self, helo, originAddress):
@@ -198,7 +196,6 @@ class POP3Debug(pop3.POP3):
     ''' the server '''
     
     def connectionMade(self):
-        print "Connection Made"
         return pop3.POP3.connectionMade(self)
     
     

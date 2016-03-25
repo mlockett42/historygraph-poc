@@ -966,10 +966,10 @@ class SendAndReceiveUnencryptedEmail(unittest.TestCase):
 
     def runTest(self):
         sender = 'mark@livewire.io'
-        receivers = ['mlockett@localhost']
+        receivers = ['mlockett@livewire.io']
 
         message = """From: Mark Lockett <mark@livewire.io>
-        To: Mark Lockett <mlockett@localhost>
+        To: Mark Lockett <mlockett@livewire.io>
         Subject: SMTP e-mail test
 
         Frist post!!!!!!
@@ -977,7 +977,6 @@ class SendAndReceiveUnencryptedEmail(unittest.TestCase):
 
         smtpObj = smtplib.SMTP('localhost', 10025)
         smtpObj.sendmail(sender, receivers, message)         
-        print "Successfully sent email"
 
         M = poplib.POP3('localhost', 10026)
         M.user("mlockett")
@@ -1006,7 +1005,7 @@ class SendAndReceiveEncryptedEmail(unittest.TestCase):
         key = RSA.generate(1024, random_generator)
 
         sender = 'mark@livewire.io'
-        receivers = ['mlockett@localhost']
+        receivers = ['mlockett@livewire.io']
 
         secretmessage = "Frist post!!!!!!"
         public_key = key.publickey()
@@ -1014,14 +1013,13 @@ class SendAndReceiveEncryptedEmail(unittest.TestCase):
         #print(enc_data)
 
         message = """From: Mark Lockett <mark@livewire.io>
-        To: Mark Lockett <mlockett@localhost>
+        To: Mark Lockett <mlockett@livewire.io>
         Subject: SMTP e-mail test
 
         """ + base64.b64encode(enc_data)
 
         smtpObj = smtplib.SMTP('localhost', 10025)
         smtpObj.sendmail(sender, receivers, message)         
-        print "Successfully sent email"
 
         M = poplib.POP3('localhost', 10026)
         M.user("mlockett")
@@ -1049,28 +1047,52 @@ class EstablishLivewireEncryptedLink(unittest.TestCase):
         testingmailserver.ResetMailDict()
 
     def runTest(self):
-        #Test not complete yet
-        contact = Contact()
-        contact.name = "Mark Lockett"
-        contact.emailaddress = "mlockett42@gmail.com"
-        GetGlobalContactStore().AddContact(contact)
+        sender = 'mlockett1@livewire.io'
+        receivers = ['mlockett2@livewire.io']
 
-        pop = mockpoplib.POP3("mail.example.com", 1)
-        pop.user("mlockett")
-        pop.pass_("password")
-        numMessages = len(pop.list()[1])
-        self.assertEquals(numMessages, 1,"Not one message waiting on pop server")
-        rawbody = pop.retr(1)[1]
+        message = """From: Mark Lockett1 <mlockett1@livewire.io>
+To: Mark Lockett2 <mlockett2@livewire.io>
+Date: """ + datetime.datetime.now().strftime("%c") + """
+Content-Type: text/plain
 
-        message = Message.fromrawbodytest(rawbody)
-        GetGlobalMessageStore().AddMessage(message)
+Subject: SMTP e-mail test
 
-        self.assertTrue(message.senderislivewireenabled, "Sender not livewire enabled")
-        self.assertTrue(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
+Frist post!!!!!!
+
+======================================================================================
+Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett1@livewire.io)
+======================================================================================
+        """
+
+        smtpObj = smtplib.SMTP('localhost', 10025)
+        smtpObj.sendmail(sender, receivers, message)         
+
+        M = poplib.POP3('localhost', 10026)
+        M.user("mlockett2")
+        M.pass_("")
+        numMessages = len(M.list()[1])
+        self.assertEquals(numMessages, 1, "Test number of messages")
+        for i in range(numMessages):
+            messages = M.retr(i+1)[1]
+            self.assertEquals(len(messages), 1, "Test number of messages")
+            for j in messages:
+                message2 = j
+                message2 = message2.replace('\\n', '\n')
+
+                message2 = Message.fromrawbodytest(message2)
+                GetGlobalMessageStore().AddMessage(message2)
+
+                self.assertTrue(message2.senderislivewireenabled, "Sender not livewire enabled")
+                self.assertTrue(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
+
+
+
+
+
         
 class StartTestingMailServerDummyTest(unittest.TestCase):
     def setUp(self):
-        testingmailserver.StartTestingMailServer("localhost", {"mlockett":""})
+        testingmailserver.StartTestingMailServer("livewire.io", {"mlockett":"","mlockett1":"","mlockett2":""})
 
     def runTest(self):
         pass        
@@ -1094,7 +1116,6 @@ def suite():
     suite.addTest(StoreObjectsInDatabaseTestCase())
     suite.addTest(StoreObjectsInJSONTestCase())
     suite.addTest(MergeChangesMadeInJSONTestCase())
-
     suite.addTest(FastSettingChangeValueTestCase())
     suite.addTest(FastSettingAccessFunctionsTestCase())
     suite.addTest(AddSettingToSettingStoreTestCase())
@@ -1120,7 +1141,7 @@ def suite():
     suite.addTest(StartTestingMailServerDummyTest())
     suite.addTest(SendAndReceiveUnencryptedEmail())
     suite.addTest(SendAndReceiveEncryptedEmail())
-    #suite.addTest(EstablishLivewireEncryptedLink())
+    suite.addTest(EstablishLivewireEncryptedLink())
 
     suite.addTest(StopTestingMailServerDummyTest())
 
