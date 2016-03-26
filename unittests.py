@@ -32,6 +32,8 @@ from Crypto.PublicKey import RSA
 from Crypto import Random
 import base64
 import time
+from json import JSONEncoder, JSONDecoder
+from Crypto.Hash import SHA256
 
 class Covers(Document):
     def __init__(self, id):
@@ -764,12 +766,18 @@ class FilterContactsByEmailAddressCase(unittest.TestCase):
         InitSessionTesting()
 
     def runTest(self):
-        contact1 = Contact()
+        contact1 = Contact() 
         contact1.name = "Mark Lockett"
         contact1.emailaddress = "mlockett@bigpond.com"
         contact2 = Contact()
+
+        random_generator = Random.new().read
+        key = RSA.generate(1024, random_generator)
+        public_key = key.publickey().exportKey("PEM")        
+
         contact2.name = "Johnny Hello"
         contact2.emailaddress = "hello@example.com"
+        contact2.publickey = public_key
         GetGlobalContactStore().AddContact(contact1)
         GetGlobalContactStore().AddContact(contact2)
 
@@ -778,6 +786,9 @@ class FilterContactsByEmailAddressCase(unittest.TestCase):
 
         self.assertEquals(len(l), 1, "Not one contact in contactstore")
         self.assertEquals(l[0].id, contact2.id, "Contact id's don't match")
+        self.assertEquals(contact1.publickey, "", "Public key field not set")
+        self.assertEquals(contact2.publickey, public_key, "Public key field not set")
+        
         
 class FilterByTagCase(unittest.TestCase):
     def setUp(self):
@@ -1010,7 +1021,6 @@ class SendAndReceiveEncryptedEmail(unittest.TestCase):
         secretmessage = "Frist post!!!!!!"
         public_key = key.publickey()
         enc_data = public_key.encrypt(secretmessage, 32)[0]
-        #print(enc_data)
 
         message = """From: Mark Lockett <mark@livewire.io>
         To: Mark Lockett <mlockett@livewire.io>
@@ -1086,8 +1096,138 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett1@livewir
                 self.assertTrue(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
 
 
+        #mlockett2 now knows that mlockett1 is livewire enabled so we need to tell it our private key
+        sender = 'mlockett2@livewire.io'
+        receivers = ['mlockett1@livewire.io']
 
+        random_generator = Random.new().read
+        key = RSA.generate(1024, random_generator)
 
+        public_key = key.publickey().exportKey("PEM")        
+    
+        begin_livewire = "-----BEGIN-LIVEWIRE-ENCODED-MESSAGE---------------------------------------------------"
+        end_livewire   = "-----END-LIVEWIRE-ENCODED-MESSAGE-----------------------------------------------------"
+
+        message = """From: Mark Lockett2 <mlockett2@livewire.io>
+To: Mark Lockett1 <mlockett1@livewire.io>
+Date: """ + datetime.datetime.now().strftime("%c") + """
+Content-Type: text/plain
+Subject: Livewire encoded message
+
+"""
+        message += begin_livewire + "\n"
+
+        messageid = str(uuid.uuid4())
+        d = {"id":messageid,"class":"identity","email": sender,"key":public_key}
+        l = ["XR1", d]
+        l = JSONEncoder().encode(l)
+        hash = SHA256.new(l).digest()
+        signature = key.sign(hash, '')
+        l2 = [l, str(signature[0])]
+        l2 = JSONEncoder().encode(l2)
+        line = base64.b64encode(l2)
+        n = 30
+        lines = [line[i:i+n] for i in range(0, len(line), n)]
+        message += '\n'.join(lines) + "\n"
+        message += end_livewire + "\n"
+
+        message += """
+======================================================================================
+Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewire.io)
+======================================================================================
+"""
+
+        smtpObj = smtplib.SMTP('localhost', 10025)
+        smtpObj.sendmail(sender, receivers, message)         
+
+        M = poplib.POP3('localhost', 10026)
+        M.user("mlockett1")
+        M.pass_("")
+        numMessages = len(M.list()[1])
+        self.assertEquals(numMessages, 1, "Test number of messages")
+        public_key = None
+        for i in range(numMessages):
+            messages = M.retr(i+1)[1]
+            self.assertEquals(len(messages), 1, "Test number of messages")
+
+            headers = list()
+            body = list()
+            inheader = True
+            for j in messages:
+                k = j.find('\\n') #The POP3 - SMTP cycle adds some extra formatting clean it up
+                message2 = j[k + 2:]
+                message2 = message2.replace('\\n', '\n')
+                lines = message2.split("\n")
+                
+                for line in lines:
+                    if line == "":
+                        inheader = False
+                    elif inheader:
+                        headers.append(line)
+                    else:
+                        body.append(line)
+
+                
+                isencodedmessage = False
+                for line in headers:
+                    if line[:8] == "Subject:":
+                        isencodedmessage = line == "Subject: Livewire encoded message"
+                    if line[:6] == "From: ":
+                        k = line.find("<")
+                        self.assertTrue(k > 0, "< not found")
+                        fromemail = line[k + 1:]
+                        k = fromemail.find(">")
+                        self.assertTrue(k > 0, "> not found")
+                        fromemail = fromemail[:k]
+                
+                inlivewirearea = False
+                wasinlivewirearea = False
+                wasinendlivewirearea = False
+                message = []
+                for line in body:
+                    if line == begin_livewire:
+                        inlivewirearea = True
+                        wasinlivewirearea = True
+                    elif line == end_livewire:
+                        inlivewirearea = False
+                        wasinendlivewirearea = True
+                    elif inlivewirearea:
+                        message.append(line)
+
+                self.assertTrue(isencodedmessage, "Sender not livewire enabled")
+                self.assertTrue(wasinlivewirearea, "Livewire begin marker not detected")
+                self.assertTrue(wasinendlivewirearea, "Livewire end marker not detected")
+                self.assertTrue(fromemail == "mlockett2@livewire.io", "Incorrect sender")
+
+                message = "".join(message)
+                line = base64.b64decode(message)
+                line = JSONDecoder().decode(line)
+                self.assertTrue(len(line) == 2, "Message is not an iterable of length two") 
+                l = line[0]
+                sig = long(line[1])
+                l2 = JSONDecoder().decode(l)
+                self.assertTrue(len(l2) == 2, "Message is not an iterable of length two") 
+                self.assertTrue(l2[0] == "XR1", "Protocol version incorrect")
+                d = l2[1]
+                self.assertTrue(isinstance(d, dict), "d must be a dict")
+                self.assertTrue(len(d) == 4, "d must contain 4 elements")
+                self.assertTrue(d["class"] == "identity", "Message must be of class identity")
+                self.assertTrue(d["email"] == fromemail, "Source email must match the message")
+                public_key = RSA.importKey(d["key"])
+                
+                hash = SHA256.new(l).digest()
+                verified = public_key.verify(hash, (sig, ))
+                self.assertTrue(verified, "Signature not verified") 
+	                
+                contact = Contact()
+                contact.name = "Mark Lockett"
+                contact.emailaddress = fromemail
+                contact.public_key = d["key"]
+                GetGlobalContactStore().AddContact(contact)
+                contacts = GetGlobalContactStore().GetContactsByEmailAddress(fromemail)
+                self.assertTrue(len(list(contacts)) == 1, "Wrong number of matching contacts")
+                self.assertTrue(contacts.first().public_key == d["key"])
+                
 
         
 class StartTestingMailServerDummyTest(unittest.TestCase):

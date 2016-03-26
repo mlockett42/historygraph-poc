@@ -162,12 +162,14 @@ class Contact(Base):
     name = Column(String)
     emailaddress = Column(String)
     islivewire = Column(Boolean)
+    publickey = Column(String)
 
     def __init__(self):
         self.id = str(uuid.uuid1())
         self.name = ""
         self.emailaddress = ""
         self.islivewire = False
+        self.publickey = ""
 
 class Tag(Base):
     __tablename__ = 'tags'
