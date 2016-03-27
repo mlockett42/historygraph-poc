@@ -973,7 +973,6 @@ class FastSettingChangeValueTestCase(unittest.TestCase):
 class SendAndReceiveUnencryptedEmail(unittest.TestCase):
     def setUp(self):
         InitSessionTesting()
-        testingmailserver.ResetMailDict()
 
     def runTest(self):
         sender = 'mark@livewire.io'
@@ -1004,11 +1003,21 @@ class SendAndReceiveUnencryptedEmail(unittest.TestCase):
                 message2 = message2[:len(message)]
                 self.assertEquals(message, message2, "Test message received was correct")
 
+        M.dele(1)
+        numMessages = len(M.list()[1])
+        self.assertEquals(numMessages, 1, "Messages should not be deleted yet")
+        M.quit()
+
+        M = poplib.POP3('localhost', 10026)
+        M.user("mlockett")
+        M.pass_("")
+        numMessages = len(M.list()[1])
+        self.assertEquals(numMessages, 0, "Messages not deleted")
+
 class SendAndReceiveEncryptedEmail(unittest.TestCase):
     #Example implementation from http://www.laurentluce.com/posts/python-and-cryptography-with-pycrypto/
     def setUp(self):
         InitSessionTesting()
-        testingmailserver.ResetMailDict()
 
 
     def runTest(self):
@@ -1051,10 +1060,20 @@ class SendAndReceiveEncryptedEmail(unittest.TestCase):
                 secretmessage2 = key.decrypt(enc_data2)
                 self.assertEquals(secretmessage, secretmessage2, "Secret message received was correct")
 
+        M.dele(1)
+        numMessages = len(M.list()[1])
+        self.assertEquals(numMessages, 1, "Messages should not be deleted yet")
+        M.quit()
+
+        M = poplib.POP3('localhost', 10026)
+        M.user("mlockett")
+        M.pass_("")
+        numMessages = len(M.list()[1])
+        self.assertEquals(numMessages, 0, "Messages not deleted")
+
 class EstablishLivewireEncryptedLink(unittest.TestCase):
     def setUp(self):
         InitSessionTesting()
-        testingmailserver.ResetMailDict()
 
     def runTest(self):
         sender = 'mlockett1@livewire.io'
@@ -1228,6 +1247,16 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
                 self.assertTrue(len(list(contacts)) == 1, "Wrong number of matching contacts")
                 self.assertTrue(contacts.first().public_key == d["key"])
                 
+        M.dele(1)
+        numMessages = len(M.list()[1])
+        self.assertEquals(numMessages, 1, "Messages should not be deleted yet")
+        M.quit()
+
+        M = poplib.POP3('localhost', 10026)
+        M.user("mlockett")
+        M.pass_("")
+        numMessages = len(M.list()[1])
+        self.assertEquals(numMessages, 0, "Messages not deleted")
 
         
 class StartTestingMailServerDummyTest(unittest.TestCase):
