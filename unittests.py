@@ -1285,6 +1285,7 @@ def suite():
     suite.addTest(StoreObjectsInDatabaseTestCase())
     suite.addTest(StoreObjectsInJSONTestCase())
     suite.addTest(MergeChangesMadeInJSONTestCase())
+
     suite.addTest(FastSettingChangeValueTestCase())
     suite.addTest(FastSettingAccessFunctionsTestCase())
     suite.addTest(AddSettingToSettingStoreTestCase())
