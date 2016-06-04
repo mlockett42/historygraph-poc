@@ -34,6 +34,7 @@ import base64
 import time
 from json import JSONEncoder, JSONDecoder
 from Crypto.Hash import SHA256
+import DocumentCollectionHelper
 
 class Covers(Document):
     def __init__(self, id):
@@ -301,20 +302,21 @@ class StoreObjectsInDatabaseTestCase(unittest.TestCase):
         test1s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(test1s), 1)
 
-        DocumentCollection.documentcollection.Save('test.history.db', 'test.content.db')
+        DocumentCollectionHelper.SaveDocumentCollection(DocumentCollection.documentcollection, 'test.history.db', 'test.content.db')
 
-        matches = DocumentCollection.documentcollection.GetSQLObjects("SELECT id FROM TestPropertyOwner1 WHERE covers > 1")
+        matches = DocumentCollectionHelper.GetSQLObjects(DocumentCollection.documentcollection, 'test.content.db', "SELECT id FROM TestPropertyOwner1 WHERE covers > 1")
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0].__class__, TestPropertyOwner1)
         self.assertEqual(matches[0].id, test1id)
-        matches = DocumentCollection.documentcollection.GetSQLObjects("SELECT id FROM TestPropertyOwner1 WHERE covers > 5")
+        matches = DocumentCollectionHelper.GetSQLObjects(DocumentCollection.documentcollection, 'test.content.db', "SELECT id FROM TestPropertyOwner1 WHERE covers > 5")
         self.assertEqual(len(matches), 0)
 
         DocumentCollection.InitialiseDocumentCollection()
         DocumentCollection.documentcollection.Register(TestPropertyOwner1)
         DocumentCollection.documentcollection.Register(TestPropertyOwner2)
 
-        DocumentCollection.documentcollection.Load('test.history.db', 'test.content.db')
+        #DocumentCollection.documentcollection = DocumentCollection.DocumentCollection()
+        DocumentCollectionHelper.LoadDocumentCollection(DocumentCollection.documentcollection, 'test.history.db', 'test.content.db')
         test1s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(test1s), 1)
         test1 = test1s[0]
@@ -325,11 +327,11 @@ class StoreObjectsInDatabaseTestCase(unittest.TestCase):
             self.assertEqual(testitem1.cover, 3)
         self.assertEqual(test1.covers, 2)
 
-        matches = DocumentCollection.documentcollection.GetSQLObjects("SELECT id FROM TestPropertyOwner1 WHERE covers > 1")
+        matches = DocumentCollectionHelper.GetSQLObjects(DocumentCollection.documentcollection, 'test.content.db', "SELECT id FROM TestPropertyOwner1 WHERE covers > 1")
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0].__class__, TestPropertyOwner1)
         self.assertEqual(matches[0].id, test1id)
-        matches = DocumentCollection.documentcollection.GetSQLObjects("SELECT id FROM TestPropertyOwner1 WHERE covers > 5")
+        matches = DocumentCollectionHelper.GetSQLObjects(DocumentCollection.documentcollection, 'test.content.db', "SELECT id FROM TestPropertyOwner1 WHERE covers > 5")
         self.assertEqual(len(matches), 0)
     
 class StoreObjectsInJSONTestCase(unittest.TestCase):
