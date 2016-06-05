@@ -44,6 +44,8 @@ class Covers(Document):
 class SimpleCoversTestCase(unittest.TestCase):
     def setUp(self):
         DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
+        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
 
     def runTest(self):
         #Test merging together simple covers documents
@@ -122,6 +124,8 @@ class ListItemChangeHistoryTestCase(unittest.TestCase):
 class SimpleItemTestCase(unittest.TestCase):
     def setUp(self):
         DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
+        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
 
     def runTest(self):
         test1 = TestPropertyOwner1(None)
@@ -160,6 +164,8 @@ class SimpleItemTestCase(unittest.TestCase):
 class AdvancedItemTestCase(unittest.TestCase):
     def setUp(self):
         DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
+        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
 
     def runTest(self):
         #Test changing them deleting a sub element
@@ -251,6 +257,8 @@ class Comments(Document):
 class MergeHistoryCommentTestCase(unittest.TestCase):
     def setUp(self):
         DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
+        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
 
     def runTest(self):
         #Test merge together two simple covers objects
@@ -276,11 +284,10 @@ class MergeHistoryCommentTestCase(unittest.TestCase):
 class StoreObjectsInDatabaseTestCase(unittest.TestCase):
     def setUp(self):
         DocumentCollection.InitialiseDocumentCollection()
-
-    def runTest(self):
         DocumentCollection.documentcollection.Register(TestPropertyOwner1)
         DocumentCollection.documentcollection.Register(TestPropertyOwner2)
 
+    def runTest(self):
         #Test writing the history to a sql lite database
         test1 = TestPropertyOwner1(None)
         test1id = test1.id
@@ -325,6 +332,7 @@ class StoreObjectsInDatabaseTestCase(unittest.TestCase):
         for testitem1 in test3.propertyowner2s:
             self.assertEqual(testitem1id, testitem1.id)
             self.assertEqual(testitem1.cover, 3)
+        #print "StoreObjectsInDatabaseTestCase test1 = ", str(test1)
         self.assertEqual(test1.covers, 2)
 
         matches = DocumentCollectionHelper.GetSQLObjects(DocumentCollection.documentcollection, 'test.content.db', "SELECT id FROM TestPropertyOwner1 WHERE covers > 1")
@@ -337,11 +345,10 @@ class StoreObjectsInDatabaseTestCase(unittest.TestCase):
 class StoreObjectsInJSONTestCase(unittest.TestCase):
     def setUp(self):
         DocumentCollection.InitialiseDocumentCollection()
-
-    def runTest(self):
         DocumentCollection.documentcollection.Register(TestPropertyOwner1)
         DocumentCollection.documentcollection.Register(TestPropertyOwner2)
 
+    def runTest(self):
         #Test writing the history to a sql lite database
         test1 = TestPropertyOwner1(None)
         test1id = test1.id
@@ -364,6 +371,7 @@ class StoreObjectsInJSONTestCase(unittest.TestCase):
         self.assertEqual(len(test1s), 1)
 
         jsontext = DocumentCollection.documentcollection.asJSON()
+        #print "jsontext = ",jsontext
         DocumentCollection.InitialiseDocumentCollection()
         DocumentCollection.documentcollection.Register(TestPropertyOwner1)
         DocumentCollection.documentcollection.Register(TestPropertyOwner2)
@@ -373,6 +381,8 @@ class StoreObjectsInJSONTestCase(unittest.TestCase):
         test1 = test1s[0]
         test1id = test1.id
         self.assertEqual(len(test1.propertyowner2s), 1)
+        #print "StoreObjectsInJSONTestCase testitem1 = ", str(testitem1)
+        #print "StoreObjectsInJSONTestCase test1 = ", str(test1)
         for testitem1 in test3.propertyowner2s:
             self.assertEqual(testitem1id, testitem1.id)
             self.assertEqual(testitem1.cover, 3)
@@ -381,11 +391,10 @@ class StoreObjectsInJSONTestCase(unittest.TestCase):
 class MergeChangesMadeInJSONTestCase(unittest.TestCase):
     def setUp(self):
         DocumentCollection.InitialiseDocumentCollection()
-
-    def runTest(self):
         DocumentCollection.documentcollection.Register(TestPropertyOwner1)
         DocumentCollection.documentcollection.Register(TestPropertyOwner2)
 
+    def runTest(self):
         #Create an object and set some values
         test1 = TestPropertyOwner1(None)
         test1id = test1.id
@@ -430,6 +439,8 @@ class MergeChangesMadeInJSONTestCase(unittest.TestCase):
         test2s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(test2s), 1)
         test2 = test2s[0]
+
+        #print "MergeChangesMadeInJSONTestCase test2 = ", str(test2)
 
         self.assertEqual(test2.covers, 3)
         for testitem2 in test2.propertyowner2s:
