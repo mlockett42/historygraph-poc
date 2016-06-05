@@ -6,6 +6,7 @@
 * Write demo apps relaxed and drawing app and wall app and cello
 * Write BDD harness and tests
 * Add a more realistic way of sending edges around. This would involve sending edges and adding them to a a document and detecting dangling edges and ophaned edges and whatever odd scnarios happen
+* Add the ability to freeze edges - this is from the traingles app
 
 Finished
 * Change startnode and endnode addressess to be hashes

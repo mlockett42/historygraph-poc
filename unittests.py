@@ -101,6 +101,26 @@ class TestPropertyOwner1(Document):
         super(TestPropertyOwner1, self).WasChanged(changetype, propertyowner, propertyname, propertyvalue, propertytype)
         self.bWasChanged = True
 
+class MergeHistorySendEdgeCoverTestCase(unittest.TestCase):
+    def setUp(self):
+        DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(Covers)
+
+    def runTest(self):
+        #Test merging together by receiving an edge
+        test = Covers(None)
+        test.covers = 1
+        test2 = test.Clone()
+        test.covers = 2
+        test2.covers = 3
+        edge = test2.history.edgesbyendnode[test2.currentnode]
+        history = test.history.Clone()
+        history.AddEdge(edge)
+        test3 = Covers(test.id)
+        history.Replay(test3)
+        #In a merge conflict between two integers the greater one is the winner
+        self.assertEqual(test3.covers, 3)
+
 class ListItemChangeHistoryTestCase(unittest.TestCase):
     def setUp(self):
         DocumentCollection.InitialiseDocumentCollection()
@@ -1291,6 +1311,7 @@ def suite():
     
     suite.addTest(SimpleCoversTestCase())
     suite.addTest(MergeHistoryCoverTestCase())
+    suite.addTest(MergeHistorySendEdgeCoverTestCase())
     suite.addTest(ListItemChangeHistoryTestCase())
     suite.addTest(SimpleItemTestCase())
     suite.addTest(AdvancedItemTestCase())
