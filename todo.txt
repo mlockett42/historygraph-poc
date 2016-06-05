@@ -5,8 +5,11 @@
 * Ensure apps can send out updates of shared data.
 * Write demo apps relaxed and drawing app and wall app and cello
 * Write BDD harness and tests
-* Change startnode and endnode addressess to be hashes
 * Add a more realistic way of sending edges around. This would involve sending edges and adding them to a a document and detecting dangling edges and ophaned edges and whatever odd scnarios happen
+
+Finished
+* Change startnode and endnode addressess to be hashes
+* Change md5 hashes to sha256
 
 
 
