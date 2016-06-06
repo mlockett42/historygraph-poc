@@ -530,6 +530,94 @@ class MergeChangesMadeInJSONTestCase(unittest.TestCase):
         self.assertEqual(test3.covers, 4)
 
     
+class MergeAdvancedChangesMadeInJSONTestCase(unittest.TestCase):
+    #Similar to merge changes test but testing things such as out of order reception of edges
+    #Orphaned edges and partially orphaned merge edges
+    def setUp(self):
+        DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
+        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+
+    def runTest(self):
+        #Create an object and set some values
+        test1 = TestPropertyOwner1(None)
+        test1id = test1.id
+        testitem1 = TestPropertyOwner2(None)
+        testitem1id = testitem1.id
+        test1.propertyowner2s.add(testitem1)
+        testitem1.cover = 3
+        test1.covers=2        
+
+        DocumentCollection.documentcollection.AddDocumentObject(test1)
+
+        olddc = DocumentCollection.documentcollection
+
+        #Simulate sending the object to another user via conversion to JSON and emailing
+        jsontext = DocumentCollection.documentcollection.asJSON()
+
+        #Simulate the other user (who received the email with the edges) getting the document and loading it into memory
+        DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
+        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+        DocumentCollection.documentcollection.LoadFromJSON(jsontext)
+        tpo1s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        self.assertEqual(len(tpo1s), 1)
+        test2 = tpo1s[0]
+
+        self.assertEqual(len(test2.propertyowner2s), 1)
+
+        #The second user makes some changes and sends them back to the first
+        for testitem2 in test2.propertyowner2s:
+            testitem2.cover = 4
+
+        edge4 = test2.history.edgesbyendnode[test2.currentnode]
+
+        test2.covers = 3
+        
+        edge3 = test2.history.edgesbyendnode[test2.currentnode]
+
+        #Simulate the first user received the second users changes out of order
+        #the second edge is received first. Test it is right 
+        DocumentCollection.documentcollection = olddc
+        DocumentCollection.documentcollection.LoadFromJSON(JSONEncoder().encode([edge3.asTuple()]))
+        test2s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        self.assertEqual(len(test2s), 1)
+        test2 = test2s[0]
+
+        #print "MergeChangesMadeInJSONTestCase test2 = ", str(test2)
+
+        self.assertEqual(test2.covers, 2)
+        for testitem2 in test2.propertyowner2s:
+            self.assertEqual(testitem2.cover, 3)
+        self.assertEqual(testitem2.cover, 3)
+         
+        #Simulate the first user received the second users changes out of order
+        #the first edge is not received make sure everything 
+        DocumentCollection.documentcollection.LoadFromJSON(JSONEncoder().encode([edge4.asTuple()]))
+        test2s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        self.assertEqual(len(test2s), 1)
+
+        test2 = test2s[0]
+
+        #print "MergeChangesMadeInJSONTestCase test2 = ", str(test2)
+
+        self.assertEqual(test2.covers, 3)
+        for testitem2 in test2.propertyowner2s:
+            self.assertEqual(testitem2.cover, 4)
+        self.assertEqual(testitem2.cover, 4)
+
+        oldnode = test2.currentnode         
+
+        dummysha = hashlib.sha256('Invalid node').hexdigest()
+        edgenull = HistoryEdgeNull({test2.currentnode, dummysha}, "", "", "", "", test2.id, test2.__class__.__name__)
+
+        DocumentCollection.documentcollection.LoadFromJSON(JSONEncoder().encode([edge4.asTuple()]))
+        test2s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        self.assertEqual(len(test2s), 1)
+        test2 = test2s[0]
+
+        self.assertEqual(oldnode, test2.currentnode)
+
 class AddMessageToMessageStoreTestCase(unittest.TestCase):
     def setUp(self):
         InitSessionTesting()
@@ -1374,6 +1462,7 @@ def suite():
     suite.addTest(StoreObjectsInDatabaseTestCase())
     suite.addTest(StoreObjectsInJSONTestCase())
     suite.addTest(MergeChangesMadeInJSONTestCase())
+    suite.addTest(MergeAdvancedChangesMadeInJSONTestCase())
 
     suite.addTest(FastSettingChangeValueTestCase())
     suite.addTest(FastSettingAccessFunctionsTestCase())
