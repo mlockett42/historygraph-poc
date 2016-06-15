@@ -5,14 +5,18 @@
 * Ensure apps can send out updates of shared data.
 * Write demo apps relaxed and drawing app and wall app and cello
 * Write BDD harness and tests
-* Add a more realistic way of sending edges around. This would involve sending edges and adding them to a a document and detecting dangling edges and ophaned edges and whatever odd scnarios happen
 * Add the ability to freeze edges - this is from the traingles app
 * Make edge reversible so we can get back to data that used to exist
 * Change AddEdge functions to addedges and send edges around in groups for performance reasons
+* Have two parties in a conversation successfully request missing edges.
+* Add support for imutable data records ie things that would record information from sensor at a certain time. Temp at 1pm is 26c
+* Test performance of merging hundreds of edges
 
 Finished
 * Change startnode and endnode addressess to be hashes
 * Change md5 hashes to sha256
+* Add a more realistic way of sending edges around. This would involve sending edges and adding them to a a document and detecting dangling edges and ophaned edges and whatever odd scnarios happen
+* Test receiving an unplayable edge that is not a merge edge with a missing startnode
 
 
 

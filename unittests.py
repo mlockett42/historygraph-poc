@@ -608,15 +608,34 @@ class MergeAdvancedChangesMadeInJSONTestCase(unittest.TestCase):
 
         oldnode = test2.currentnode         
 
-        dummysha = hashlib.sha256('Invalid node').hexdigest()
-        edgenull = HistoryEdgeNull({test2.currentnode, dummysha}, "", "", "", "", test2.id, test2.__class__.__name__)
+        dummysha1 = hashlib.sha256('Invalid node 1').hexdigest()
+        dummysha2 = hashlib.sha256('Invalid node 2').hexdigest()
+        edgenull1 = HistoryEdgeNull({dummysha1, dummysha2}, "", "", "", "", test2.id, test2.__class__.__name__)
+        edgenull2 = HistoryEdgeNull({test2.currentnode, edgenull1.GetEndNode()}, "", "", "", "", test2.id, test2.__class__.__name__)
 
-        DocumentCollection.documentcollection.LoadFromJSON(JSONEncoder().encode([edge4.asTuple()]))
+        DocumentCollection.documentcollection.LoadFromJSON(JSONEncoder().encode([edgenull2.asTuple()]))
         test2s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(test2s), 1)
         test2 = test2s[0]
 
         self.assertEqual(oldnode, test2.currentnode)
+
+        self.assertEqual(test2.covers, 3)
+        for testitem2 in test2.propertyowner2s:
+            self.assertEqual(testitem2.cover, 4)
+        self.assertEqual(testitem2.cover, 4)
+
+        DocumentCollection.documentcollection.LoadFromJSON(JSONEncoder().encode([edgenull1.asTuple()]))
+        test2s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        self.assertEqual(len(test2s), 1)
+        test2 = test2s[0]
+
+        self.assertEqual(oldnode, test2.currentnode)
+
+        self.assertEqual(test2.covers, 3)
+        for testitem2 in test2.propertyowner2s:
+            self.assertEqual(testitem2.cover, 4)
+        self.assertEqual(testitem2.cover, 4)
 
 class AddMessageToMessageStoreTestCase(unittest.TestCase):
     def setUp(self):
