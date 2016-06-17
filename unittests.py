@@ -117,7 +117,7 @@ class MergeHistorySendEdgeCoverTestCase(unittest.TestCase):
         test2.covers = 3
         edge = test2.history.edgesbyendnode[test2.currentnode]
         history = test.history.Clone()
-        history.AddEdge(edge)
+        history.AddEdges([edge])
         test3 = Covers(test.id)
         history.Replay(test3)
         #In a merge conflict between two integers the greater one is the winner
@@ -135,26 +135,28 @@ class MergeHistorySendEdgeCoverTestCase(unittest.TestCase):
         edge4 = test2.history.edgesbyendnode[test2.currentnode]
         edge3 = test2.history.edgesbyendnode[list(edge4.startnodes)[0]]
         history = test.history.Clone()
-        history.AddEdge(edge4)
+        history.AddEdges([edge4])
         test3 = Covers(test.id)
         history.Replay(test3)
         #edge4 should be orphaned and not played
         self.assertEqual(test3.covers, 2)
         #Once edge3 is added we should replay automatically to 4
-        history.AddEdge(edge3)
+        history.AddEdges([edge3])
         test4 = Covers(test.id)
         history.Replay(test4)
         #edge4 should be orphaned and not played
         self.assertEqual(test4.covers, 4)
 
         #Test live adding of edges
-        test5.AddEdge(edge3)
+        test5.AddEdges([edge3])
         self.assertEqual(test5.covers, 3)
         
         #Test live adding of orphaned edges
-        test6.AddEdge(edge4)
+        #print "Adding edge 4"
+        test6.AddEdges([edge4])
         self.assertEqual(test6.covers, 1)
-        test6.AddEdge(edge3)
+        #print "Adding edge 3"
+        test6.AddEdges([edge3])
         self.assertEqual(test6.covers, 4)
 
         #Test adding a Null edge where we don't  have one of the start nodes.
@@ -162,7 +164,7 @@ class MergeHistorySendEdgeCoverTestCase(unittest.TestCase):
         dummysha = hashlib.sha256('Invalid node').hexdigest()
         history = test.history.Clone()
         edgenull = HistoryEdgeNull({test6.currentnode, dummysha}, "", "", "", "", test6.id, test6.__class__.__name__)
-        history.AddEdge(edgenull)
+        history.AddEdges([edgenull])
         test6 = Covers(test.id)
         history.Replay(test6)
         self.assertEqual(test6.covers, 2)
@@ -171,7 +173,7 @@ class MergeHistorySendEdgeCoverTestCase(unittest.TestCase):
         test6 = test.Clone()
         oldnode = test6.currentnode
         edgenull = HistoryEdgeNull({test6.currentnode, dummysha}, "", "", "", "", test6.id, test6.__class__.__name__)
-        test6.AddEdge(edgenull)
+        test6.AddEdges([edgenull])
         self.assertEqual(test6.covers, 2)
         self.assertEqual(test6.currentnode, oldnode)
         
