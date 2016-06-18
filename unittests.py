@@ -37,6 +37,7 @@ from Crypto.Hash import SHA256
 import DocumentCollectionHelper
 import hashlib
 from HistoryEdgeNull import HistoryEdgeNull
+import timeit
 
 class Covers(Document):
     def __init__(self, id):
@@ -638,6 +639,55 @@ class MergeAdvancedChangesMadeInJSONTestCase(unittest.TestCase):
         for testitem2 in test2.propertyowner2s:
             self.assertEqual(testitem2.cover, 4)
         self.assertEqual(testitem2.cover, 4)
+
+
+class FreezeTestCase(unittest.TestCase):
+    def setUp(self):
+        DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(Covers)
+
+    def runTest(self):
+        #Test merging together by receiving an edge
+        test = Covers(None)
+        test.covers = 1
+        test2 = test.Clone()
+        test.covers = 2
+        test2.covers = 3
+        test.Freeze()
+        edge = test2.history.edgesbyendnode[test2.currentnode]
+        test.AddEdges([edge])
+        # Normally we would receive the edge and play it. The new edge would win the conflict and update the object but that shouldn't
+        # happened because we are frozen
+        self.assertEqual(test.covers, 2)
+        # Once we unfreeze the updates should play
+        test.Unfreeze()
+        self.assertEqual(test.covers, 3)
+
+class LargeMergeTestCase(unittest.TestCase):
+    def setUp(self):
+        DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(Covers)
+
+    def runTest(self):
+        #Test merging together performance by receiving large numbers of edges
+        test = Covers(None)
+        test.covers = 1
+        test2 = test.Clone()
+        for i in range(2,52):
+            test.covers = i
+        for i in range(52,102):
+            test2.covers = i
+        # Perform this merge. This simulate databases that have been disconnected for a long time
+        def wrapper(func, *args, **kwargs):
+            def wrapped():
+                return func(*args, **kwargs)
+            return wrapped
+        def test_add_edges(test, test2):
+            test.AddEdges([v for (k, v) in test2.history.edgesbyendnode.iteritems()])
+        wrapped = wrapper(test_add_edges, test, test2)
+        time_taken = timeit.timeit(wrapped, number=1)
+        print "time_taken=",time_taken
+        self.assertEqual(test.covers, 101)
 
 class AddMessageToMessageStoreTestCase(unittest.TestCase):
     def setUp(self):
@@ -1484,6 +1534,8 @@ def suite():
     suite.addTest(StoreObjectsInJSONTestCase())
     suite.addTest(MergeChangesMadeInJSONTestCase())
     suite.addTest(MergeAdvancedChangesMadeInJSONTestCase())
+    #suite.addTest(FreezeTestCase())
+    suite.addTest(LargeMergeTestCase())
 
     suite.addTest(FastSettingChangeValueTestCase())
     suite.addTest(FastSettingAccessFunctionsTestCase())
