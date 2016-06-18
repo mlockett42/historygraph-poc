@@ -648,7 +648,8 @@ class FreezeTestCase(unittest.TestCase):
 
     def runTest(self):
         #Test merging together by receiving an edge
-        test = Covers(None)
+        test = Covers("beabdce5-e787-4d60-9577-c620d7c99158") #Fails every time
+        #test = Covers("beabdce5-e787-4d60-9577-c620d7c99159") # Succeeds every time
         test.covers = 1
         test2 = test.Clone()
         test.covers = 2
@@ -661,6 +662,8 @@ class FreezeTestCase(unittest.TestCase):
         self.assertEqual(test.covers, 2)
         # Once we unfreeze the updates should play
         test.Unfreeze()
+        #print "test.id=",test.id
+        self.assertFalse(test.history.HasDanglingEdges())
         self.assertEqual(test.covers, 3)
 
 class LargeMergeTestCase(unittest.TestCase):
@@ -686,7 +689,7 @@ class LargeMergeTestCase(unittest.TestCase):
             test.AddEdges([v for (k, v) in test2.history.edgesbyendnode.iteritems()])
         wrapped = wrapper(test_add_edges, test, test2)
         time_taken = timeit.timeit(wrapped, number=1)
-        print "time_taken=",time_taken
+        #print "time_taken=",time_taken #Comment out because I don't need to see this on every run
         self.assertEqual(test.covers, 101)
 
 class AddMessageToMessageStoreTestCase(unittest.TestCase):
@@ -1522,7 +1525,6 @@ class StopTestingMailServerDummyTest(unittest.TestCase):
 
 def suite():
     suite = unittest.TestSuite()
-    
     suite.addTest(SimpleCoversTestCase())
     suite.addTest(MergeHistoryCoverTestCase())
     suite.addTest(MergeHistorySendEdgeCoverTestCase())
@@ -1534,7 +1536,7 @@ def suite():
     suite.addTest(StoreObjectsInJSONTestCase())
     suite.addTest(MergeChangesMadeInJSONTestCase())
     suite.addTest(MergeAdvancedChangesMadeInJSONTestCase())
-    #suite.addTest(FreezeTestCase())
+    suite.addTest(FreezeTestCase())
     suite.addTest(LargeMergeTestCase())
 
     suite.addTest(FastSettingChangeValueTestCase())
