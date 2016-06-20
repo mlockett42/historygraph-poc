@@ -450,7 +450,6 @@ class StoreObjectsInJSONTestCase(unittest.TestCase):
         self.assertEqual(len(test1s), 1)
 
         jsontext = DocumentCollection.documentcollection.asJSON()
-        #print "jsontext = ",jsontext
         DocumentCollection.InitialiseDocumentCollection()
         DocumentCollection.documentcollection.Register(TestPropertyOwner1)
         DocumentCollection.documentcollection.Register(TestPropertyOwner2)
@@ -460,8 +459,6 @@ class StoreObjectsInJSONTestCase(unittest.TestCase):
         test1 = test1s[0]
         test1id = test1.id
         self.assertEqual(len(test1.propertyowner2s), 1)
-        #print "StoreObjectsInJSONTestCase testitem1 = ", str(testitem1)
-        #print "StoreObjectsInJSONTestCase test1 = ", str(test1)
         for testitem1 in test3.propertyowner2s:
             self.assertEqual(testitem1id, testitem1.id)
             self.assertEqual(testitem1.cover, 3)
@@ -583,7 +580,7 @@ class MergeAdvancedChangesMadeInJSONTestCase(unittest.TestCase):
         #Simulate the first user received the second users changes out of order
         #the second edge is received first. Test it is right 
         DocumentCollection.documentcollection = olddc
-        DocumentCollection.documentcollection.LoadFromJSON(JSONEncoder().encode([edge3.asTuple()]))
+        DocumentCollection.documentcollection.LoadFromJSON(JSONEncoder().encode({"history":[edge3.asTuple()],"immutableobjects":[]}))
         test2s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(test2s), 1)
         test2 = test2s[0]
@@ -597,7 +594,7 @@ class MergeAdvancedChangesMadeInJSONTestCase(unittest.TestCase):
          
         #Simulate the first user received the second users changes out of order
         #the first edge is not received make sure everything 
-        DocumentCollection.documentcollection.LoadFromJSON(JSONEncoder().encode([edge4.asTuple()]))
+        DocumentCollection.documentcollection.LoadFromJSON(JSONEncoder().encode({"history":[edge4.asTuple()],"immutableobjects":[]}))
         test2s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(test2s), 1)
 
@@ -617,7 +614,7 @@ class MergeAdvancedChangesMadeInJSONTestCase(unittest.TestCase):
         edgenull1 = HistoryEdgeNull({dummysha1, dummysha2}, "", "", "", "", test2.id, test2.__class__.__name__)
         edgenull2 = HistoryEdgeNull({test2.currentnode, edgenull1.GetEndNode()}, "", "", "", "", test2.id, test2.__class__.__name__)
 
-        DocumentCollection.documentcollection.LoadFromJSON(JSONEncoder().encode([edgenull2.asTuple()]))
+        DocumentCollection.documentcollection.LoadFromJSON(JSONEncoder().encode({"history":[edgenull2.asTuple()],"immutableobjects":[]}))
         test2s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(test2s), 1)
         test2 = test2s[0]
@@ -629,7 +626,7 @@ class MergeAdvancedChangesMadeInJSONTestCase(unittest.TestCase):
             self.assertEqual(testitem2.cover, 4)
         self.assertEqual(testitem2.cover, 4)
 
-        DocumentCollection.documentcollection.LoadFromJSON(JSONEncoder().encode([edgenull1.asTuple()]))
+        DocumentCollection.documentcollection.LoadFromJSON(JSONEncoder().encode({"history":[edgenull1.asTuple()],"immutableobjects":[]}))
         test2s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(test2s), 1)
         test2 = test2s[0]
@@ -742,6 +739,31 @@ class ImmutableClassTestCase(unittest.TestCase):
             m.messagetime = int(round(time.time() * 1000))
             
 
+class StoreImmutableObjectsInJSONTestCase(unittest.TestCase):
+    def setUp(self):
+        DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(MessageTest)
+
+    def runTest(self):
+        #Test writing the immutable object to an sql lite database
+        t = int(round(time.time() * 1000))
+        m = MessageTest(messagetime=t, text="Hello")
+        DocumentCollection.documentcollection.AddImmutableObject(m)
+        test1id = m.GetHash()
+
+        test1s = DocumentCollection.documentcollection.GetByClass(MessageTest)
+        self.assertEqual(len(test1s), 1)
+
+        jsontext = DocumentCollection.documentcollection.asJSON()
+
+        DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(MessageTest)
+        DocumentCollection.documentcollection.LoadFromJSON(jsontext)
+        test1s = DocumentCollection.documentcollection.GetByClass(MessageTest)
+        self.assertEqual(len(test1s), 1)
+        test1 = test1s[0]
+        self.assertEqual(test1id, test1.GetHash())
+    
 class AddMessageToMessageStoreTestCase(unittest.TestCase):
     def setUp(self):
         InitSessionTesting()
@@ -1590,6 +1612,7 @@ def suite():
     suite.addTest(LargeMergeTestCase())
     suite.addTest(FreezeThreeWayMergeTestCase())
     suite.addTest(ImmutableClassTestCase())
+    suite.addTest(StoreImmutableObjectsInJSONTestCase())
 
     suite.addTest(FastSettingChangeValueTestCase())
     suite.addTest(FastSettingAccessFunctionsTestCase())
