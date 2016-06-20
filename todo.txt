@@ -9,11 +9,11 @@
 * Have two parties in a conversation successfully request missing edges.
 * Add support for imutable data records ie things that would record information from sensor at a certain time. Temp at 1pm is 26c
 * Stop directly accessing the history graph access it via methods on the Document class
-* Test that a three way merge works. Ie produce a graph with three dangling edges and replay it to produce the correct result
 * Put special DOOP fields into a Meta class as per Django Models
-* Repaying the graph has a pattern like ProcessGraph, RecordPastEdges, ProcessConflictWinners, Replay see Document.Unfreeze clean this up and make one function
+* Replaying the graph has a pattern like ProcessGraph, RecordPastEdges, ProcessConflictWinners, Replay see Document.Unfreeze clean this up and make one function
 
 Finished
+* Test that a three way merge works. Ie produce a graph with three dangling edges and replay it to produce the correct result
 * DocumentObject __setattr__ only needs to skip on insetattr other are filtered out by doop fields
 * Test performance of merging hundreds of edges
 * Change AddEdge functions to addedges and send edges around in groups for performance reasons

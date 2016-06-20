@@ -38,6 +38,7 @@ import DocumentCollectionHelper
 import hashlib
 from HistoryEdgeNull import HistoryEdgeNull
 import timeit
+from ImmutableObject import ImmutableObject
 
 class Covers(Document):
     def __init__(self, id):
@@ -648,8 +649,9 @@ class FreezeTestCase(unittest.TestCase):
 
     def runTest(self):
         #Test merging together by receiving an edge
-        test = Covers("beabdce5-e787-4d60-9577-c620d7c99158") #Fails every time
+        #test = Covers("beabdce5-e787-4d60-9577-c620d7c99158") #Fails every time
         #test = Covers("beabdce5-e787-4d60-9577-c620d7c99159") # Succeeds every time
+        test = Covers(None) #Fails every time
         test.covers = 1
         test2 = test.Clone()
         test.covers = 2
@@ -662,9 +664,35 @@ class FreezeTestCase(unittest.TestCase):
         self.assertEqual(test.covers, 2)
         # Once we unfreeze the updates should play
         test.Unfreeze()
-        #print "test.id=",test.id
         self.assertFalse(test.history.HasDanglingEdges())
         self.assertEqual(test.covers, 3)
+
+class FreezeThreeWayMergeTestCase(unittest.TestCase):
+    def setUp(self):
+        DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(Covers)
+
+    def runTest(self):
+        #Test merging together by receiving an edge
+        test = Covers(None)
+        test.covers = 1
+        test2 = test.Clone()
+        test3 = test.Clone()
+        test.covers = 2
+        test2.covers = 3
+        test3.covers = 4
+        test.Freeze()
+        edge2 = test2.history.edgesbyendnode[test2.currentnode]
+        edge3 = test3.history.edgesbyendnode[test3.currentnode]
+        test.AddEdges([edge2, edge3])
+        # Normally we would receive the edge and play it. The new edge would win the conflict and update the object but that shouldn't
+        # happened because we are frozen
+        self.assertEqual(test.covers, 2)
+        # Once we unfreeze the updates should play
+        test.Unfreeze()
+        #print "test.id=",test.id
+        self.assertFalse(test.history.HasDanglingEdges())
+        self.assertEqual(test.covers, 4)
 
 class LargeMergeTestCase(unittest.TestCase):
     def setUp(self):
@@ -691,6 +719,28 @@ class LargeMergeTestCase(unittest.TestCase):
         time_taken = timeit.timeit(wrapped, number=1)
         #print "time_taken=",time_taken #Comment out because I don't need to see this on every run
         self.assertEqual(test.covers, 101)
+
+class MessageTest(ImmutableObject):
+    # A demo class of an immutable object. It emulated a simple text message broadcast at a certain time
+    # similar to a tweet
+    messagetime = FieldInt() # The time in epoch milliseconds of the message
+    text = FieldText() # The text of the message
+
+class ImmutableClassTestCase(unittest.TestCase):
+    def setUp(self):
+        DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(Covers)
+
+    def runTest(self):
+        t = int(round(time.time() * 1000))
+        m = MessageTest(messagetime=t, text="Hello")
+        self.assertEqual(m.messagetime, t)
+        self.assertEqual(m.text, "Hello")
+        
+        was_exception = False
+        with self.assertRaises(AssertionError):
+            m.messagetime = int(round(time.time() * 1000))
+            
 
 class AddMessageToMessageStoreTestCase(unittest.TestCase):
     def setUp(self):
@@ -1538,6 +1588,8 @@ def suite():
     suite.addTest(MergeAdvancedChangesMadeInJSONTestCase())
     suite.addTest(FreezeTestCase())
     suite.addTest(LargeMergeTestCase())
+    suite.addTest(FreezeThreeWayMergeTestCase())
+    suite.addTest(ImmutableClassTestCase())
 
     suite.addTest(FastSettingChangeValueTestCase())
     suite.addTest(FastSettingAccessFunctionsTestCase())
