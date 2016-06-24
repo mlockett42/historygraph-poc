@@ -763,7 +763,100 @@ class StoreImmutableObjectsInJSONTestCase(unittest.TestCase):
         self.assertEqual(len(test1s), 1)
         test1 = test1s[0]
         self.assertEqual(test1id, test1.GetHash())
+
+class StoreImmutableObjectsInDatabaseTestCase(unittest.TestCase):
+    def setUp(self):
+        DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(MessageTest)
+
+    def runTest(self):
+        #Test writing the immutable object to an sql lite database
+        t = int(round(time.time() * 1000))
+        m = MessageTest(messagetime=t, text="Hello")
+        DocumentCollection.documentcollection.AddImmutableObject(m)
+        test1id = m.GetHash()
+
+        DocumentCollectionHelper.SaveDocumentCollection(DocumentCollection.documentcollection, 'test.history.db', 'test.content.db')
+
+        matches = DocumentCollectionHelper.GetSQLObjects(DocumentCollection.documentcollection, 'test.content.db', "SELECT id FROM MessageTest WHERE messagetime > 1")
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(matches[0].__class__, MessageTest)
+        self.assertEqual(matches[0].GetHash(), test1id)
+        matches = DocumentCollectionHelper.GetSQLObjects(DocumentCollection.documentcollection, 'test.content.db', "SELECT id FROM MessageTest WHERE messagetime < 5")
+        self.assertEqual(len(matches), 0)
+
+        DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(MessageTest)
+
+        #DocumentCollection.documentcollection = DocumentCollection.DocumentCollection()
+        DocumentCollectionHelper.LoadDocumentCollection(DocumentCollection.documentcollection, 'test.history.db', 'test.content.db')
+
+        test1s = DocumentCollection.documentcollection.GetByClass(MessageTest)
+        self.assertEqual(len(test1s), 1)
+        test1 = test1s[0]
+        test1id = test1.GetHash()
+
+        matches = DocumentCollectionHelper.GetSQLObjects(DocumentCollection.documentcollection, 'test.content.db', "SELECT id FROM MessageTest WHERE messagetime > 1")
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(matches[0].__class__, MessageTest)
+        self.assertEqual(matches[0].GetHash(), test1id)
+        matches = DocumentCollectionHelper.GetSQLObjects(DocumentCollection.documentcollection, 'test.content.db', "SELECT id FROM MessageTest WHERE messagetime < 5")
+        self.assertEqual(len(matches), 0)
+
+class TestUpdateHandler(object):
+    #Handle update requests to us
+    def WasChanged(self, source):
+        self.covers = source.covers
     
+class SimpleCoversUpdateTestCase(unittest.TestCase):
+    def setUp(self):
+        DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
+        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+
+    def runTest(self):
+        #Test merging together simple covers documents
+        test = Covers(None)
+        test.covers = 1
+        handler = TestUpdateHandler()
+        test.AddHandler(handler.WasChanged)
+        self.assertEqual(len(test.change_handlers), 1)
+        test.covers = 2
+        self.assertEqual(handler.covers, 2)
+        test.RemoveHandler(handler.WasChanged)
+        self.assertEqual(len(test.change_handlers), 0)
+        test.covers = 3
+        self.assertEqual(handler.covers, 2)
+    
+class FreezeUpdateTestCase(unittest.TestCase):
+    def setUp(self):
+        DocumentCollection.InitialiseDocumentCollection()
+        DocumentCollection.documentcollection.Register(Covers)
+
+    def runTest(self):
+        #Test merging together by receiving an edge
+        test = Covers(None) 
+        test.covers = 1
+
+        test2 = test.Clone()
+        handler = TestUpdateHandler()
+        test.AddHandler(handler.WasChanged)
+        test.covers = 2
+        test2.covers = 3
+        test.Freeze()
+        self.assertEqual(handler.covers, 2)
+        edge = test2.history.edgesbyendnode[test2.currentnode]
+        test.AddEdges([edge])
+        # Normally we would receive the edge and play it. The new edge would win the conflict and update the object but that shouldn't
+        # happened because we are frozen
+        self.assertEqual(test.covers, 2)
+        self.assertEqual(handler.covers, 2)
+        # Once we unfreeze the updates should play
+        test.Unfreeze()
+        self.assertFalse(test.history.HasDanglingEdges())
+        self.assertEqual(test.covers, 3)
+        self.assertEqual(handler.covers, 3)
+
 class AddMessageToMessageStoreTestCase(unittest.TestCase):
     def setUp(self):
         InitSessionTesting()
@@ -1613,6 +1706,9 @@ def suite():
     suite.addTest(FreezeThreeWayMergeTestCase())
     suite.addTest(ImmutableClassTestCase())
     suite.addTest(StoreImmutableObjectsInJSONTestCase())
+    suite.addTest(StoreImmutableObjectsInDatabaseTestCase())
+    suite.addTest(SimpleCoversUpdateTestCase())
+    suite.addTest(FreezeUpdateTestCase())
 
     suite.addTest(FastSettingChangeValueTestCase())
     suite.addTest(FastSettingAccessFunctionsTestCase())
