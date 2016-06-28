@@ -125,7 +125,7 @@ X-Google-Sender-Auth: cwWnFfb_w3aQg3O2Dopv1bcY5ds
 Message-ID: <CAMvA9yMfZNtiOhzVGCQjO7fgpTkGxZMm7rRuW9XBMhqL-qQEVQ@mail.gmail.com>
 
 Subject: Hello world
-From: Mark Lockett <mlockett@bigpond.com>
+From: <mlockett42@gmail.com>
 To: livewiretest2@gmail.com
 Content-Type: multipart/alternative; boundary=001a11c3415c8b9b7d04eebcd85f
 

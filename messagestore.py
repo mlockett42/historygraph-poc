@@ -53,7 +53,7 @@ class Message(Base):
         emailmsg = Parser().parsestr(rawbody)
         ret = Message()
         ret.subject = emailmsg["subject"]
-        ret.fromaddress = emailmsg["sender"]
+        ret.fromaddress = emailmsg["From"]
         toaddress = Address()
         toaddress.email_address = emailmsg["to"]
         toaddress.message_id = ret.id
@@ -93,6 +93,7 @@ class Message(Base):
     #Fixme: Below method put in to pass unit tests - not sure how to make email received via pop or why the test does not work
     @staticmethod
     def fromrawbodytest(rawbody):
+        #print "fromrawbodytest rawbody = ",rawbody
         lines = rawbody.split("\n")
         inbody = False
         body = ""
@@ -101,8 +102,13 @@ class Message(Base):
         foundsecondsigline = False
         foundthirdsigline = False
         for line in lines:
-            if inbody == False and line[:7] == "Sender:":
-                ret.fromaddress = line[8:]
+            #print "fromrawbodytest line = ",line
+            if inbody == False and line[:5] == "From:":
+                ret.fromaddress = line[6:]
+                if ret.fromaddress[0] == "<":
+                    ret.fromaddress = ret.fromaddress[1:]
+                if ret.fromaddress[-1] == ">":
+                    ret.fromaddress = ret.fromaddress[:-1]
             if inbody == False and line[:5] == "Date:":
                 dt = parser.parse(line[5:])
                 ret.datetime = dt
@@ -115,6 +121,7 @@ class Message(Base):
                 toaddress.addresstype = "To"
                 ret.addresses.append(toaddress)
             if inbody == False and line[:24] == "Content-Type: text/plain":
+                #print "Found content type text plain"
                 inbody = True
             elif inbody == True and line[:13] == "Content-Type:":
                 inbody = False
@@ -124,10 +131,13 @@ class Message(Base):
                     and foundthirdsigline == False:
                     if re.match("^=+$", line) is not None:
                         foundfirstsigline = True
+                        #print "Found first sig line"
                 elif foundfirstsigline == True and foundsecondsigline == False \
                     and foundthirdsigline == False:
+                    #print "line=",line
                     if re.match("^Livewire enabled emailer http:\/\/wwww.livewirecommunicator.org \([a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\)$", line):
                         foundsecondsigline = True
+                        #print "Found 2nd sig line"
                     else:
                         foundfirstsigline = False
                 elif foundfirstsigline == True and foundsecondsigline == True \
@@ -136,7 +146,10 @@ class Message(Base):
                         ret.senderislivewireenabled = True
                     foundfirstsigline = False
                     foundsecondsigline = False
+                    #print "Found 3rd sig line"
+
         ret.body = body
+        #print "fromrawbodytest ret.body = ",ret.body
         return ret
 
 
@@ -204,7 +217,7 @@ class MessageStore:
     def GetMessagesByFilter(self, filter):
         return sorted(filter.applyFilter(globalsession), key=lambda message: message.datetime)
 
-    def AddMessage(self, message):
+    def AddMessage(self, message, makelivewirehandler):
         globalsession.add(message)
         globalsession.commit()
 
@@ -216,11 +229,15 @@ class MessageStore:
             contact.emailaddress = message.fromaddress
             contact.islivewire = message.senderislivewireenabled
             globalcontactstore.AddContact(contact)
+            if makelivewirehandler:
+                makelivewirehandler(contact)
         elif l.count() == 1:
             if message.senderislivewireenabled == True:
                 contact = l.first()
                 contact.islivewire = True
                 globalcontactstore.AddContact(contact)
+                if makelivewirehandler:
+                    makelivewirehandler(contact)
         else:
             assert False
 

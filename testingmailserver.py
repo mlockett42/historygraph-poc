@@ -10,6 +10,7 @@ from collections import defaultdict
 validDomain = None
 validMailnames = None
 mailDict = None
+deletedmessages = None
 
 class DictMessageWriter(object):
     implements(smtp.IMessage)
@@ -120,7 +121,8 @@ class WallMailbox(object):
     def __init__(self,id,cache):
         self.id = id
         self.cache = cache
-        self.deletedmessages = []
+        global deletedmessages
+        deletedmessages = []
     
     def listMessages(self, i=None):
         global mailDict
@@ -142,15 +144,18 @@ class WallMailbox(object):
     
     def deleteMessage(self,i):
         #Not quite correct these deletion should only be carried out when quitting
-        self.deletedmessages.append((self.id,i))
+        global deletedmessages
+        deletedmessages.append((self.id,i))
     
     def undeleteMessage(self):
         pass
     
     def sync(self):
         global mailDict
-        for (id, i) in self.deletedmessages:
-            del mailDict[id][i]
+        global deletedmessages
+        for (id, i) in deletedmessages:
+            if i < len(mailDict[id]):
+                del mailDict[id][i]
 
 class WallCredentialsChecker(object):
     
@@ -272,6 +277,12 @@ def StartTestingMailServer(domain, mailnames):
 def StopTestingMailServer():
     reactor.callFromThread(reactor.stop)
 
+def ResetMailDict():
+    global mailDict
+    mailDict = defaultdict(list)
+    global deletedmessages
+    deletedmessages = []
 
-
-
+def GetEmailCountByAccount(accountname):
+    #Warn this is not exactly thread staff
+    return len(mailDict[accountname])

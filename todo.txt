@@ -1,4 +1,4 @@
-* Handshake if we detect an email from a livewire enabled source - received email. Send email with our public key. After receiving public keys from other send our full contact details including bitmessage address.
+* Handshake if we detect an email from a livewire enabled source - received email. Send email with our public key. After receiving public keys from other send our full contact details
 * Handshake if we are given a livewire URI. Ask the other end for their full key (livewire URL to only have fingerprint), giving them our at the same time. Then send them our full contact details once we hae theirs
 * Handle simple encrypted text messages
 * Handle app routing of messages (we receive a message on the wire intended for an app how do we send it)
@@ -7,11 +7,13 @@
 * Write BDD harness and tests
 * Make edge reversible so we can get back to data that used to exist
 * Have two parties in a conversation successfully request missing edges.
-* Stop directly accessing the history graph access it via methods on the Document class
-* Put special DOOP fields into a Meta class as per Django Models
-* Replaying the graph has a pattern like ProcessGraph, RecordPastEdges, ProcessConflictWinners, Replay see Document.Unfreeze clean this up and make one function
-* Add transactions, we could store them in edges with multiple commands to reduce metadata requirements
-* Switch to SQLite JSON storage
+* Required edges received off the net to be signed by a known contact
+* Remove the DocumentCollection.documentcollection global
+* Make testing server thread safe by replacing Dict with FrozenDict
+* Demux plain email don't include the full name of the sender
+* Make sure the demux correctly handles multiple queued up emails
+* Test we receive normal emails OK including not sending confirmation emails
+* Make sure the Demux saves and reloads our info correctly on program restart
 
 Finished
 * Update handling including when edges are replayed
@@ -28,6 +30,14 @@ Finished
 * Test receiving an unplayable edge that is not a merge edge with a missing startnode
 * Add the ability to freeze edges - this is from the traingles app
 
+On Hold
+* Stop directly accessing the history graph access it via methods on the Document class
+* Put special DOOP fields into a Meta class as per Django Models
+* Replaying the graph has a pattern like ProcessGraph, RecordPastEdges, ProcessConflictWinners, Replay see Document.Unfreeze clean this up and make one function
+* Add transactions, we could store them in edges with multiple commands to reduce metadata requirements
+
+Rejected
+* Switch to SQLite JSON storage - SQLite's JSON storage appears to be too combersome for this for now. Relational is good enough
 
 
 

@@ -39,6 +39,8 @@ import hashlib
 from HistoryEdgeNull import HistoryEdgeNull
 import timeit
 from ImmutableObject import ImmutableObject
+from App import App
+from Demux import Demux
 
 class Covers(Document):
     def __init__(self, id):
@@ -865,7 +867,7 @@ class AddMessageToMessageStoreTestCase(unittest.TestCase):
         message = Message()
         message.fromaddress = "Mark_Lockett@hotmail.com"
         message.datetime = datetime.datetime(2013,10,31,12,0,0)
-        GetGlobalMessageStore().AddMessage(message)
+        GetGlobalMessageStore().AddMessage(message, None)
 
         self.assertEquals(GetGlobalMessageStore().GetMessages().count(), 1, "Not one message in messagestore")
         self.assertEquals(GetGlobalMessageStore().GetMessages().first().id, message.id, "Message id's don't match")
@@ -883,9 +885,9 @@ class FilterByDateTestCase(unittest.TestCase):
         message2.datetime = datetime.datetime(2013,11,1,12,0,0)
         message3 = Message()
         message3.datetime = datetime.datetime(2013,10,30,12,0,0)
-        GetGlobalMessageStore().AddMessage(message1)
-        GetGlobalMessageStore().AddMessage(message2)
-        GetGlobalMessageStore().AddMessage(message3)
+        GetGlobalMessageStore().AddMessage(message1, None)
+        GetGlobalMessageStore().AddMessage(message2, None)
+        GetGlobalMessageStore().AddMessage(message3, None)
 
         f = MessageFilterDateTime(datetime.datetime(2013,10,31,0,0,0), datetime.datetime(2013,10,31,23,59,59))
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
@@ -907,9 +909,9 @@ class FilterBySubjectCase(unittest.TestCase):
         message3 = Message()
         message3.subject = "Hello3"
         message3.datetime = datetime.datetime(2013,10,31,12,0,0)
-        GetGlobalMessageStore().AddMessage(message1)
-        GetGlobalMessageStore().AddMessage(message2)
-        GetGlobalMessageStore().AddMessage(message3)
+        GetGlobalMessageStore().AddMessage(message1, None)
+        GetGlobalMessageStore().AddMessage(message2, None)
+        GetGlobalMessageStore().AddMessage(message3, None)
 
         f = MessageFilterSubject("Hello2")
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
@@ -931,9 +933,9 @@ class FilterByBodyCase(unittest.TestCase):
         message3 = Message()
         message3.body = "Hello3"
         message3.datetime = datetime.datetime(2013,10,31,12,0,0)
-        GetGlobalMessageStore().AddMessage(message1)
-        GetGlobalMessageStore().AddMessage(message2)
-        GetGlobalMessageStore().AddMessage(message3)
+        GetGlobalMessageStore().AddMessage(message1, None)
+        GetGlobalMessageStore().AddMessage(message2, None)
+        GetGlobalMessageStore().AddMessage(message3, None)
 
         f = MessageFilterBody("Hello2")
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
@@ -958,9 +960,9 @@ class FilterAndCase(unittest.TestCase):
         message3.body = "Hello3"
         message3.subject = "blarg"
         message3.datetime = datetime.datetime(2013,10,31,12,0,0)
-        GetGlobalMessageStore().AddMessage(message1)
-        GetGlobalMessageStore().AddMessage(message2)
-        GetGlobalMessageStore().AddMessage(message3)
+        GetGlobalMessageStore().AddMessage(message1, None)
+        GetGlobalMessageStore().AddMessage(message2, None)
+        GetGlobalMessageStore().AddMessage(message3, None)
 
         f1 = MessageFilterBody("Hello2")
         f2 = MessageFilterSubject("blarg")
@@ -987,9 +989,9 @@ class FilterOrCase(unittest.TestCase):
         message3.body = "Hello3"
         message3.subject = "blarg3"
         message3.datetime = datetime.datetime(2013,1,2,12,0,0)
-        GetGlobalMessageStore().AddMessage(message1)
-        GetGlobalMessageStore().AddMessage(message2)
-        GetGlobalMessageStore().AddMessage(message3)
+        GetGlobalMessageStore().AddMessage(message1, None)
+        GetGlobalMessageStore().AddMessage(message2, None)
+        GetGlobalMessageStore().AddMessage(message3, None)
 
         f1 = MessageFilterBody("Hello2")
         f2 = MessageFilterSubject("blarg1")
@@ -1017,9 +1019,9 @@ class FilterByFromAddressCase(unittest.TestCase):
         message3.body = "Hello3"
         message3.datetime = datetime.datetime(2013,10,31,12,0,0)
         message3.fromaddress = "hello@example.com"
-        GetGlobalMessageStore().AddMessage(message1)
-        GetGlobalMessageStore().AddMessage(message2)
-        GetGlobalMessageStore().AddMessage(message3)
+        GetGlobalMessageStore().AddMessage(message1, None)
+        GetGlobalMessageStore().AddMessage(message2, None)
+        GetGlobalMessageStore().AddMessage(message3, None)
 
         f = MessageFilterFromAddress("mlockett@bigpond.com")
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
@@ -1050,8 +1052,8 @@ class FilterByToAddressCase(unittest.TestCase):
         addr2.message_id = message2.id
         addr2.addresstype = "To"
         message2.addresses.append(addr2)
-        GetGlobalMessageStore().AddMessage(message1)
-        GetGlobalMessageStore().AddMessage(message2)
+        GetGlobalMessageStore().AddMessage(message1, None)
+        GetGlobalMessageStore().AddMessage(message2, None)
 
         f = MessageFilterByToAddress("Mark_Lockett@hotmail.com")
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
@@ -1092,8 +1094,8 @@ class FilterByCCAddressCase(unittest.TestCase):
         addr4.message_id = message2.id
         addr4.addresstype = "CC"
         message2.addresses.append(addr4)
-        GetGlobalMessageStore().AddMessage(message1)
-        GetGlobalMessageStore().AddMessage(message2)
+        GetGlobalMessageStore().AddMessage(message1, None)
+        GetGlobalMessageStore().AddMessage(message2, None)
 
         f = MessageFilterByCCAddress("cc1@example.com")
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
@@ -1149,8 +1151,8 @@ class FilterByBCCAddressCase(unittest.TestCase):
         addr6.message_id = message2.id
         addr6.addresstype = "BCC"
         message2.addresses.append(addr4)
-        GetGlobalMessageStore().AddMessage(message1)
-        GetGlobalMessageStore().AddMessage(message2)
+        GetGlobalMessageStore().AddMessage(message1, None)
+        GetGlobalMessageStore().AddMessage(message2, None)
 
         f = MessageFilterByBCCAddress("bcc1@example.com")
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
@@ -1231,8 +1233,8 @@ class FilterByTagCase(unittest.TestCase):
         addr2.message_id = message2.id
         addr2.addresstype = "To"
         message2.addresses.append(addr2)
-        GetGlobalMessageStore().AddMessage(message1)
-        GetGlobalMessageStore().AddMessage(message2)
+        GetGlobalMessageStore().AddMessage(message1, None)
+        GetGlobalMessageStore().AddMessage(message2, None)
 
         f = MessageFilterByTag("Awesome")
         l = GetGlobalMessageStore().GetMessagesByFilter(f)
@@ -1302,7 +1304,7 @@ class AddMessageDoesNotDuplicateContacts(unittest.TestCase):
         message = Message()
         message.fromaddress = "Mark_Lockett@hotmail.com"
         message.datetime = datetime.datetime(2013,10,31,12,0,0)
-        GetGlobalMessageStore().AddMessage(message)
+        GetGlobalMessageStore().AddMessage(message, None)
 
         self.assertEquals(GetGlobalMessageStore().GetMessages().count(), 1, "Not one message in messagestore")
         self.assertEquals(GetGlobalMessageStore().GetMessages().first().id, message.id, "Message id's don't match")
@@ -1322,7 +1324,7 @@ class DetectsLivewireEnabledSender(unittest.TestCase):
         rawbody = pop.retr(1)[1]
 
         message = Message.fromrawbodytest(rawbody)
-        GetGlobalMessageStore().AddMessage(message)
+        GetGlobalMessageStore().AddMessage(message, None)
 
         self.assertTrue(message.senderislivewireenabled, "Sender not livewire enabled")
         self.assertTrue(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
@@ -1345,9 +1347,10 @@ class DetectsLivewireEnabledSenderExistingContact(unittest.TestCase):
         rawbody = pop.retr(1)[1]
 
         message = Message.fromrawbodytest(rawbody)
-        GetGlobalMessageStore().AddMessage(message)
+        GetGlobalMessageStore().AddMessage(message, None)
 
         self.assertTrue(message.senderislivewireenabled, "Sender not livewire enabled")
+        self.assertEquals(len(list(GetGlobalContactStore().GetContacts())), 1)
         self.assertTrue(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
         
 class AddSettingToSettingStoreTestCase(unittest.TestCase):
@@ -1524,7 +1527,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett1@livewir
                 message2 = message2.replace('\\n', '\n')
 
                 message2 = Message.fromrawbodytest(message2)
-                GetGlobalMessageStore().AddMessage(message2)
+                GetGlobalMessageStore().AddMessage(message2, None)
 
                 self.assertTrue(message2.senderislivewireenabled, "Sender not livewire enabled")
                 self.assertTrue(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
@@ -1673,6 +1676,300 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
         numMessages = len(M.list()[1])
         self.assertEquals(numMessages, 0, "Messages not deleted")
 
+class EstablishLivewireEncryptedLinkUsingDemux(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+        testingmailserver.ResetMailDict()
+
+    def runTest(self):
+        demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+        demux2 = Demux(myemail='mlockett2@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett2',smtppass='',
+                       popuser='mlockett2',poppass='',popport=10026, popserver='localhost')
+
+        message = """
+Frist post!!!!!!
+
+"""
+        demux1.SendPlainEmail(receivers = ['mlockett2@livewire.io'], subject = "SMTP e-mail test", message=message)
+
+        messages = demux1.messagestore
+        self.assertEqual(len(list(messages)), 0)
+
+        time.sleep(0.01) #Give background thread a chance to run
+        
+        demux2.CheckEmail()
+
+        messages = demux2.messagestore
+        self.assertEqual(len(list(messages)), 1)
+        message = messages[0]
+        self.assertTrue(message.senderislivewireenabled) # Sender is not livewire enabled
+
+        #mlockett2 now knows that mlockett1 is livewire enabled The demux should have already sent to mlockett1 our public key
+        
+        time.sleep(0.01) #Give background thread a chance to run
+        
+        messages = demux1.messagestore
+        self.assertEqual(len(list(messages)), 0)
+
+        demux1.CheckEmail() #Demux 1 should receive a message from demux2 and recognise it is livewire enabled and get the public key
+
+        #messages = demux1.messagestore
+        #self.assertEqual(len(list(messages)), 1)
+        #print "messages[0] = ", messages[0]
+        #print "messages[0].fromaddress = ", messages[0].fromaddress
+        #print "messages[0].subject = ", messages[0].subject
+        #print "messages[0].body = ", messages[0].body
+
+        contacts = demux1.contactstore
+
+        self.assertEqual(len(list(contacts)), 1)
+        self.assertTrue(contacts[0].islivewire)
+        self.assertEqual(contacts[0].publickey, demux2.key.publickey().exportKey("PEM"))
+
+        time.sleep(0.01) #Give background thread a chance to run
+
+        demux2.CheckEmail() #Demux 2 should receive a message from demux1 with it's public key
+
+        #Each demux should now have the 
+
+        contacts = demux2.contactstore
+
+        self.assertEqual(len(contacts), 1)
+        self.assertEqual(contacts[0].publickey, demux1.key.publickey().exportKey("PEM") )
+        self.assertTrue(contacts[0].islivewire)
+
+
+class CoversApp(App):
+    def MessageReceived(s):
+        pass
+        
+class DemuxTestCase(unittest.TestCase):
+    def setUp(self):
+        InitSessionTesting()
+
+        testingmailserver.ResetMailDict()
+
+        sender = 'mlockett1@livewire.io'
+        receivers = ['mlockett2@livewire.io']
+
+        message = """From: Mark Lockett1 <mlockett1@livewire.io>
+To: Mark Lockett2 <mlockett2@livewire.io>
+Date: """ + datetime.datetime.now().strftime("%c") + """
+Content-Type: text/plain
+
+Subject: SMTP e-mail test
+
+Frist post!!!!!!
+
+======================================================================================
+Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett1@livewire.io)
+======================================================================================
+        """
+
+        smtpObj = smtplib.SMTP('localhost', 10025)
+        smtpObj.sendmail(sender, receivers, message)         
+
+        M = poplib.POP3('localhost', 10026)
+        M.user("mlockett2")
+        M.pass_("")
+        numMessages = len(M.list()[1])
+        self.assertEquals(numMessages, 1, "Test number of messages")
+        for i in range(numMessages):
+            messages = M.retr(i+1)[1]
+            self.assertEquals(len(messages), 1, "Test number of messages")
+            for j in messages:
+                message2 = j
+                message2 = message2.replace('\\n', '\n')
+
+                message2 = Message.fromrawbodytest(message2)
+                GetGlobalMessageStore().AddMessage(message2, None)
+
+                self.assertTrue(message2.senderislivewireenabled, "Sender not livewire enabled")
+                self.assertTrue(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
+
+
+        #mlockett2 now knows that mlockett1 is livewire enabled so we need to tell it our private key
+        sender = 'mlockett2@livewire.io'
+        receivers = ['mlockett1@livewire.io']
+
+        random_generator = Random.new().read
+        key = RSA.generate(1024, random_generator)
+
+        public_key = key.publickey().exportKey("PEM")        
+    
+        begin_livewire = "-----BEGIN-LIVEWIRE-ENCODED-MESSAGE---------------------------------------------------"
+        end_livewire   = "-----END-LIVEWIRE-ENCODED-MESSAGE-----------------------------------------------------"
+
+        message = """From: Mark Lockett2 <mlockett2@livewire.io>
+To: Mark Lockett1 <mlockett1@livewire.io>
+Date: """ + datetime.datetime.now().strftime("%c") + """
+Content-Type: text/plain
+Subject: Livewire encoded message
+
+"""
+        message += begin_livewire + "\n"
+
+        messageid = str(uuid.uuid4())
+        d = {"id":messageid,"class":"identity","email": sender,"key":public_key}
+        l = ["XR1", d]
+        l = JSONEncoder().encode(l)
+        hash = SHA256.new(l).digest()
+        signature = key.sign(hash, '')
+        l2 = [l, str(signature[0])]
+        l2 = JSONEncoder().encode(l2)
+        line = base64.b64encode(l2)
+        n = 30
+        lines = [line[i:i+n] for i in range(0, len(line), n)]
+        message += '\n'.join(lines) + "\n"
+        message += end_livewire + "\n"
+
+        message += """
+======================================================================================
+Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewire.io)
+======================================================================================
+"""
+
+        smtpObj = smtplib.SMTP('localhost', 10025)
+        smtpObj.sendmail(sender, receivers, message)         
+
+        M = poplib.POP3('localhost', 10026)
+        M.user("mlockett1")
+        M.pass_("")
+        numMessages = len(M.list()[1])
+        self.assertEquals(numMessages, 1, "Test number of messages")
+        public_key = None
+        for i in range(numMessages):
+            messages = M.retr(i+1)[1]
+            self.assertEquals(len(messages), 1, "Test number of messages")
+
+            headers = list()
+            body = list()
+            inheader = True
+            for j in messages:
+                k = j.find('\\n') #The POP3 - SMTP cycle adds some extra formatting clean it up
+                message2 = j[k + 2:]
+                message2 = message2.replace('\\n', '\n')
+                lines = message2.split("\n")
+                
+                for line in lines:
+                    if line == "":
+                        inheader = False
+                    elif inheader:
+                        headers.append(line)
+                    else:
+                        body.append(line)
+
+                
+                isencodedmessage = False
+                for line in headers:
+                    if line[:8] == "Subject:":
+                        isencodedmessage = line == "Subject: Livewire encoded message"
+                    if line[:6] == "From: ":
+                        k = line.find("<")
+                        self.assertTrue(k > 0, "< not found")
+                        fromemail = line[k + 1:]
+                        k = fromemail.find(">")
+                        self.assertTrue(k > 0, "> not found")
+                        fromemail = fromemail[:k]
+                
+                inlivewirearea = False
+                wasinlivewirearea = False
+                wasinendlivewirearea = False
+                message = []
+                for line in body:
+                    if line == begin_livewire:
+                        inlivewirearea = True
+                        wasinlivewirearea = True
+                    elif line == end_livewire:
+                        inlivewirearea = False
+                        wasinendlivewirearea = True
+                    elif inlivewirearea:
+                        message.append(line)
+
+                self.assertTrue(isencodedmessage, "Sender not livewire enabled")
+                self.assertTrue(wasinlivewirearea, "Livewire begin marker not detected")
+                self.assertTrue(wasinendlivewirearea, "Livewire end marker not detected")
+                self.assertTrue(fromemail == "mlockett2@livewire.io", "Incorrect sender")
+
+                message = "".join(message)
+                line = base64.b64decode(message)
+                line = JSONDecoder().decode(line)
+                self.assertTrue(len(line) == 2, "Message is not an iterable of length two") 
+                l = line[0]
+                sig = long(line[1])
+                l2 = JSONDecoder().decode(l)
+                self.assertTrue(len(l2) == 2, "Message is not an iterable of length two") 
+                self.assertTrue(l2[0] == "XR1", "Protocol version incorrect")
+                d = l2[1]
+                self.assertTrue(isinstance(d, dict), "d must be a dict")
+                self.assertTrue(len(d) == 4, "d must contain 4 elements")
+                self.assertTrue(d["class"] == "identity", "Message must be of class identity")
+                self.assertTrue(d["email"] == fromemail, "Source email must match the message")
+                public_key = RSA.importKey(d["key"])
+                
+                hash = SHA256.new(l).digest()
+                verified = public_key.verify(hash, (sig, ))
+                self.assertTrue(verified, "Signature not verified") 
+	                
+                contact = Contact()
+                contact.name = "Mark Lockett"
+                contact.emailaddress = fromemail
+                contact.public_key = d["key"]
+                GetGlobalContactStore().AddContact(contact)
+                contacts = GetGlobalContactStore().GetContactsByEmailAddress(fromemail)
+                self.assertTrue(len(list(contacts)) == 1, "Wrong number of matching contacts")
+                self.assertTrue(contacts.first().public_key == d["key"])
+                
+        M.dele(1)
+        numMessages = len(M.list()[1])
+        self.assertEquals(numMessages, 1, "Messages should not be deleted yet")
+        M.quit()
+
+        M = poplib.POP3('localhost', 10026)
+        M.user("mlockett")
+        M.pass_("")
+        numMessages = len(M.list()[1])
+        self.assertEquals(numMessages, 0, "Messages not deleted")
+
+    def runTest(self):
+        demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026)
+        demux2 = Demux(myemail='mlockett2@livewire.io', smtpserver='localhost',smtport=10025,smtpuser='mlockett2',smtppass='',
+                       popuser='mlockett2',poppass='',popport=10026)
+
+        app1 = CoversApp()
+        app2 = CoversApp()
+
+        dc1 = app1.CreateNewDocumentCollection()
+        test = TestPropertyOwner1()
+        dc1.AddDocumentObject(test)
+        app1.Share(dc1, 'mlockett2@livewire.io')
+
+        time.sleep(0.01) #Give the email a chance to send
+        app2.CheckEmail()
+
+        dc = app2.GetDocumentCollectionByID(dc1.id)
+
+        self.assertEqual(len(dc.objects[TestPropertyOwner1.__name__]), 1)
+        test2 = dc.objects[TestPropertyOwner1.__name__][test.id]
+
+        self.assertEqual(test.id, test2.id)
+        self.assertEqual(test.covers, test2.covers)
+
+        test.covers = 2 #This should share the update automatically
+
+        time.sleep(0.01) #Give the email a chance to send
+        app2.CheckEmail()
+        
+        self.assertEqual(len(dc.objects[TestPropertyOwner1.__name__]), 1)
+        test2 = dc.objects[TestPropertyOwner1.__name__][test.id]
+
+        self.assertEqual(test.id, test2.id)
+        self.assertEqual(test.covers, 2)
+        self.assertEqual(test2.covers, 2)
+        self.assertEqual(test.covers, test2.covers)
+
         
 class StartTestingMailServerDummyTest(unittest.TestCase):
     def setUp(self):
@@ -1736,6 +2033,9 @@ def suite():
     suite.addTest(SendAndReceiveUnencryptedEmail())
     suite.addTest(SendAndReceiveEncryptedEmail())
     suite.addTest(EstablishLivewireEncryptedLink())
+    suite.addTest(EstablishLivewireEncryptedLinkUsingDemux())
+
+    #suite.addTest(DemuxTestCase())
 
     suite.addTest(StopTestingMailServerDummyTest())
 
