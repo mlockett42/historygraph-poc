@@ -1412,14 +1412,9 @@ class SendAndReceiveUnencryptedEmail(unittest.TestCase):
         numMessages = len(M.list()[1])
         self.assertEquals(numMessages, 1, "Test number of messages")
         for i in range(numMessages):
-            messages = M.retr(i+1)[1]
-            self.assertEquals(len(messages), 1, "Test number of messages")
-            for j in messages:
-                k = j.find('\\n') #The POP3 - SMTP cycle adds some extra formatting clean it up
-                message2 = j[k + 2:]
-                message2 = message2.replace('\\n', '\n')
-                message2 = message2[:len(message)]
-                self.assertEquals(message, message2, "Test message received was correct")
+            lines = M.retr(i+1)[1]
+            message2 = '\n'.join(lines[1:]) #Build the message. The first line is inserted by the emailer
+            self.assertEquals(message, message2) #, "Test message received was correct")
 
         M.dele(1)
         numMessages = len(M.list()[1])
@@ -1464,19 +1459,13 @@ class SendAndReceiveEncryptedEmail(unittest.TestCase):
         numMessages = len(M.list()[1])
         self.assertEquals(numMessages, 1, "Test number of messages")
         for i in range(numMessages):
-            messages = M.retr(i+1)[1]
-            self.assertEquals(len(messages), 1, "Test number of messages")
-            for j in messages:
-                k = j.find('\\n') #The POP3 - SMTP cycle adds some extra formatting clean it up
-                message2 = j[k + 2:]
-                message2 = message2.replace('\\n', '\n')
-                message2 = message2[:len(message)]
-                lines = message2.split("\n")
-                enc_data2 = "\n".join(lines[4:])
-                enc_data2 = base64.b64decode(enc_data2)
-                self.assertEquals(enc_data, enc_data2, "Encrypted data matches")
-                secretmessage2 = key.decrypt(enc_data2)
-                self.assertEquals(secretmessage, secretmessage2, "Secret message received was correct")
+            lines = M.retr(i+1)[1]
+            lines = lines[1:] #Lines 
+            enc_data2 = "\n".join(lines[4:])
+            enc_data2 = base64.b64decode(enc_data2)
+            self.assertEquals(enc_data, enc_data2)#, "Encrypted data matches")
+            secretmessage2 = key.decrypt(enc_data2)
+            self.assertEquals(secretmessage, secretmessage2)#, "Secret message received was correct")
 
         M.dele(1)
         numMessages = len(M.list()[1])
@@ -1520,17 +1509,14 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett1@livewir
         numMessages = len(M.list()[1])
         self.assertEquals(numMessages, 1, "Test number of messages")
         for i in range(numMessages):
-            messages = M.retr(i+1)[1]
-            self.assertEquals(len(messages), 1, "Test number of messages")
-            for j in messages:
-                message2 = j
-                message2 = message2.replace('\\n', '\n')
+            lines = M.retr(i+1)[1]
+            message2 = '\n'.join(lines)
 
-                message2 = Message.fromrawbodytest(message2)
-                GetGlobalMessageStore().AddMessage(message2, None)
+            message2 = Message.fromrawbodytest(message2)
+            GetGlobalMessageStore().AddMessage(message2, None)
 
-                self.assertTrue(message2.senderislivewireenabled, "Sender not livewire enabled")
-                self.assertTrue(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
+            self.assertTrue(message2.senderislivewireenabled, "Sender not livewire enabled")
+            self.assertTrue(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
 
 
         #mlockett2 now knows that mlockett1 is livewire enabled so we need to tell it our private key
@@ -1584,86 +1570,80 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
         self.assertEquals(numMessages, 1, "Test number of messages")
         public_key = None
         for i in range(numMessages):
-            messages = M.retr(i+1)[1]
-            self.assertEquals(len(messages), 1, "Test number of messages")
+            lines = M.retr(i+1)[1]
 
             headers = list()
             body = list()
             inheader = True
-            for j in messages:
-                k = j.find('\\n') #The POP3 - SMTP cycle adds some extra formatting clean it up
-                message2 = j[k + 2:]
-                message2 = message2.replace('\\n', '\n')
-                lines = message2.split("\n")
                 
-                for line in lines:
-                    if line == "":
-                        inheader = False
-                    elif inheader:
-                        headers.append(line)
-                    else:
-                        body.append(line)
+            for line in lines:
+                if line == "":
+                    inheader = False
+                elif inheader:
+                    headers.append(line)
+                else:
+                    body.append(line)
 
-                
-                isencodedmessage = False
-                for line in headers:
-                    if line[:8] == "Subject:":
-                        isencodedmessage = line == "Subject: Livewire encoded message"
-                    if line[:6] == "From: ":
-                        k = line.find("<")
-                        self.assertTrue(k > 0, "< not found")
-                        fromemail = line[k + 1:]
-                        k = fromemail.find(">")
-                        self.assertTrue(k > 0, "> not found")
-                        fromemail = fromemail[:k]
-                
-                inlivewirearea = False
-                wasinlivewirearea = False
-                wasinendlivewirearea = False
-                message = []
-                for line in body:
-                    if line == begin_livewire:
-                        inlivewirearea = True
-                        wasinlivewirearea = True
-                    elif line == end_livewire:
-                        inlivewirearea = False
-                        wasinendlivewirearea = True
-                    elif inlivewirearea:
-                        message.append(line)
+            
+            isencodedmessage = False
+            for line in headers:
+                if line[:8] == "Subject:":
+                    isencodedmessage = line == "Subject: Livewire encoded message"
+                if line[:6] == "From: ":
+                    k = line.find("<")
+                    self.assertTrue(k > 0, "< not found")
+                    fromemail = line[k + 1:]
+                    k = fromemail.find(">")
+                    self.assertTrue(k > 0, "> not found")
+                    fromemail = fromemail[:k]
+            
+            inlivewirearea = False
+            wasinlivewirearea = False
+            wasinendlivewirearea = False
+            message = []
+            for line in body:
+                if line == begin_livewire:
+                    inlivewirearea = True
+                    wasinlivewirearea = True
+                elif line == end_livewire:
+                    inlivewirearea = False
+                    wasinendlivewirearea = True
+                elif inlivewirearea:
+                    message.append(line)
 
-                self.assertTrue(isencodedmessage, "Sender not livewire enabled")
-                self.assertTrue(wasinlivewirearea, "Livewire begin marker not detected")
-                self.assertTrue(wasinendlivewirearea, "Livewire end marker not detected")
-                self.assertTrue(fromemail == "mlockett2@livewire.io", "Incorrect sender")
+            self.assertTrue(isencodedmessage, "Sender not livewire enabled")
+            self.assertTrue(wasinlivewirearea, "Livewire begin marker not detected")
+            self.assertTrue(wasinendlivewirearea, "Livewire end marker not detected")
+            self.assertTrue(fromemail == "mlockett2@livewire.io", "Incorrect sender")
 
-                message = "".join(message)
-                line = base64.b64decode(message)
-                line = JSONDecoder().decode(line)
-                self.assertTrue(len(line) == 2, "Message is not an iterable of length two") 
-                l = line[0]
-                sig = long(line[1])
-                l2 = JSONDecoder().decode(l)
-                self.assertTrue(len(l2) == 2, "Message is not an iterable of length two") 
-                self.assertTrue(l2[0] == "XR1", "Protocol version incorrect")
-                d = l2[1]
-                self.assertTrue(isinstance(d, dict), "d must be a dict")
-                self.assertTrue(len(d) == 4, "d must contain 4 elements")
-                self.assertTrue(d["class"] == "identity", "Message must be of class identity")
-                self.assertTrue(d["email"] == fromemail, "Source email must match the message")
-                public_key = RSA.importKey(d["key"])
+            message = "".join(message)
+            line = base64.b64decode(message)
+            line = JSONDecoder().decode(line)
+            self.assertTrue(len(line) == 2, "Message is not an iterable of length two") 
+            l = line[0]
+            sig = long(line[1])
+            l2 = JSONDecoder().decode(l)
+            self.assertTrue(len(l2) == 2, "Message is not an iterable of length two") 
+            self.assertTrue(l2[0] == "XR1", "Protocol version incorrect")
+            d = l2[1]
+            self.assertTrue(isinstance(d, dict), "d must be a dict")
+            self.assertTrue(len(d) == 4, "d must contain 4 elements")
+            self.assertTrue(d["class"] == "identity", "Message must be of class identity")
+            self.assertTrue(d["email"] == fromemail, "Source email must match the message")
+            public_key = RSA.importKey(d["key"])
+            
+            hash = SHA256.new(l).digest()
+            verified = public_key.verify(hash, (sig, ))
+            self.assertTrue(verified, "Signature not verified") 
                 
-                hash = SHA256.new(l).digest()
-                verified = public_key.verify(hash, (sig, ))
-                self.assertTrue(verified, "Signature not verified") 
-	                
-                contact = Contact()
-                contact.name = "Mark Lockett"
-                contact.emailaddress = fromemail
-                contact.public_key = d["key"]
-                GetGlobalContactStore().AddContact(contact)
-                contacts = GetGlobalContactStore().GetContactsByEmailAddress(fromemail)
-                self.assertTrue(len(list(contacts)) == 1, "Wrong number of matching contacts")
-                self.assertTrue(contacts.first().public_key == d["key"])
+            contact = Contact()
+            contact.name = "Mark Lockett"
+            contact.emailaddress = fromemail
+            contact.public_key = d["key"]
+            GetGlobalContactStore().AddContact(contact)
+            contacts = GetGlobalContactStore().GetContactsByEmailAddress(fromemail)
+            self.assertTrue(len(list(contacts)) == 1, "Wrong number of matching contacts")
+            self.assertTrue(contacts.first().public_key == d["key"])
                 
         M.dele(1)
         numMessages = len(M.list()[1])
@@ -1782,17 +1762,13 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett1@livewir
         numMessages = len(M.list()[1])
         self.assertEquals(numMessages, 1, "Test number of messages")
         for i in range(numMessages):
-            messages = M.retr(i+1)[1]
-            self.assertEquals(len(messages), 1, "Test number of messages")
-            for j in messages:
-                message2 = j
-                message2 = message2.replace('\\n', '\n')
+            lines = M.retr(i+1)[1]
 
-                message2 = Message.fromrawbodytest(message2)
-                GetGlobalMessageStore().AddMessage(message2, None)
+            message2 = Message.fromrawbodytest('\n'.join(lines))
+            GetGlobalMessageStore().AddMessage(message2, None)
 
-                self.assertTrue(message2.senderislivewireenabled, "Sender not livewire enabled")
-                self.assertTrue(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
+            self.assertTrue(message2.senderislivewireenabled, "Sender not livewire enabled")
+            self.assertTrue(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
 
 
         #mlockett2 now knows that mlockett1 is livewire enabled so we need to tell it our private key
@@ -1846,86 +1822,79 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
         self.assertEquals(numMessages, 1, "Test number of messages")
         public_key = None
         for i in range(numMessages):
-            messages = M.retr(i+1)[1]
-            self.assertEquals(len(messages), 1, "Test number of messages")
+            lines = M.retr(i+1)[1]
 
             headers = list()
             body = list()
             inheader = True
-            for j in messages:
-                k = j.find('\\n') #The POP3 - SMTP cycle adds some extra formatting clean it up
-                message2 = j[k + 2:]
-                message2 = message2.replace('\\n', '\n')
-                lines = message2.split("\n")
-                
-                for line in lines:
-                    if line == "":
-                        inheader = False
-                    elif inheader:
-                        headers.append(line)
-                    else:
-                        body.append(line)
+            for line in lines:
+                if line == "":
+                    inheader = False
+                elif inheader:
+                    headers.append(line)
+                else:
+                    body.append(line)
 
-                
-                isencodedmessage = False
-                for line in headers:
-                    if line[:8] == "Subject:":
-                        isencodedmessage = line == "Subject: Livewire encoded message"
-                    if line[:6] == "From: ":
-                        k = line.find("<")
-                        self.assertTrue(k > 0, "< not found")
-                        fromemail = line[k + 1:]
-                        k = fromemail.find(">")
-                        self.assertTrue(k > 0, "> not found")
-                        fromemail = fromemail[:k]
-                
-                inlivewirearea = False
-                wasinlivewirearea = False
-                wasinendlivewirearea = False
-                message = []
-                for line in body:
-                    if line == begin_livewire:
-                        inlivewirearea = True
-                        wasinlivewirearea = True
-                    elif line == end_livewire:
-                        inlivewirearea = False
-                        wasinendlivewirearea = True
-                    elif inlivewirearea:
-                        message.append(line)
+            
+            isencodedmessage = False
+            for line in headers:
+                if line[:8] == "Subject:":
+                    isencodedmessage = line == "Subject: Livewire encoded message"
+                if line[:6] == "From: ":
+                    k = line.find("<")
+                    self.assertTrue(k > 0, "< not found")
+                    fromemail = line[k + 1:]
+                    k = fromemail.find(">")
+                    self.assertTrue(k > 0, "> not found")
+                    fromemail = fromemail[:k]
+            
+            inlivewirearea = False
+            wasinlivewirearea = False
+            wasinendlivewirearea = False
+            message = []
+            for line in body:
+                if line == begin_livewire:
+                    inlivewirearea = True
+                    wasinlivewirearea = True
+                elif line == end_livewire:
+                    inlivewirearea = False
+                    wasinendlivewirearea = True
+                elif inlivewirearea:
+                    message.append(line)
 
-                self.assertTrue(isencodedmessage, "Sender not livewire enabled")
-                self.assertTrue(wasinlivewirearea, "Livewire begin marker not detected")
-                self.assertTrue(wasinendlivewirearea, "Livewire end marker not detected")
-                self.assertTrue(fromemail == "mlockett2@livewire.io", "Incorrect sender")
+            self.assertTrue(isencodedmessage, "Sender not livewire enabled")
+            self.assertTrue(wasinlivewirearea, "Livewire begin marker not detected")
+            self.assertTrue(wasinendlivewirearea, "Livewire end marker not detected")
+            self.assertTrue(fromemail == "mlockett2@livewire.io", "Incorrect sender")
 
-                message = "".join(message)
-                line = base64.b64decode(message)
-                line = JSONDecoder().decode(line)
-                self.assertTrue(len(line) == 2, "Message is not an iterable of length two") 
-                l = line[0]
-                sig = long(line[1])
-                l2 = JSONDecoder().decode(l)
-                self.assertTrue(len(l2) == 2, "Message is not an iterable of length two") 
-                self.assertTrue(l2[0] == "XR1", "Protocol version incorrect")
-                d = l2[1]
-                self.assertTrue(isinstance(d, dict), "d must be a dict")
-                self.assertTrue(len(d) == 4, "d must contain 4 elements")
-                self.assertTrue(d["class"] == "identity", "Message must be of class identity")
-                self.assertTrue(d["email"] == fromemail, "Source email must match the message")
-                public_key = RSA.importKey(d["key"])
+            message = "".join(message)
+            line = base64.b64decode(message)
+            line = JSONDecoder().decode(line)
+            self.assertTrue(len(line) == 2, "Message is not an iterable of length two") 
+            l = line[0]
+            sig = long(line[1])
+            l2 = JSONDecoder().decode(l)
+            self.assertTrue(len(l2) == 2, "Message is not an iterable of length two") 
+            self.assertTrue(l2[0] == "XR1", "Protocol version incorrect")
+            d = l2[1]
+            self.assertTrue(isinstance(d, dict), "d must be a dict")
+            self.assertTrue(len(d) == 4, "d must contain 4 elements")
+            self.assertTrue(d["class"] == "identity", "Message must be of class identity")
+            self.assertTrue(d["email"] == fromemail, "Source email must match the message")
+            public_key = RSA.importKey(d["key"])
+            
+            hash = SHA256.new(l).digest()
+            verified = public_key.verify(hash, (sig, ))
+            self.assertTrue(verified, "Signature not verified") 
                 
-                hash = SHA256.new(l).digest()
-                verified = public_key.verify(hash, (sig, ))
-                self.assertTrue(verified, "Signature not verified") 
-	                
-                contact = Contact()
-                contact.name = "Mark Lockett"
-                contact.emailaddress = fromemail
-                contact.public_key = d["key"]
-                GetGlobalContactStore().AddContact(contact)
-                contacts = GetGlobalContactStore().GetContactsByEmailAddress(fromemail)
-                self.assertTrue(len(list(contacts)) == 1, "Wrong number of matching contacts")
-                self.assertTrue(contacts.first().public_key == d["key"])
+            contact = Contact()
+            contact.name = "Mark Lockett"
+            contact.emailaddress = fromemail
+            contact.public_key = d["key"]
+            GetGlobalContactStore().AddContact(contact)
+            contacts = GetGlobalContactStore().GetContactsByEmailAddress(fromemail)
+            self.assertTrue(len(list(contacts)) == 1, "Wrong number of matching contacts")
+            self.assertTrue(contacts.first().public_key == d["key"])
                 
         M.dele(1)
         numMessages = len(M.list()[1])
@@ -1970,6 +1939,11 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
 
         test.covers = 2 #This should share the update automatically
 
+        t = int(round(time.time() * 1000))
+        m = MessageTest(messagetime=t, text="Hello")
+        dc1.AddImmutableObject(m)
+        test1id = m.GetHash()
+
         time.sleep(0.01) #Give the email a chance to send
         demux2.CheckEmail()
         
@@ -1980,14 +1954,6 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
         self.assertEqual(test.covers, 2)
         self.assertEqual(test2.covers, 2)
         self.assertEqual(test.covers, test2.covers)
-
-        t = int(round(time.time() * 1000))
-        m = MessageTest(messagetime=t, text="Hello")
-        dc1.AddImmutableObject(m)
-        test1id = m.GetHash()
-
-        time.sleep(0.01) #Give the email a chance to send
-        demux2.CheckEmail()
 
         test1s = dc2.GetByClass(MessageTest)
         self.assertEqual(len(test1s), 1)

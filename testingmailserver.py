@@ -26,8 +26,10 @@ class DictMessageWriter(object):
         # message is complete, store it
         self.lines.append('') # add a trailing newline
         messageData = '\n'.join(self.lines)
+        #print "eomReceived messageData = ",messageData
         global mailDict
         mailDict[self.username].append(messageData)
+        #print "eomReceived mailDict[self.username] = ",mailDict[self.username]
         return defer.succeed(None)
 
     def connectionLost(self):
@@ -130,14 +132,19 @@ class WallMailbox(object):
             return [self.listMessages(i) for i in range(len(mailDict[self.id]))]
         elif i >= len(mailDict[self.id]):
             raise ValueError
-        return len(mailDict[self.id][i])
+        return len(mailDict[self.id])
     
     def getMessage(self, i):
+        global mailDict
         if i >= len(mailDict[self.id]):
             raise ValueError
-        return StringIO.StringIO(mailDict[self.id])
+        #print "getMessage mailDict[self.id] = ",mailDict[self.id]
+        s = mailDict[self.id][i]
+        #print "getMessage s = ",s
+        return StringIO.StringIO(s)
     
     def getUidl(self, i):
+        global mailDict
         if i >= len(mailDict[self.id]):
             raise ValueError
         return md5(mailDict[self.id][i]).hexdigest()
