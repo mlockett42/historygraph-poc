@@ -1747,6 +1747,7 @@ class CoversApp(App):
     def CreateNewDocumentCollection(self, dcid):
         dc = super(CoversApp, self).CreateNewDocumentCollection(dcid)
         dc.Register(TestPropertyOwner1)
+        dc.Register(MessageTest)
         return dc
         
 class DemuxTestCase(unittest.TestCase):
@@ -1979,6 +1980,19 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
         self.assertEqual(test.covers, 2)
         self.assertEqual(test2.covers, 2)
         self.assertEqual(test.covers, test2.covers)
+
+        t = int(round(time.time() * 1000))
+        m = MessageTest(messagetime=t, text="Hello")
+        dc1.AddImmutableObject(m)
+        test1id = m.GetHash()
+
+        time.sleep(0.01) #Give the email a chance to send
+        demux2.CheckEmail()
+
+        test1s = dc2.GetByClass(MessageTest)
+        self.assertEqual(len(test1s), 1)
+        test1 = test1s[0]
+        self.assertEqual(test1id, test1.GetHash())
 
         
 class StartTestingMailServerDummyTest(unittest.TestCase):
