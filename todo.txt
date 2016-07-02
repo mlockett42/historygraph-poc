@@ -18,10 +18,10 @@
 * Documents with no activity cannot be shared. This may or may not be a problem
 * Add unit tests to test edge listener functionality of both documents and collections
 * Changes made while frozen should not be shared
-* Test sharing of immutable objects
 * In document collection objects should be a dict of dicts not a dict of lists
 
 Finished
+* Test sharing of immutable objects
 * Handle app routing of messages (we receive a message on the wire intended for an app how do we send it)
 * Ensure apps can send out updates of shared data.
 * Update handling including when edges are replayed
