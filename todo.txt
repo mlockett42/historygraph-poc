@@ -14,6 +14,14 @@
 * Make sure the demux correctly handles multiple queued up emails
 * Test we receive normal emails OK including not sending confirmation emails
 * Make sure the Demux saves and reloads our info correctly on program restart
+* Require encoded messages to be signed
+* Remove tests that manually handshake and send encrypted messages and use a Demux instead
+* testingmailserver.ResetMailDict() is used too often in tests somehow deleting things is not working correctly
+* createdocumentcollection message creates a document without asking the user for permission
+* Documents with no activity cannot be shared. This may or may not be a problem
+* Add unit tests to test edge listener functionality of both documents and collections
+* Changes made while frozen should not be shared
+* Test sharing of immutable objects
 
 Finished
 * Update handling including when edges are replayed

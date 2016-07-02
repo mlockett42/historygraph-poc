@@ -1743,6 +1743,11 @@ Frist post!!!!!!
 class CoversApp(App):
     def MessageReceived(s):
         pass
+
+    def CreateNewDocumentCollection(self, dcid):
+        dc = super(CoversApp, self).CreateNewDocumentCollection(dcid)
+        dc.Register(TestPropertyOwner1)
+        return dc
         
 class DemuxTestCase(unittest.TestCase):
     def setUp(self):
@@ -1753,8 +1758,8 @@ class DemuxTestCase(unittest.TestCase):
         sender = 'mlockett1@livewire.io'
         receivers = ['mlockett2@livewire.io']
 
-        message = """From: Mark Lockett1 <mlockett1@livewire.io>
-To: Mark Lockett2 <mlockett2@livewire.io>
+        message = """From: <mlockett1@livewire.io>
+To: <mlockett2@livewire.io>
 Date: """ + datetime.datetime.now().strftime("%c") + """
 Content-Type: text/plain
 
@@ -1933,26 +1938,31 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
         self.assertEquals(numMessages, 0, "Messages not deleted")
 
     def runTest(self):
-        demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026)
-        demux2 = Demux(myemail='mlockett2@livewire.io', smtpserver='localhost',smtport=10025,smtpuser='mlockett2',smtppass='',
-                       popuser='mlockett2',poppass='',popport=10026)
+        demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+        demux2 = Demux(myemail='mlockett2@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett2',smtppass='',
+                       popuser='mlockett2',poppass='',popport=10026, popserver='localhost')
 
-        app1 = CoversApp()
-        app2 = CoversApp()
+        app1 = CoversApp(demux1)
+        app2 = CoversApp(demux2)
 
-        dc1 = app1.CreateNewDocumentCollection()
-        test = TestPropertyOwner1()
+        demux1.RegisterApp(app1)
+        demux2.RegisterApp(app2)
+
+        dc1 = app1.CreateNewDocumentCollection(None)
+        test = TestPropertyOwner1(None)
+        test.covers = 1
         dc1.AddDocumentObject(test)
+        testingmailserver.ResetMailDict() #Remove this line emails not being correctly deleted over pop
         app1.Share(dc1, 'mlockett2@livewire.io')
 
         time.sleep(0.01) #Give the email a chance to send
-        app2.CheckEmail()
+        demux2.CheckEmail()
 
-        dc = app2.GetDocumentCollectionByID(dc1.id)
+        dc2 = app2.GetDocumentCollectionByID(dc1.id)
 
-        self.assertEqual(len(dc.objects[TestPropertyOwner1.__name__]), 1)
-        test2 = dc.objects[TestPropertyOwner1.__name__][test.id]
+        self.assertEqual(len(dc2.objects[TestPropertyOwner1.__name__]), 1)
+        test2 = dc2.GetObjectByID(TestPropertyOwner1.__name__, test.id)
 
         self.assertEqual(test.id, test2.id)
         self.assertEqual(test.covers, test2.covers)
@@ -1960,10 +1970,10 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
         test.covers = 2 #This should share the update automatically
 
         time.sleep(0.01) #Give the email a chance to send
-        app2.CheckEmail()
+        demux2.CheckEmail()
         
-        self.assertEqual(len(dc.objects[TestPropertyOwner1.__name__]), 1)
-        test2 = dc.objects[TestPropertyOwner1.__name__][test.id]
+        self.assertEqual(len(dc2.objects[TestPropertyOwner1.__name__]), 1)
+        test2 = dc2.GetObjectByID(TestPropertyOwner1.__name__, test.id)
 
         self.assertEqual(test.id, test2.id)
         self.assertEqual(test.covers, 2)
@@ -2035,7 +2045,7 @@ def suite():
     suite.addTest(EstablishLivewireEncryptedLink())
     suite.addTest(EstablishLivewireEncryptedLinkUsingDemux())
 
-    #suite.addTest(DemuxTestCase())
+    suite.addTest(DemuxTestCase())
 
     suite.addTest(StopTestingMailServerDummyTest())
 
