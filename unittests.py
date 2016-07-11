@@ -1977,6 +1977,7 @@ class StopTestingMailServerDummyTest(unittest.TestCase):
 
 def suite():
     suite = unittest.TestSuite()
+
     suite.addTest(SimpleCoversTestCase())
     suite.addTest(MergeHistoryCoverTestCase())
     suite.addTest(MergeHistorySendEdgeCoverTestCase())

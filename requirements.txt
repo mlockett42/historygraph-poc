@@ -1,0 +1,11 @@
+pyside
+sqlalchemy
+python-dateutil
+pytest-qt
+lettuce
+twisted
+pycrypto
+pyopenssl
+service_identity
+
+
