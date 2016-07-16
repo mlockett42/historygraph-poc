@@ -20,4 +20,13 @@ pip install -r requirements.txt
 
 pyside will take a long time to install.
 
+Running Tests
+-------------
+
+To run the unittests (TDD) run ./unittests
+
+To run the BDD functional tests 
+cd tests
+lettuce
+
 
