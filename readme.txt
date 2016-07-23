@@ -26,7 +26,10 @@ Running Tests
 To run the unittests (TDD) run ./unittests
 
 To run the BDD functional tests 
+from the livewirepy directory
+export $PYTHONPATH=$PWD
 cd tests
+export 
 lettuce
 
 

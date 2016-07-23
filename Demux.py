@@ -184,7 +184,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                         if io2.GetHash() == oi.GetHash():
                             wasexisting = True
                     if wasexisting == False:
-                        dc.objects[classname].append(io)
+                        dc.objects[classname][io.GetHash()] = io
                 else:
                     assert False #Message type not implemented yet
             else:

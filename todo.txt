@@ -2,10 +2,9 @@
 * Handshake if we are given a livewire URI. Ask the other end for their full key (livewire URL to only have fingerprint), giving them our at the same time. Then send them our full contact details once we hae theirs
 * Handle simple encrypted text messages
 * Write demo apps relaxed and drawing app and wall app and cello
-* Write BDD harness and tests
+* Write BDD tests
 * Have two parties in a conversation successfully request missing edges.
 * Required edges received off the net to be signed by a known contact
-* Remove the DocumentCollection.documentcollection global
 * Make testing server thread safe by replacing Dict with FrozenDict
 * Demux plain email don't include the full name of the sender
 * Test we receive normal emails OK including not sending confirmation emails
@@ -14,10 +13,17 @@
 * Remove tests that manually handshake and send encrypted messages and use a Demux instead
 * testingmailserver.ResetMailDict() is used too often in tests somehow deleting things is not working correctly
 * Changes made while frozen should not be shared
-* In document collection objects should be a dict of dicts not a dict of lists
 * fromrawbodytest should accept a list of lines not a single string. Also maybe the full version of this function should be used
+* documentcollection is used by HistoryEdgeAddChild to lookup the class when replaying. Should this info be stored elsewhere (eg in the history graph)
+* test saving multiple objects (both mutable and imutable in a database)
+
+Currently Working on
+* Remove the DocumentCollection.documentcollection global
+* Remove global variables from the old app MessageStore and related guff. Use a standard document collection
+* In document collection objects should be a dict of dicts not a dict of lists
 
 Finished
+* BDD harness finished in lettuce
 * Make sure the demux correctly handles multiple queued up emails
 * Add unit tests to test edge listener functionality of both documents and collections
 * Test sharing of immutable objects

@@ -49,9 +49,9 @@ class Covers(Document):
 
 class SimpleCoversTestCase(unittest.TestCase):
     def setUp(self):
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
-        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(TestPropertyOwner1)
+        self.dc.Register(TestPropertyOwner2)
 
     def runTest(self):
         #Test merging together simple covers documents
@@ -83,7 +83,7 @@ class SimpleCoversTestCase(unittest.TestCase):
     
 class MergeHistoryCoverTestCase(unittest.TestCase):
     def setUp(self):
-        DocumentCollection.InitialiseDocumentCollection()
+        self.dc = DocumentCollection.DocumentCollection()
 
     def runTest(self):
         #Test merge together two simple covers objects
@@ -109,8 +109,8 @@ class TestPropertyOwner1(Document):
 
 class MergeHistorySendEdgeCoverTestCase(unittest.TestCase):
     def setUp(self):
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(Covers)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(Covers)
 
     def runTest(self):
         #Test merging together by receiving an edge
@@ -184,7 +184,7 @@ class MergeHistorySendEdgeCoverTestCase(unittest.TestCase):
 
 class ListItemChangeHistoryTestCase(unittest.TestCase):
     def setUp(self):
-        DocumentCollection.InitialiseDocumentCollection()
+        self.dc = DocumentCollection.DocumentCollection()
 
     def runTest(self):
         #Test that various types of changes create was changed events
@@ -204,9 +204,9 @@ class ListItemChangeHistoryTestCase(unittest.TestCase):
 
 class SimpleItemTestCase(unittest.TestCase):
     def setUp(self):
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
-        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(TestPropertyOwner1)
+        self.dc.Register(TestPropertyOwner2)
 
     def runTest(self):
         test1 = TestPropertyOwner1(None)
@@ -225,7 +225,11 @@ class SimpleItemTestCase(unittest.TestCase):
         testitem.cover = 1
         test1.propertyowner2s.remove(testitem.id)
 
+        dc2 = DocumentCollection.DocumentCollection()
+        dc2.Register(TestPropertyOwner1)
+        dc2.Register(TestPropertyOwner2)
         test2 = TestPropertyOwner1(test1.id)
+        dc2.AddDocumentObject(test2)
         test1.history.Replay(test2)
 
         #Check that replaying correctly removes the object
@@ -244,13 +248,14 @@ class SimpleItemTestCase(unittest.TestCase):
 
 class AdvancedItemTestCase(unittest.TestCase):
     def setUp(self):
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
-        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(TestPropertyOwner1)
+        self.dc.Register(TestPropertyOwner2)
 
     def runTest(self):
         #Test changing them deleting a sub element
         test1 = TestPropertyOwner1(None)
+        self.dc.AddDocumentObject(test1)
         testitem1 = TestPropertyOwner2(None)
         test1.propertyowner2s.add(testitem1)
         testitem1.cover = 1
@@ -263,6 +268,7 @@ class AdvancedItemTestCase(unittest.TestCase):
 
         #Test changing them deleting a sub element. Test merging in the opposition order to previous test
         test1 = TestPropertyOwner1(None)
+        self.dc.AddDocumentObject(test1)
         testitem1 = TestPropertyOwner2(None)
         test1.propertyowner2s.add(testitem1)
         testitem1.cover = 1
@@ -275,6 +281,7 @@ class AdvancedItemTestCase(unittest.TestCase):
 
         #Test merging changes to different objects in the same document works
         test1 = TestPropertyOwner1(None)
+        self.dc.AddDocumentObject(test1)
         testitem1 = TestPropertyOwner2(None)
         test1.propertyowner2s.add(testitem1)
         test2 = test1.Clone()
@@ -288,6 +295,7 @@ class AdvancedItemTestCase(unittest.TestCase):
 
         #Test changing different objects on different branches works
         test1 = TestPropertyOwner1(None)
+        self.dc.AddDocumentObject(test1)
         testitem1 = TestPropertyOwner2(None)
         id1 = testitem1.id
         test1.propertyowner2s.add(testitem1)
@@ -310,6 +318,7 @@ class AdvancedItemTestCase(unittest.TestCase):
         
         #Test changing different objects on different branches works reverse merge of above
         test1 = TestPropertyOwner1(None)
+        self.dc.AddDocumentObject(test1)
         testitem1 = TestPropertyOwner2(None)
         id1 = testitem1.id
         test1.propertyowner2s.add(testitem1)
@@ -337,9 +346,9 @@ class Comments(Document):
 
 class MergeHistoryCommentTestCase(unittest.TestCase):
     def setUp(self):
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
-        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(TestPropertyOwner1)
+        self.dc.Register(TestPropertyOwner2)
 
     def runTest(self):
         #Test merge together two simple covers objects
@@ -364,13 +373,14 @@ class MergeHistoryCommentTestCase(unittest.TestCase):
 
 class StoreObjectsInDatabaseTestCase(unittest.TestCase):
     def setUp(self):
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
-        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(TestPropertyOwner1)
+        self.dc.Register(TestPropertyOwner2)
 
     def runTest(self):
         #Test writing the history to a sql lite database
         test1 = TestPropertyOwner1(None)
+        self.dc.AddDocumentObject(test1)
         test1id = test1.id
         testitem1 = TestPropertyOwner2(None)
         testitem1id = testitem1.id
@@ -385,27 +395,27 @@ class StoreObjectsInDatabaseTestCase(unittest.TestCase):
         for item1 in test3.propertyowner2s:
             self.assertEqual(item1.cover, 3)
         self.assertEqual(test3.covers, 2)
-        DocumentCollection.documentcollection.AddDocumentObject(test3)
+        self.dc.AddDocumentObject(test3)
 
-        test1s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        test1s = self.dc.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(test1s), 1)
 
-        DocumentCollectionHelper.SaveDocumentCollection(DocumentCollection.documentcollection, 'test.history.db', 'test.content.db')
+        DocumentCollectionHelper.SaveDocumentCollection(self.dc, 'test.history.db', 'test.content.db')
 
-        matches = DocumentCollectionHelper.GetSQLObjects(DocumentCollection.documentcollection, 'test.content.db', "SELECT id FROM TestPropertyOwner1 WHERE covers > 1")
+        matches = DocumentCollectionHelper.GetSQLObjects(self.dc, 'test.content.db', "SELECT id FROM TestPropertyOwner1 WHERE covers > 1")
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0].__class__, TestPropertyOwner1)
         self.assertEqual(matches[0].id, test1id)
-        matches = DocumentCollectionHelper.GetSQLObjects(DocumentCollection.documentcollection, 'test.content.db', "SELECT id FROM TestPropertyOwner1 WHERE covers > 5")
+        matches = DocumentCollectionHelper.GetSQLObjects(self.dc, 'test.content.db', "SELECT id FROM TestPropertyOwner1 WHERE covers > 5")
         self.assertEqual(len(matches), 0)
 
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
-        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(TestPropertyOwner1)
+        self.dc.Register(TestPropertyOwner2)
 
         #DocumentCollection.documentcollection = DocumentCollection.DocumentCollection()
-        DocumentCollectionHelper.LoadDocumentCollection(DocumentCollection.documentcollection, 'test.history.db', 'test.content.db')
-        test1s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        DocumentCollectionHelper.LoadDocumentCollection(self.dc, 'test.history.db', 'test.content.db')
+        test1s = self.dc.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(test1s), 1)
         test1 = test1s[0]
         test1id = test1.id
@@ -416,22 +426,23 @@ class StoreObjectsInDatabaseTestCase(unittest.TestCase):
         #print "StoreObjectsInDatabaseTestCase test1 = ", str(test1)
         self.assertEqual(test1.covers, 2)
 
-        matches = DocumentCollectionHelper.GetSQLObjects(DocumentCollection.documentcollection, 'test.content.db', "SELECT id FROM TestPropertyOwner1 WHERE covers > 1")
+        matches = DocumentCollectionHelper.GetSQLObjects(self.dc, 'test.content.db', "SELECT id FROM TestPropertyOwner1 WHERE covers > 1")
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0].__class__, TestPropertyOwner1)
         self.assertEqual(matches[0].id, test1id)
-        matches = DocumentCollectionHelper.GetSQLObjects(DocumentCollection.documentcollection, 'test.content.db', "SELECT id FROM TestPropertyOwner1 WHERE covers > 5")
+        matches = DocumentCollectionHelper.GetSQLObjects(self.dc, 'test.content.db', "SELECT id FROM TestPropertyOwner1 WHERE covers > 5")
         self.assertEqual(len(matches), 0)
     
 class StoreObjectsInJSONTestCase(unittest.TestCase):
     def setUp(self):
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
-        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(TestPropertyOwner1)
+        self.dc.Register(TestPropertyOwner2)
 
     def runTest(self):
         #Test writing the history to a sql lite database
         test1 = TestPropertyOwner1(None)
+        self.dc.AddDocumentObject(test1)
         test1id = test1.id
         testitem1 = TestPropertyOwner2(None)
         testitem1id = testitem1.id
@@ -446,17 +457,17 @@ class StoreObjectsInJSONTestCase(unittest.TestCase):
         for item1 in test3.propertyowner2s:
             self.assertEqual(item1.cover, 3)
         self.assertEqual(test3.covers, 2)
-        DocumentCollection.documentcollection.AddDocumentObject(test3)
+        self.dc.AddDocumentObject(test3)
 
-        test1s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        test1s = self.dc.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(test1s), 1)
 
-        jsontext = DocumentCollection.documentcollection.asJSON()
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
-        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
-        DocumentCollection.documentcollection.LoadFromJSON(jsontext)
-        test1s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        jsontext = self.dc.asJSON()
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(TestPropertyOwner1)
+        self.dc.Register(TestPropertyOwner2)
+        self.dc.LoadFromJSON(jsontext)
+        test1s = self.dc.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(test1s), 1)
         test1 = test1s[0]
         test1id = test1.id
@@ -468,13 +479,14 @@ class StoreObjectsInJSONTestCase(unittest.TestCase):
     
 class MergeChangesMadeInJSONTestCase(unittest.TestCase):
     def setUp(self):
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
-        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(TestPropertyOwner1)
+        self.dc.Register(TestPropertyOwner2)
 
     def runTest(self):
         #Create an object and set some values
         test1 = TestPropertyOwner1(None)
+        self.dc.AddDocumentObject(test1)
         test1id = test1.id
         testitem1 = TestPropertyOwner2(None)
         testitem1id = testitem1.id
@@ -482,20 +494,20 @@ class MergeChangesMadeInJSONTestCase(unittest.TestCase):
         testitem1.cover = 3
         test1.covers=2        
 
-        DocumentCollection.documentcollection.AddDocumentObject(test1)
+        self.dc.AddDocumentObject(test1)
 
         #Simulate sending the object to another user via conversion to JSON and emailing
-        jsontext = DocumentCollection.documentcollection.asJSON()
+        jsontext = self.dc.asJSON()
 
         #Make some local changes
         test1.covers = 4
 
         #Simulate the other user (who received the email with the edges) getting the document and loading it into memory
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
-        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
-        DocumentCollection.documentcollection.LoadFromJSON(jsontext)
-        tpo1s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(TestPropertyOwner1)
+        self.dc.Register(TestPropertyOwner2)
+        self.dc.LoadFromJSON(jsontext)
+        tpo1s = self.dc.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(tpo1s), 1)
         test2 = tpo1s[0]
 
@@ -507,18 +519,16 @@ class MergeChangesMadeInJSONTestCase(unittest.TestCase):
 
         test2.covers = 3
         
-        jsontext = DocumentCollection.documentcollection.asJSON()
+        jsontext = self.dc.asJSON()
         
         #Simulate the first user received the second users changes
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
-        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
-        DocumentCollection.documentcollection.LoadFromJSON(jsontext)
-        test2s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(TestPropertyOwner1)
+        self.dc.Register(TestPropertyOwner2)
+        self.dc.LoadFromJSON(jsontext)
+        test2s = self.dc.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(test2s), 1)
         test2 = test2s[0]
-
-        #print "MergeChangesMadeInJSONTestCase test2 = ", str(test2)
 
         self.assertEqual(test2.covers, 3)
         for testitem2 in test2.propertyowner2s:
@@ -537,9 +547,9 @@ class MergeAdvancedChangesMadeInJSONTestCase(unittest.TestCase):
     #Similar to merge changes test but testing things such as out of order reception of edges
     #Orphaned edges and partially orphaned merge edges
     def setUp(self):
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
-        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(TestPropertyOwner1)
+        self.dc.Register(TestPropertyOwner2)
 
     def runTest(self):
         #Create an object and set some values
@@ -551,19 +561,19 @@ class MergeAdvancedChangesMadeInJSONTestCase(unittest.TestCase):
         testitem1.cover = 3
         test1.covers=2        
 
-        DocumentCollection.documentcollection.AddDocumentObject(test1)
+        self.dc.AddDocumentObject(test1)
 
-        olddc = DocumentCollection.documentcollection
+        olddc = self.dc
 
         #Simulate sending the object to another user via conversion to JSON and emailing
-        jsontext = DocumentCollection.documentcollection.asJSON()
+        jsontext = self.dc.asJSON()
 
         #Simulate the other user (who received the email with the edges) getting the document and loading it into memory
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
-        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
-        DocumentCollection.documentcollection.LoadFromJSON(jsontext)
-        tpo1s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(TestPropertyOwner1)
+        self.dc.Register(TestPropertyOwner2)
+        self.dc.LoadFromJSON(jsontext)
+        tpo1s = self.dc.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(tpo1s), 1)
         test2 = tpo1s[0]
 
@@ -581,13 +591,11 @@ class MergeAdvancedChangesMadeInJSONTestCase(unittest.TestCase):
 
         #Simulate the first user received the second users changes out of order
         #the second edge is received first. Test it is right 
-        DocumentCollection.documentcollection = olddc
-        DocumentCollection.documentcollection.LoadFromJSON(JSONEncoder().encode({"history":[edge3.asTuple()],"immutableobjects":[]}))
-        test2s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        self.dc = olddc
+        self.dc.LoadFromJSON(JSONEncoder().encode({"history":[edge3.asTuple()],"immutableobjects":[]}))
+        test2s = self.dc.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(test2s), 1)
         test2 = test2s[0]
-
-        #print "MergeChangesMadeInJSONTestCase test2 = ", str(test2)
 
         self.assertEqual(test2.covers, 2)
         for testitem2 in test2.propertyowner2s:
@@ -596,13 +604,11 @@ class MergeAdvancedChangesMadeInJSONTestCase(unittest.TestCase):
          
         #Simulate the first user received the second users changes out of order
         #the first edge is not received make sure everything 
-        DocumentCollection.documentcollection.LoadFromJSON(JSONEncoder().encode({"history":[edge4.asTuple()],"immutableobjects":[]}))
-        test2s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        self.dc.LoadFromJSON(JSONEncoder().encode({"history":[edge4.asTuple()],"immutableobjects":[]}))
+        test2s = self.dc.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(test2s), 1)
 
         test2 = test2s[0]
-
-        #print "MergeChangesMadeInJSONTestCase test2 = ", str(test2)
 
         self.assertEqual(test2.covers, 3)
         for testitem2 in test2.propertyowner2s:
@@ -616,8 +622,8 @@ class MergeAdvancedChangesMadeInJSONTestCase(unittest.TestCase):
         edgenull1 = HistoryEdgeNull({dummysha1, dummysha2}, "", "", "", "", test2.id, test2.__class__.__name__)
         edgenull2 = HistoryEdgeNull({test2.currentnode, edgenull1.GetEndNode()}, "", "", "", "", test2.id, test2.__class__.__name__)
 
-        DocumentCollection.documentcollection.LoadFromJSON(JSONEncoder().encode({"history":[edgenull2.asTuple()],"immutableobjects":[]}))
-        test2s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        self.dc.LoadFromJSON(JSONEncoder().encode({"history":[edgenull2.asTuple()],"immutableobjects":[]}))
+        test2s = self.dc.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(test2s), 1)
         test2 = test2s[0]
 
@@ -628,8 +634,8 @@ class MergeAdvancedChangesMadeInJSONTestCase(unittest.TestCase):
             self.assertEqual(testitem2.cover, 4)
         self.assertEqual(testitem2.cover, 4)
 
-        DocumentCollection.documentcollection.LoadFromJSON(JSONEncoder().encode({"history":[edgenull1.asTuple()],"immutableobjects":[]}))
-        test2s = DocumentCollection.documentcollection.GetByClass(TestPropertyOwner1)
+        self.dc.LoadFromJSON(JSONEncoder().encode({"history":[edgenull1.asTuple()],"immutableobjects":[]}))
+        test2s = self.dc.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(test2s), 1)
         test2 = test2s[0]
 
@@ -643,14 +649,12 @@ class MergeAdvancedChangesMadeInJSONTestCase(unittest.TestCase):
 
 class FreezeTestCase(unittest.TestCase):
     def setUp(self):
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(Covers)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(Covers)
 
     def runTest(self):
         #Test merging together by receiving an edge
-        #test = Covers("beabdce5-e787-4d60-9577-c620d7c99158") #Fails every time
-        #test = Covers("beabdce5-e787-4d60-9577-c620d7c99159") # Succeeds every time
-        test = Covers(None) #Fails every time
+        test = Covers(None) 
         test.covers = 1
         test2 = test.Clone()
         test.covers = 2
@@ -668,8 +672,8 @@ class FreezeTestCase(unittest.TestCase):
 
 class FreezeThreeWayMergeTestCase(unittest.TestCase):
     def setUp(self):
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(Covers)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(Covers)
 
     def runTest(self):
         #Test merging together by receiving an edge
@@ -695,8 +699,8 @@ class FreezeThreeWayMergeTestCase(unittest.TestCase):
 
 class LargeMergeTestCase(unittest.TestCase):
     def setUp(self):
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(Covers)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(Covers)
 
     def runTest(self):
         #Test merging together performance by receiving large numbers of edges
@@ -727,8 +731,8 @@ class MessageTest(ImmutableObject):
 
 class ImmutableClassTestCase(unittest.TestCase):
     def setUp(self):
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(Covers)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(Covers)
 
     def runTest(self):
         t = int(round(time.time() * 1000))
@@ -743,66 +747,65 @@ class ImmutableClassTestCase(unittest.TestCase):
 
 class StoreImmutableObjectsInJSONTestCase(unittest.TestCase):
     def setUp(self):
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(MessageTest)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(MessageTest)
 
     def runTest(self):
         #Test writing the immutable object to an sql lite database
         t = int(round(time.time() * 1000))
         m = MessageTest(messagetime=t, text="Hello")
-        DocumentCollection.documentcollection.AddImmutableObject(m)
+        self.dc.AddImmutableObject(m)
         test1id = m.GetHash()
 
-        test1s = DocumentCollection.documentcollection.GetByClass(MessageTest)
+        test1s = self.dc.GetByClass(MessageTest)
         self.assertEqual(len(test1s), 1)
 
-        jsontext = DocumentCollection.documentcollection.asJSON()
+        jsontext = self.dc.asJSON()
 
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(MessageTest)
-        DocumentCollection.documentcollection.LoadFromJSON(jsontext)
-        test1s = DocumentCollection.documentcollection.GetByClass(MessageTest)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(MessageTest)
+        self.dc.LoadFromJSON(jsontext)
+        test1s = self.dc.GetByClass(MessageTest)
         self.assertEqual(len(test1s), 1)
         test1 = test1s[0]
         self.assertEqual(test1id, test1.GetHash())
 
 class StoreImmutableObjectsInDatabaseTestCase(unittest.TestCase):
     def setUp(self):
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(MessageTest)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(MessageTest)
 
     def runTest(self):
         #Test writing the immutable object to an sql lite database
         t = int(round(time.time() * 1000))
         m = MessageTest(messagetime=t, text="Hello")
-        DocumentCollection.documentcollection.AddImmutableObject(m)
+        self.dc.AddImmutableObject(m)
         test1id = m.GetHash()
 
-        DocumentCollectionHelper.SaveDocumentCollection(DocumentCollection.documentcollection, 'test.history.db', 'test.content.db')
+        DocumentCollectionHelper.SaveDocumentCollection(self.dc, 'test.history.db', 'test.content.db')
 
-        matches = DocumentCollectionHelper.GetSQLObjects(DocumentCollection.documentcollection, 'test.content.db', "SELECT id FROM MessageTest WHERE messagetime > 1")
+        matches = DocumentCollectionHelper.GetSQLObjects(self.dc, 'test.content.db', "SELECT id FROM MessageTest WHERE messagetime > 1")
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0].__class__, MessageTest)
         self.assertEqual(matches[0].GetHash(), test1id)
-        matches = DocumentCollectionHelper.GetSQLObjects(DocumentCollection.documentcollection, 'test.content.db', "SELECT id FROM MessageTest WHERE messagetime < 5")
+        matches = DocumentCollectionHelper.GetSQLObjects(self.dc, 'test.content.db', "SELECT id FROM MessageTest WHERE messagetime < 5")
         self.assertEqual(len(matches), 0)
 
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(MessageTest)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(MessageTest)
 
-        #DocumentCollection.documentcollection = DocumentCollection.DocumentCollection()
-        DocumentCollectionHelper.LoadDocumentCollection(DocumentCollection.documentcollection, 'test.history.db', 'test.content.db')
+        DocumentCollectionHelper.LoadDocumentCollection(self.dc, 'test.history.db', 'test.content.db')
 
-        test1s = DocumentCollection.documentcollection.GetByClass(MessageTest)
+        test1s = self.dc.GetByClass(MessageTest)
         self.assertEqual(len(test1s), 1)
         test1 = test1s[0]
         test1id = test1.GetHash()
 
-        matches = DocumentCollectionHelper.GetSQLObjects(DocumentCollection.documentcollection, 'test.content.db', "SELECT id FROM MessageTest WHERE messagetime > 1")
+        matches = DocumentCollectionHelper.GetSQLObjects(self.dc, 'test.content.db', "SELECT id FROM MessageTest WHERE messagetime > 1")
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0].__class__, MessageTest)
         self.assertEqual(matches[0].GetHash(), test1id)
-        matches = DocumentCollectionHelper.GetSQLObjects(DocumentCollection.documentcollection, 'test.content.db', "SELECT id FROM MessageTest WHERE messagetime < 5")
+        matches = DocumentCollectionHelper.GetSQLObjects(self.dc, 'test.content.db', "SELECT id FROM MessageTest WHERE messagetime < 5")
         self.assertEqual(len(matches), 0)
 
 class TestUpdateHandler(object):
@@ -812,9 +815,9 @@ class TestUpdateHandler(object):
     
 class SimpleCoversUpdateTestCase(unittest.TestCase):
     def setUp(self):
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(TestPropertyOwner1)
-        DocumentCollection.documentcollection.Register(TestPropertyOwner2)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(TestPropertyOwner1)
+        self.dc.Register(TestPropertyOwner2)
 
     def runTest(self):
         #Test merging together simple covers documents
@@ -832,8 +835,8 @@ class SimpleCoversUpdateTestCase(unittest.TestCase):
     
 class FreezeUpdateTestCase(unittest.TestCase):
     def setUp(self):
-        DocumentCollection.InitialiseDocumentCollection()
-        DocumentCollection.documentcollection.Register(Covers)
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(Covers)
 
     def runTest(self):
         #Test merging together by receiving an edge
