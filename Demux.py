@@ -1,13 +1,21 @@
 import smtplib
 import poplib
 import datetime
-from messagestore import *
+from messagestore import ContactStore, MessageStore, SettingsStore, Base, Message, Contact
 from Crypto.PublicKey import RSA
 from Crypto import Random
 from json import JSONEncoder, JSONDecoder
 from Crypto.Hash import SHA256
 import base64
 from ImmutableObject import ImmutableObject
+import sqlalchemy
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship, backref
+from sqlalchemy.types import Boolean
+import uuid
 
 #A demux is a class that deals with receiving data from the email and routing it to the correct place
 class Demux(object):
@@ -21,8 +29,6 @@ class Demux(object):
         self.popuser = popuser
         self.poppass = poppass
         self.popport = popport
-        self.messagestore = list()
-        self.contactstore = list()
         if 'key' not in kwargs:
             random_generator = Random.new().read
             self.key = RSA.generate(1024, random_generator)
@@ -30,6 +36,19 @@ class Demux(object):
             self.key = kwargs['key']
         self.registeredapps = dict()
 
+        filename = self.get_database_filename()
+        engine = create_engine('sqlite:///' + filename, echo=False)
+        Base.metadata.create_all(engine)
+        Session = sessionmaker(bind=engine)
+        self.session = Session()
+        self.contactstore = ContactStore(self)
+        self.messagestore = MessageStore(self)
+        self.settingsstore = SettingsStore(self)
+
+
+    def get_database_filename(self):
+        return 'livewire.db'
+    
     def ProcessMessage(self, s):
         pass
 
@@ -146,7 +165,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                     verified = public_key.verify(hash, (sig, ))
                     assert verified # "Signature not verified"
                         
-                    l = [c for c in self.contactstore if c.emailaddress == fromemail]
+                    l = [c for c in self.contactstore.GetContacts() if c.emailaddress == fromemail]
                     if len(l) == 0:
                         contact = Contact()
                         contact.name = d["email"]
@@ -155,7 +174,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                         contact.emailaddress = fromemail
                         contact.publickey = d["key"]
                         contact.islivewire = True
-                        self.contactstore.append(contact)
+                        self.contactstore.AddContact(contact)
                         #print "CheckEmail contact.public_key ",contact.publickey
                         self.SendConfirmationEmail(contact)
                     else:
@@ -190,9 +209,9 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
             else:
                 message2 = Message.fromrawbodytest('\n'.join(lines))
                 assert message2.fromaddress != ""
-                self.messagestore.append(message2)
+                self.messagestore.AddMessage(message2, None)
                 self.ProcessBodyLivewireMessages(message2)
-                l = [c for c in self.contactstore if c.emailaddress == message2.fromaddress]
+                l = [c for c in self.contactstore.GetContacts() if c.emailaddress == message2.fromaddress]
 
                 send_confirmation_email = False
                 if len(l) == 0:

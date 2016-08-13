@@ -41,6 +41,7 @@ import timeit
 from ImmutableObject import ImmutableObject
 from App import App
 from Demux import Demux
+from mock import patch, Mock, MagicMock
 
 class Covers(Document):
     def __init__(self, id):
@@ -862,24 +863,31 @@ class FreezeUpdateTestCase(unittest.TestCase):
         self.assertEqual(test.covers, 3)
         self.assertEqual(handler.covers, 3)
 
+
 class AddMessageToMessageStoreTestCase(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         message = Message()
         message.fromaddress = "Mark_Lockett@hotmail.com"
         message.datetime = datetime.datetime(2013,10,31,12,0,0)
-        GetGlobalMessageStore().AddMessage(message, None)
+        self.demux.messagestore.AddMessage(message, None)
 
-        self.assertEquals(GetGlobalMessageStore().GetMessages().count(), 1, "Not one message in messagestore")
-        self.assertEquals(GetGlobalMessageStore().GetMessages().first().id, message.id, "Message id's don't match")
-        self.assertEquals(GetGlobalContactStore().GetContacts().count(), 1, "Not one contact in contactstore")
-        self.assertEquals(GetGlobalContactStore().GetContacts().first().emailaddress, message.fromaddress, "Contact email address not correct")
+        self.assertEquals(self.demux.messagestore.GetMessages().count(), 1, "Not one message in messagestore")
+        self.assertEquals(self.demux.messagestore.GetMessages().first().id, message.id, "Message id's don't match")
+        self.assertEquals(self.demux.contactstore.GetContacts().count(), 1, "Not one contact in contactstore")
+        self.assertEquals(self.demux.contactstore.GetContacts().first().emailaddress, message.fromaddress, "Contact email address not correct")
 
 class FilterByDateTestCase(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         message1 = Message()
@@ -888,19 +896,22 @@ class FilterByDateTestCase(unittest.TestCase):
         message2.datetime = datetime.datetime(2013,11,1,12,0,0)
         message3 = Message()
         message3.datetime = datetime.datetime(2013,10,30,12,0,0)
-        GetGlobalMessageStore().AddMessage(message1, None)
-        GetGlobalMessageStore().AddMessage(message2, None)
-        GetGlobalMessageStore().AddMessage(message3, None)
+        self.demux.messagestore.AddMessage(message1, None)
+        self.demux.messagestore.AddMessage(message2, None)
+        self.demux.messagestore.AddMessage(message3, None)
 
         f = MessageFilterDateTime(datetime.datetime(2013,10,31,0,0,0), datetime.datetime(2013,10,31,23,59,59))
-        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+        l = self.demux.messagestore.GetMessagesByFilter(f)
 
         self.assertEquals(len(l), 1, "Not one message in messagestore")
         self.assertEquals(l[0].id, message1.id, "Message id's don't match")
 
 class FilterBySubjectCase(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         message1 = Message()
@@ -912,19 +923,22 @@ class FilterBySubjectCase(unittest.TestCase):
         message3 = Message()
         message3.subject = "Hello3"
         message3.datetime = datetime.datetime(2013,10,31,12,0,0)
-        GetGlobalMessageStore().AddMessage(message1, None)
-        GetGlobalMessageStore().AddMessage(message2, None)
-        GetGlobalMessageStore().AddMessage(message3, None)
+        self.demux.messagestore.AddMessage(message1, None)
+        self.demux.messagestore.AddMessage(message2, None)
+        self.demux.messagestore.AddMessage(message3, None)
 
         f = MessageFilterSubject("Hello2")
-        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+        l = self.demux.messagestore.GetMessagesByFilter(f)
 
         self.assertEquals(len(l), 1, "Not one message in messagestore")
         self.assertEquals(l[0].id, message2.id, "Message id's don't match")
 
 class FilterByBodyCase(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         message1 = Message()
@@ -936,19 +950,22 @@ class FilterByBodyCase(unittest.TestCase):
         message3 = Message()
         message3.body = "Hello3"
         message3.datetime = datetime.datetime(2013,10,31,12,0,0)
-        GetGlobalMessageStore().AddMessage(message1, None)
-        GetGlobalMessageStore().AddMessage(message2, None)
-        GetGlobalMessageStore().AddMessage(message3, None)
+        self.demux.messagestore.AddMessage(message1, None)
+        self.demux.messagestore.AddMessage(message2, None)
+        self.demux.messagestore.AddMessage(message3, None)
 
         f = MessageFilterBody("Hello2")
-        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+        l = self.demux.messagestore.GetMessagesByFilter(f)
 
         self.assertEquals(len(l), 1, "Not one message in messagestore")
         self.assertEquals(l[0].id, message2.id, "Message id's don't match")
 
 class FilterAndCase(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         message1 = Message()
@@ -963,21 +980,24 @@ class FilterAndCase(unittest.TestCase):
         message3.body = "Hello3"
         message3.subject = "blarg"
         message3.datetime = datetime.datetime(2013,10,31,12,0,0)
-        GetGlobalMessageStore().AddMessage(message1, None)
-        GetGlobalMessageStore().AddMessage(message2, None)
-        GetGlobalMessageStore().AddMessage(message3, None)
+        self.demux.messagestore.AddMessage(message1, None)
+        self.demux.messagestore.AddMessage(message2, None)
+        self.demux.messagestore.AddMessage(message3, None)
 
         f1 = MessageFilterBody("Hello2")
         f2 = MessageFilterSubject("blarg")
         f = MessageFilterAnd(f1, f2)
-        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+        l = self.demux.messagestore.GetMessagesByFilter(f)
 
         self.assertEquals(len(l), 1, "Not one message in messagestore")
         self.assertEquals(l[0].id, message2.id, "Message id's don't match")
 
 class FilterOrCase(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         message1 = Message()
@@ -992,22 +1012,25 @@ class FilterOrCase(unittest.TestCase):
         message3.body = "Hello3"
         message3.subject = "blarg3"
         message3.datetime = datetime.datetime(2013,1,2,12,0,0)
-        GetGlobalMessageStore().AddMessage(message1, None)
-        GetGlobalMessageStore().AddMessage(message2, None)
-        GetGlobalMessageStore().AddMessage(message3, None)
+        self.demux.messagestore.AddMessage(message1, None)
+        self.demux.messagestore.AddMessage(message2, None)
+        self.demux.messagestore.AddMessage(message3, None)
 
         f1 = MessageFilterBody("Hello2")
         f2 = MessageFilterSubject("blarg1")
         f = MessageFilterOr(f1, f2)
-        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+        l = self.demux.messagestore.GetMessagesByFilter(f)
 
         self.assertEquals(len(l), 2, "Not one message in messagestore")
         self.assertEquals(l[0].id, message1.id, "Message id's don't match")
         self.assertEquals(l[1].id, message2.id, "Message id's don't match")
 
 class FilterByFromAddressCase(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
         
     def runTest(self):
         message1 = Message()
@@ -1022,19 +1045,22 @@ class FilterByFromAddressCase(unittest.TestCase):
         message3.body = "Hello3"
         message3.datetime = datetime.datetime(2013,10,31,12,0,0)
         message3.fromaddress = "hello@example.com"
-        GetGlobalMessageStore().AddMessage(message1, None)
-        GetGlobalMessageStore().AddMessage(message2, None)
-        GetGlobalMessageStore().AddMessage(message3, None)
+        self.demux.messagestore.AddMessage(message1, None)
+        self.demux.messagestore.AddMessage(message2, None)
+        self.demux.messagestore.AddMessage(message3, None)
 
         f = MessageFilterFromAddress("mlockett@bigpond.com")
-        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+        l = self.demux.messagestore.GetMessagesByFilter(f)
 
         self.assertEquals(len(l), 1, "Not one message in messagestore")
         self.assertEquals(l[0].id, message1.id, "Message id's don't match")
         
 class FilterByToAddressCase(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         message1 = Message()
@@ -1055,18 +1081,21 @@ class FilterByToAddressCase(unittest.TestCase):
         addr2.message_id = message2.id
         addr2.addresstype = "To"
         message2.addresses.append(addr2)
-        GetGlobalMessageStore().AddMessage(message1, None)
-        GetGlobalMessageStore().AddMessage(message2, None)
+        self.demux.messagestore.AddMessage(message1, None)
+        self.demux.messagestore.AddMessage(message2, None)
 
         f = MessageFilterByToAddress("Mark_Lockett@hotmail.com")
-        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+        l = self.demux.messagestore.GetMessagesByFilter(f)
 
         self.assertEquals(len(l), 1, "Not one message in messagestore")
         self.assertEquals(l[0].id, message1.id, "Message id's don't match")
         
 class FilterByCCAddressCase(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         message1 = Message()
@@ -1097,23 +1126,26 @@ class FilterByCCAddressCase(unittest.TestCase):
         addr4.message_id = message2.id
         addr4.addresstype = "CC"
         message2.addresses.append(addr4)
-        GetGlobalMessageStore().AddMessage(message1, None)
-        GetGlobalMessageStore().AddMessage(message2, None)
+        self.demux.messagestore.AddMessage(message1, None)
+        self.demux.messagestore.AddMessage(message2, None)
 
         f = MessageFilterByCCAddress("cc1@example.com")
-        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+        l = self.demux.messagestore.GetMessagesByFilter(f)
 
         self.assertEquals(len(l), 1, "Not one message in messagestore")
         self.assertEquals(l[0].id, message1.id, "Message id's don't match")
 
         f = MessageFilterByCCAddress("goblin@example.com")
-        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+        l = self.demux.messagestore.GetMessagesByFilter(f)
 
         self.assertEquals(len(l), 0, "Not zero messages in messagestore")
 
 class FilterByBCCAddressCase(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         message1 = Message()
@@ -1154,36 +1186,42 @@ class FilterByBCCAddressCase(unittest.TestCase):
         addr6.message_id = message2.id
         addr6.addresstype = "BCC"
         message2.addresses.append(addr4)
-        GetGlobalMessageStore().AddMessage(message1, None)
-        GetGlobalMessageStore().AddMessage(message2, None)
+        self.demux.messagestore.AddMessage(message1, None)
+        self.demux.messagestore.AddMessage(message2, None)
 
         f = MessageFilterByBCCAddress("bcc1@example.com")
-        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+        l = self.demux.messagestore.GetMessagesByFilter(f)
 
         self.assertEquals(len(l), 1, "Not one message in messagestore")
         self.assertEquals(l[0].id, message1.id, "Message id's don't match")
 
         f = MessageFilterByBCCAddress("cc1@example.com")
-        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+        l = self.demux.messagestore.GetMessagesByFilter(f)
 
         self.assertEquals(len(l), 0, "Not zero messages in messagestore")
 
 class AddContactToContactStoreTestCase(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         contact = Contact()
         contact.name = "Mark Lockett"
         contact.emailaddress = "mlockett@bigpond.com"
-        GetGlobalContactStore().AddContact(contact)
+        self.demux.contactstore.AddContact(contact)
 
-        self.assertEquals(GetGlobalContactStore().GetContacts().count(), 1, "Not one message in messagestore")
-        self.assertEquals(GetGlobalContactStore().GetContacts().first().id, contact.id, "Message id's don't match")
+        self.assertEquals(self.demux.contactstore.GetContacts().count(), 1, "Not one message in messagestore")
+        self.assertEquals(self.demux.contactstore.GetContacts().first().id, contact.id, "Message id's don't match")
 
 class FilterContactsByEmailAddressCase(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         contact1 = Contact() 
@@ -1198,11 +1236,11 @@ class FilterContactsByEmailAddressCase(unittest.TestCase):
         contact2.name = "Johnny Hello"
         contact2.emailaddress = "hello@example.com"
         contact2.publickey = public_key
-        GetGlobalContactStore().AddContact(contact1)
-        GetGlobalContactStore().AddContact(contact2)
+        self.demux.contactstore.AddContact(contact1)
+        self.demux.contactstore.AddContact(contact2)
 
         f = ContactFilterEmailAddress("hello@example.com")
-        l = GetGlobalContactStore().GetContactsByFilter(f)
+        l = self.demux.contactstore.GetContactsByFilter(f)
 
         self.assertEquals(len(l), 1, "Not one contact in contactstore")
         self.assertEquals(l[0].id, contact2.id, "Contact id's don't match")
@@ -1211,8 +1249,11 @@ class FilterContactsByEmailAddressCase(unittest.TestCase):
         
         
 class FilterByTagCase(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         message1 = Message()
@@ -1236,18 +1277,21 @@ class FilterByTagCase(unittest.TestCase):
         addr2.message_id = message2.id
         addr2.addresstype = "To"
         message2.addresses.append(addr2)
-        GetGlobalMessageStore().AddMessage(message1, None)
-        GetGlobalMessageStore().AddMessage(message2, None)
+        self.demux.messagestore.AddMessage(message1, None)
+        self.demux.messagestore.AddMessage(message2, None)
 
         f = MessageFilterByTag("Awesome")
-        l = GetGlobalMessageStore().GetMessagesByFilter(f)
+        l = self.demux.messagestore.GetMessagesByFilter(f)
 
         self.assertEquals(len(l), 1, "Not one message in messagestore")
         self.assertEquals(l[0].id, message1.id, "Message id's don't match")
         
 class ReceiveEmailByPOPTestCase(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         pop = mockpoplib.POP3("mail.example.com", 0)
@@ -1268,8 +1312,11 @@ hello
         self.assertFalse(message.senderislivewireenabled, "Sender not livewire enabled")
         
 class SendEmailBySMTPTestCase(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         #Is this actually testing anything? Probably not
@@ -1295,28 +1342,34 @@ class SendEmailBySMTPTestCase(unittest.TestCase):
         smtp.quit()
 
 class AddMessageDoesNotDuplicateContacts(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         contact = Contact()
         contact.name = "Mark Lockett"
         contact.emailaddress = "Mark_Lockett@hotmail.com"
-        GetGlobalContactStore().AddContact(contact)
+        self.demux.contactstore.AddContact(contact)
 
         message = Message()
         message.fromaddress = "Mark_Lockett@hotmail.com"
         message.datetime = datetime.datetime(2013,10,31,12,0,0)
-        GetGlobalMessageStore().AddMessage(message, None)
+        self.demux.messagestore.AddMessage(message, None)
 
-        self.assertEquals(GetGlobalMessageStore().GetMessages().count(), 1, "Not one message in messagestore")
-        self.assertEquals(GetGlobalMessageStore().GetMessages().first().id, message.id, "Message id's don't match")
-        self.assertEquals(GetGlobalContactStore().GetContacts().count(), 1, "Not one contact in contactstore")
-        self.assertEquals(GetGlobalContactStore().GetContacts().first().emailaddress, message.fromaddress, "Contact email address not correct")
+        self.assertEquals(self.demux.messagestore.GetMessages().count(), 1, "Not one message in messagestore")
+        self.assertEquals(self.demux.messagestore.GetMessages().first().id, message.id, "Message id's don't match")
+        self.assertEquals(self.demux.contactstore.GetContacts().count(), 1, "Not one contact in contactstore")
+        self.assertEquals(self.demux.contactstore.GetContacts().first().emailaddress, message.fromaddress, "Contact email address not correct")
 
 class DetectsLivewireEnabledSender(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         pop = mockpoplib.POP3("mail.example.com", 1)
@@ -1327,20 +1380,23 @@ class DetectsLivewireEnabledSender(unittest.TestCase):
         rawbody = pop.retr(1)[1]
 
         message = Message.fromrawbodytest(rawbody)
-        GetGlobalMessageStore().AddMessage(message, None)
+        self.demux.messagestore.AddMessage(message, None)
 
         self.assertTrue(message.senderislivewireenabled, "Sender not livewire enabled")
-        self.assertTrue(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
+        self.assertTrue(self.demux.contactstore.GetContacts().first().islivewire, "Contact not set up to be livewire")
         
 class DetectsLivewireEnabledSenderExistingContact(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         contact = Contact()
         contact.name = "Mark Lockett"
         contact.emailaddress = "mlockett42@gmail.com"
-        GetGlobalContactStore().AddContact(contact)
+        self.demux.contactstore.AddContact(contact)
 
         pop = mockpoplib.POP3("mail.example.com", 1)
         pop.user("mlockett")
@@ -1350,50 +1406,62 @@ class DetectsLivewireEnabledSenderExistingContact(unittest.TestCase):
         rawbody = pop.retr(1)[1]
 
         message = Message.fromrawbodytest(rawbody)
-        GetGlobalMessageStore().AddMessage(message, None)
+        self.demux.messagestore.AddMessage(message, None)
 
         self.assertTrue(message.senderislivewireenabled, "Sender not livewire enabled")
-        self.assertEquals(len(list(GetGlobalContactStore().GetContacts())), 1)
-        self.assertTrue(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
+        self.assertEquals(len(list(self.demux.contactstore.GetContacts())), 1)
+        self.assertTrue(self.demux.contactstore.GetContacts().first().islivewire, "Contact not set up to be livewire")
         
 class AddSettingToSettingStoreTestCase(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         setting = Setting()
         setting.name = "TestMe"
         setting.value = "Test value"
-        GetGlobalSettingStore().AddSetting(setting)
+        self.demux.settingsstore.AddSetting(setting)
 
-        setting2 = GetGlobalSettingStore().GetSetting("TestMe")
+        setting2 = self.demux.settingsstore.GetSetting("TestMe")
         self.assertEquals(setting2.value, "Test value", "Setting value didn't match")
-        setting3 = GetGlobalSettingStore().GetSetting("TestMe2")
+        setting3 = self.demux.settingsstore.GetSetting("TestMe2")
         self.assertIsNone(setting3, "Unknown setting returning incorrect value")
 
 class FastSettingAccessFunctionsTestCase(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
-        GetGlobalSettingStore().SaveSetting("TestMe2", "Blah")
+        self.demux.settingsstore.SaveSetting("TestMe2", "Blah")
 
-        self.assertEquals(GetGlobalSettingStore().LoadSetting("TestMe2"), "Blah", "Setting value didn't match")
-        self.assertEquals(GetGlobalSettingStore().LoadSetting("TestMe"), "", "Unknown setting returning incorrect value")
+        self.assertEquals(self.demux.settingsstore.LoadSetting("TestMe2"), "Blah", "Setting value didn't match")
+        self.assertEquals(self.demux.settingsstore.LoadSetting("TestMe"), "", "Unknown setting returning incorrect value")
 
 class FastSettingChangeValueTestCase(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
-        GetGlobalSettingStore().SaveSetting("TestMe2", "Blah")
-        GetGlobalSettingStore().SaveSetting("TestMe2", "Blah2")
+        self.demux.settingsstore.SaveSetting("TestMe2", "Blah")
+        self.demux.settingsstore.SaveSetting("TestMe2", "Blah2")
 
-        self.assertEquals(GetGlobalSettingStore().LoadSetting("TestMe2"), "Blah2", "Setting value didn't match")
+        self.assertEquals(self.demux.settingsstore.LoadSetting("TestMe2"), "Blah2", "Setting value didn't match")
 
 class SendAndReceiveUnencryptedEmail(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         sender = 'mark@livewire.io'
@@ -1432,8 +1500,11 @@ class SendAndReceiveUnencryptedEmail(unittest.TestCase):
 
 class SendAndReceiveEncryptedEmail(unittest.TestCase):
     #Example implementation from http://www.laurentluce.com/posts/python-and-cryptography-with-pycrypto/
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
 
     def runTest(self):
@@ -1482,8 +1553,11 @@ class SendAndReceiveEncryptedEmail(unittest.TestCase):
         self.assertEquals(numMessages, 0, "Messages not deleted")
 
 class EstablishLivewireEncryptedLink(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
     def runTest(self):
         sender = 'mlockett1@livewire.io'
@@ -1516,10 +1590,10 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett1@livewir
             message2 = '\n'.join(lines)
 
             message2 = Message.fromrawbodytest(message2)
-            GetGlobalMessageStore().AddMessage(message2, None)
+            self.demux.messagestore.AddMessage(message2, None)
 
             self.assertTrue(message2.senderislivewireenabled, "Sender not livewire enabled")
-            self.assertTrue(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
+            self.assertTrue(self.demux.contactstore.GetContacts().first().islivewire, "Contact not set up to be livewire")
 
 
         #mlockett2 now knows that mlockett1 is livewire enabled so we need to tell it our private key
@@ -1643,8 +1717,8 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
             contact.name = "Mark Lockett"
             contact.emailaddress = fromemail
             contact.public_key = d["key"]
-            GetGlobalContactStore().AddContact(contact)
-            contacts = GetGlobalContactStore().GetContactsByEmailAddress(fromemail)
+            self.demux.contactstore.AddContact(contact)
+            contacts = self.demux.contactstore.GetContactsByEmailAddress(fromemail)
             self.assertTrue(len(list(contacts)) == 1, "Wrong number of matching contacts")
             self.assertTrue(contacts.first().public_key == d["key"])
                 
@@ -1661,10 +1735,11 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
 
 class EstablishLivewireEncryptedLinkUsingDemux(unittest.TestCase):
     def setUp(self):
-        InitSessionTesting()
         testingmailserver.ResetMailDict()
 
-    def runTest(self):
+    @patch.object(Demux, 'get_database_filename')
+    def runTest(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
         demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
                        popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
         demux2 = Demux(myemail='mlockett2@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett2',smtppass='',
@@ -1676,14 +1751,14 @@ Frist post!!!!!!
 """
         demux1.SendPlainEmail(receivers = ['mlockett2@livewire.io'], subject = "SMTP e-mail test", message=message)
 
-        messages = demux1.messagestore
+        messages = demux1.messagestore.GetMessages()
         self.assertEqual(len(list(messages)), 0)
 
         time.sleep(0.01) #Give background thread a chance to run
         
         demux2.CheckEmail()
 
-        messages = demux2.messagestore
+        messages = demux2.messagestore.GetMessages()
         self.assertEqual(len(list(messages)), 1)
         message = messages[0]
         self.assertTrue(message.senderislivewireenabled) # Sender is not livewire enabled
@@ -1692,7 +1767,7 @@ Frist post!!!!!!
         
         time.sleep(0.01) #Give background thread a chance to run
         
-        messages = demux1.messagestore
+        messages = demux1.messagestore.GetMessages()
         self.assertEqual(len(list(messages)), 0)
 
         demux1.CheckEmail() #Demux 1 should receive a message from demux2 and recognise it is livewire enabled and get the public key
@@ -1704,7 +1779,7 @@ Frist post!!!!!!
         #print "messages[0].subject = ", messages[0].subject
         #print "messages[0].body = ", messages[0].body
 
-        contacts = demux1.contactstore
+        contacts = demux1.contactstore.GetContacts()
 
         self.assertEqual(len(list(contacts)), 1)
         self.assertTrue(contacts[0].islivewire)
@@ -1716,9 +1791,9 @@ Frist post!!!!!!
 
         #Each demux should now have the 
 
-        contacts = demux2.contactstore
+        contacts = demux2.contactstore.GetContacts()
 
-        self.assertEqual(len(contacts), 1)
+        self.assertEqual(len(list(contacts)), 1)
         self.assertEqual(contacts[0].publickey, demux1.key.publickey().exportKey("PEM") )
         self.assertTrue(contacts[0].islivewire)
 
@@ -1734,8 +1809,11 @@ class CoversApp(App):
         return dc
         
 class DemuxTestCase(unittest.TestCase):
-    def setUp(self):
-        InitSessionTesting()
+    @patch.object(Demux, 'get_database_filename')
+    def setUp(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
 
         testingmailserver.ResetMailDict()
 
@@ -1768,10 +1846,10 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett1@livewir
             lines = M.retr(i+1)[1]
 
             message2 = Message.fromrawbodytest('\n'.join(lines))
-            GetGlobalMessageStore().AddMessage(message2, None)
+            self.demux.messagestore.AddMessage(message2, None)
 
             self.assertTrue(message2.senderislivewireenabled, "Sender not livewire enabled")
-            self.assertTrue(GetGlobalContactStore().GetContacts().first().islivewire, "Contact not set up to be livewire")
+            self.assertTrue(self.demux.contactstore.GetContacts().first().islivewire, "Contact not set up to be livewire")
 
 
         #mlockett2 now knows that mlockett1 is livewire enabled so we need to tell it our private key
@@ -1894,8 +1972,8 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
             contact.name = "Mark Lockett"
             contact.emailaddress = fromemail
             contact.public_key = d["key"]
-            GetGlobalContactStore().AddContact(contact)
-            contacts = GetGlobalContactStore().GetContactsByEmailAddress(fromemail)
+            self.demux.contactstore.AddContact(contact)
+            contacts = self.demux.contactstore.GetContactsByEmailAddress(fromemail)
             self.assertTrue(len(list(contacts)) == 1, "Wrong number of matching contacts")
             self.assertTrue(contacts.first().public_key == d["key"])
                 

@@ -197,45 +197,45 @@ class Tag(Base):
 
 class ContactStore:
     def GetContactsByFilter(self, filter):
-        return filter.applyFilter(globalsession).all()
+        return filter.applyFilter(self.demux.session).all()
 
     def AddContact(self, contact):
-        globalsession.add(contact)
-        globalsession.commit()
+        self.demux.session.add(contact)
+        self.demux.session.commit()
 
     def GetContacts(self):
         #Return all contacts unfiltered
-        return globalsession.query(Contact)
+        return self.demux.session.query(Contact)
 
     def GetContactsByEmailAddress(self, emailaddress):
-        return globalsession.query(Contact).filter(Contact.emailaddress.like(emailaddress))
+        return self.demux.session.query(Contact).filter(Contact.emailaddress.like(emailaddress))
 
-    def __init__(self):
-        pass
+    def __init__(self, demux):
+        self.demux = demux
 
 class MessageStore:
     def GetMessagesByFilter(self, filter):
-        return sorted(filter.applyFilter(globalsession), key=lambda message: message.datetime)
+        return sorted(filter.applyFilter(self.demux.session), key=lambda message: message.datetime)
 
     def AddMessage(self, message, makelivewirehandler):
-        globalsession.add(message)
-        globalsession.commit()
+        self.demux.session.add(message)
+        self.demux.session.commit()
 
-        l = globalcontactstore.GetContactsByEmailAddress(message.fromaddress)
+        l = self.demux.contactstore.GetContactsByEmailAddress(message.fromaddress)
 
         if l.count() == 0:
             contact = Contact()
             contact.name = message.fromaddress
             contact.emailaddress = message.fromaddress
             contact.islivewire = message.senderislivewireenabled
-            globalcontactstore.AddContact(contact)
+            self.demux.contactstore.AddContact(contact)
             if makelivewirehandler:
                 makelivewirehandler(contact)
         elif l.count() == 1:
             if message.senderislivewireenabled == True:
                 contact = l.first()
                 contact.islivewire = True
-                globalcontactstore.AddContact(contact)
+                self.demux.contactstore.AddContact(contact)
                 if makelivewirehandler:
                     makelivewirehandler(contact)
         else:
@@ -243,10 +243,10 @@ class MessageStore:
 
     def GetMessages(self):
         #Return all messages unfiltered
-        return globalsession.query(Message)
+        return self.demux.session.query(Message)
 
-    def __init__(self):
-        pass
+    def __init__(self, demux):
+        self.demux = demux
 
 #message object
 class Setting(Base):
@@ -261,11 +261,11 @@ class Setting(Base):
 
 class SettingsStore:
     def AddSetting(self, setting):
-        globalsession.add(setting)
-        globalsession.commit()
+        self.demux.session.add(setting)
+        self.demux.session.commit()
 
     def GetSetting(self, searchname):
-        l = globalsession.query(Setting).filter(Setting.name == searchname)
+        l = self.demux.session.query(Setting).filter(Setting.name == searchname)
         if l.count > 0:
             return l.first()
         else:
@@ -286,45 +286,9 @@ class SettingsStore:
         else:
             return setting.value
 
-def InitSessionTesting():
-    global globalsession
-    global globalcontactstore
-    global globalmessagestore
-    global globalsettingstore
-    engine = create_engine('sqlite:///:memory:', echo=False)
-    Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
-    globalsession = Session()
-    globalcontactstore = ContactStore()
-    globalmessagestore = MessageStore()
-    globalsettingstore = SettingsStore()
+    def __init__(self, demux):
+        self.demux = demux
 
-def InitSession():
-    global globalsession
-    global globalcontactstore
-    global globalmessagestore
-    global globalsettingstore
-    engine = create_engine('sqlite:///livewire.db', echo=False)
-    Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
-    globalsession = Session()
-    globalcontactstore = ContactStore()
-    globalmessagestore = MessageStore()
-    globalsettingstore = SettingsStore()
 
-def GetGlobalContactStore():
-    return globalcontactstore
 
-def GetGlobalSession():
-    return globalsession
 
-def GetGlobalMessageStore():
-    return globalmessagestore
-
-def GetGlobalSettingStore():
-    return globalsettingstore
-
-globalsession = None
-globalmessagestore = None
-globalcontactstore = None
-globalsettingstore = None
