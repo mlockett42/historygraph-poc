@@ -59,7 +59,7 @@ class Message(Base):
         toaddress.message_id = ret.id
         toaddress.addresstype = "To"
         ret.addresses.append(toaddress)
-        ret.datetime = parser.parse(emailmsg["date"])
+        ret.datetime = parser.parse(emailmsg["Date"])
         if emailmsg.is_multipart() == False:
             ret.body = emailmsg.get_payload()
         else:
@@ -90,6 +90,7 @@ class Message(Base):
                     foundsecondsigline = False
         return ret
 
+"""
     #Fixme: Below method put in to pass unit tests - not sure how to make email received via pop or why the test does not work
     @staticmethod
     def fromrawbodytest(rawbody):
@@ -151,7 +152,7 @@ class Message(Base):
         ret.body = body
         #print "fromrawbodytest ret.body = ",ret.body
         return ret
-
+"""
 
 class Address(Base):
         __tablename__ = 'addresses'
@@ -177,12 +178,22 @@ class Contact(Base):
     islivewire = Column(Boolean)
     publickey = Column(String)
 
+
     def __init__(self):
         self.id = str(uuid.uuid1())
         self.name = ""
         self.emailaddress = ""
         self.islivewire = False
         self.publickey = ""
+
+def CleanedEmailAddress(emailaddress):
+    i = emailaddress.find('<')
+    if i == -1:
+        return emailaddress
+    j = emailaddress.find('>')
+    if j <= i:
+        return emailaddress
+    return emailaddress[i+1:j]
 
 class Tag(Base):
     __tablename__ = 'tags'

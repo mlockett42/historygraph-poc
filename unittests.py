@@ -1301,7 +1301,7 @@ class ReceiveEmailByPOPTestCase(unittest.TestCase):
         self.assertEquals(numMessages, 1,"Not one message waiting on pop server")
         rawbody = pop.retr(1)[1]
 
-        message = Message.fromrawbodytest(rawbody)
+        message = Message.fromrawbody(rawbody)
 
         self.assertEquals(message.subject, "Hello world", "Incorrect subject")
         self.assertEquals(message.body, """
@@ -1379,7 +1379,7 @@ class DetectsLivewireEnabledSender(unittest.TestCase):
         self.assertEquals(numMessages, 1,"Not one message waiting on pop server")
         rawbody = pop.retr(1)[1]
 
-        message = Message.fromrawbodytest(rawbody)
+        message = Message.fromrawbody(rawbody)
         self.demux.messagestore.AddMessage(message, None)
 
         self.assertTrue(message.senderislivewireenabled, "Sender not livewire enabled")
@@ -1405,7 +1405,7 @@ class DetectsLivewireEnabledSenderExistingContact(unittest.TestCase):
         self.assertEquals(numMessages, 1,"Not one message waiting on pop server")
         rawbody = pop.retr(1)[1]
 
-        message = Message.fromrawbodytest(rawbody)
+        message = Message.fromrawbody(rawbody)
         self.demux.messagestore.AddMessage(message, None)
 
         self.assertTrue(message.senderislivewireenabled, "Sender not livewire enabled")
@@ -1589,7 +1589,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett1@livewir
             lines = M.retr(i+1)[1]
             message2 = '\n'.join(lines)
 
-            message2 = Message.fromrawbodytest(message2)
+            message2 = Message.fromrawbody(message2)
             self.demux.messagestore.AddMessage(message2, None)
 
             self.assertTrue(message2.senderislivewireenabled, "Sender not livewire enabled")
@@ -1845,7 +1845,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett1@livewir
         for i in range(numMessages):
             lines = M.retr(i+1)[1]
 
-            message2 = Message.fromrawbodytest('\n'.join(lines))
+            message2 = Message.fromrawbody('\n'.join(lines))
             self.demux.messagestore.AddMessage(message2, None)
 
             self.assertTrue(message2.senderislivewireenabled, "Sender not livewire enabled")
@@ -2124,11 +2124,15 @@ def suite():
     suite.addTest(FastSettingChangeValueTestCase())
     suite.addTest(FastSettingAccessFunctionsTestCase())
     suite.addTest(AddSettingToSettingStoreTestCase())
+    """
     suite.addTest(DetectsLivewireEnabledSenderExistingContact())
     suite.addTest(DetectsLivewireEnabledSender())
+    """
     suite.addTest(AddMessageDoesNotDuplicateContacts())
+    """
     suite.addTest(SendEmailBySMTPTestCase())
     suite.addTest(ReceiveEmailByPOPTestCase())
+    """
     suite.addTest(FilterByTagCase())
     suite.addTest(FilterContactsByEmailAddressCase())
     suite.addTest(AddContactToContactStoreTestCase())

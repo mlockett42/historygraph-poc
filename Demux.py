@@ -1,7 +1,7 @@
 import smtplib
 import poplib
 import datetime
-from messagestore import ContactStore, MessageStore, SettingsStore, Base, Message, Contact
+from messagestore import ContactStore, MessageStore, SettingsStore, Base, Message, Contact, CleanedEmailAddress
 from Crypto.PublicKey import RSA
 from Crypto import Random
 from json import JSONEncoder, JSONDecoder
@@ -165,7 +165,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                     verified = public_key.verify(hash, (sig, ))
                     assert verified # "Signature not verified"
                         
-                    l = [c for c in self.contactstore.GetContacts() if c.emailaddress == fromemail]
+                    l = [c for c in self.contactstore.GetContacts() if CleanedEmailAddress(c.emailaddress) == CleanedEmailAddress(fromemail)]
                     if len(l) == 0:
                         contact = Contact()
                         contact.name = d["email"]
@@ -204,7 +204,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                 else:
                     assert False #Message type not implemented yet
             else:
-                message2 = Message.fromrawbodytest('\n'.join(lines))
+                message2 = Message.fromrawbody('\n'.join(lines))
                 assert message2.fromaddress != ""
                 self.messagestore.AddMessage(message2, None)
                 self.ProcessBodyLivewireMessages(message2)
@@ -238,10 +238,11 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
 
     def SendConfirmationEmail(self, contact):
         sender = self.myemail
-        assert contact.emailaddress[0] != '<'
-        assert contact.emailaddress[-1] != '>'
-        assert contact.emailaddress != ''
-        receivers = [contact.emailaddress]
+        emailaddress = CleanedEmailAddress(contact.emailaddress)
+        assert emailaddress[0] != '<'
+        assert emailaddress[-1] != '>'
+        assert emailaddress != ''
+        receivers = [emailaddress]
 
         public_key = self.key.publickey().exportKey("PEM")        
     
