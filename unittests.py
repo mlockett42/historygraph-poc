@@ -2039,7 +2039,49 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
         test1s = dc2.GetByClass(MessageTest)
         self.assertEqual(len(test1s), 1)
         test1 = test1s[0]
-        self.assertEqual(test1id, test1.GetHash())
+        self.assertEqual(m.messagetime, test1.messagetime)
+        self.assertEqual(m.text, test1.text)
+        self.assertEqual(m._prevhash, test1._prevhash)
+        self.assertEqual(m.GetHash(), test1.GetHash())
+        m_b = dc2.GetObjectByID(MessageTest.__name__, m.GetHash())
+        self.assertEqual(m.GetHash(), m_b.GetHash())
+        self.assertEqual(m.messagetime, m_b.messagetime)
+        self.assertEqual(m.text, m_b.text)
+
+        #Test the transmission of sequenced immutable objects including that we get 
+        t = int(round(time.time() * 1000))
+        m1 = MessageTest(messagetime=t, text="Hello 1")
+        self.assertEqual(m1._prevhash, '')
+        m2 = MessageTest(messagetime=t + 1, text="Hello 2", _prevhash = m1.GetHash())
+        self.assertEqual(m2._prevhash, m1.GetHash())
+        m3 = MessageTest(messagetime=t + 2, text="Hello 3", _prevhash = m2.GetHash())
+        self.assertEqual(m3._prevhash, m2.GetHash())
+
+        #Add two objects to the dc we expect a request for the second one
+        dc1.AddImmutableObject(m1)
+        dc1.AddImmutableObject(m3)
+
+        time.sleep(0.01) #Give the email a chance to send
+        demux2.CheckEmail()
+        self.assertEqual(len(dc2.objects[MessageTest.__name__]), 3)
+        m1_b = dc2.GetObjectByID(MessageTest.__name__, m1.GetHash())
+        m3_b = dc2.GetObjectByID(MessageTest.__name__, m3.GetHash())
+        self.assertEqual(m1_b.messagetime, m1.messagetime)
+        self.assertEqual(m1_b.text, m1.text)
+        self.assertEqual(m3_b.messagetime, m3.messagetime)
+        self.assertEqual(m3_b.text, m3.text)
+
+        time.sleep(0.01) #Give the email a chance to send. Demux 2 should have sent a request for m2 to demux1 
+        dc1.AddImmutableObject(m2)
+        demux1.CheckEmail()
+        
+        time.sleep(0.01) #Give the email a chance to send. Demux 1 should have sent m2 to demux2 
+        demux2.CheckEmail()
+        self.assertEqual(len(dc2.objects[MessageTest.__name__]), 4)
+        m2_b = dc2.GetObjectByID(MessageTest.__name__, m2.GetHash())
+        self.assertEqual(m2_b.messagetime, m2.messagetime)
+        self.assertEqual(m2_b.text, m2.text)
+
 
         
 class StartTestingMailServerDummyTest(unittest.TestCase):
@@ -2121,3 +2163,4 @@ runner.run(suite())
     
 
     
+

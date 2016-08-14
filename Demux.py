@@ -197,12 +197,9 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                     thehash = d2["hash"]
                     del d2["classname"]
                     del d2["hash"]
-                    io = theclass(**d)
-                    wasexisting = False
-                    for io2 in dc.objects[classname]:
-                        if io2.GetHash() == oi.GetHash():
-                            wasexisting = True
-                    if wasexisting == False:
+
+                    io = theclass(**d2)
+                    if io.GetHash() not in dc.objects[classname]:
                         dc.objects[classname][io.GetHash()] = io
                 else:
                     assert False #Message type not implemented yet
