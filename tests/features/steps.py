@@ -1,9 +1,10 @@
 from lettuce import *
 from formsettings import *
+from Demux import Demux
 
 @step(u'Go to the settings page')
 def go_to_the_settings_page(step):
-    form = FormSettings()
+    form = FormSettings(Demux('', '', 0, '', '', '', '', '', 0))
 
     #assert False, 'This step must be implemented'
 """

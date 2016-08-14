@@ -10,6 +10,8 @@ Under Ubuntu
 
 sudo apt-get install libssl-dev libffi-dev
 
+Use these insstructions to get python qt4 / pyside to work in virtual env
+
 Create the virtual environment
 
 virtualenv .
@@ -28,7 +30,7 @@ To run the unittests (TDD) run ./unittests
 To run the BDD functional tests 
 from the livewirepy directory
 source bin/activate
-export PYTHONPATH=$PWD
+export PYTHONPATH=$PWD:$PWD/doop
 cd tests
 lettuce
 

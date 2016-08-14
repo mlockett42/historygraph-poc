@@ -20,6 +20,7 @@
 * check mockpoplib is correctly emulating the behaviour of real email
 * Remove sqlite for the messagestore and use our own document structures
 * change ReceiveEmailByPOPTestCase and SendEmailBySMTPTestCase to use the demux
+* Demux needs to be able to save to a file
 
 Currently Working on
 
