@@ -1385,33 +1385,6 @@ class DetectsLivewireEnabledSender(unittest.TestCase):
         self.assertTrue(message.senderislivewireenabled, "Sender not livewire enabled")
         self.assertTrue(self.demux.contactstore.GetContacts().first().islivewire, "Contact not set up to be livewire")
         
-class DetectsLivewireEnabledSenderExistingContact(unittest.TestCase):
-    @patch.object(Demux, 'get_database_filename')
-    def setUp(self, mock_get_database_filename):
-        mock_get_database_filename.return_value = ':memory:'
-        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
-
-    def runTest(self):
-        contact = Contact()
-        contact.name = "Mark Lockett"
-        contact.emailaddress = "mlockett42@gmail.com"
-        self.demux.contactstore.AddContact(contact)
-
-        pop = mockpoplib.POP3("mail.example.com", 1)
-        pop.user("mlockett")
-        pop.pass_("password")
-        numMessages = len(pop.list()[1])
-        self.assertEquals(numMessages, 1,"Not one message waiting on pop server")
-        rawbody = pop.retr(1)[1]
-
-        message = Message.fromrawbody(rawbody)
-        self.demux.messagestore.AddMessage(message, None)
-
-        self.assertTrue(message.senderislivewireenabled, "Sender not livewire enabled")
-        self.assertEquals(len(list(self.demux.contactstore.GetContacts())), 1)
-        self.assertTrue(self.demux.contactstore.GetContacts().first().islivewire, "Contact not set up to be livewire")
-        
 class AddSettingToSettingStoreTestCase(unittest.TestCase):
     @patch.object(Demux, 'get_database_filename')
     def setUp(self, mock_get_database_filename):
@@ -2190,7 +2163,6 @@ def suite():
     suite.addTest(FastSettingAccessFunctionsTestCase())
     suite.addTest(AddSettingToSettingStoreTestCase())
     """
-    suite.addTest(DetectsLivewireEnabledSenderExistingContact())
     suite.addTest(DetectsLivewireEnabledSender())
     """
     suite.addTest(AddMessageDoesNotDuplicateContacts())
