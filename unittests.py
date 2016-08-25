@@ -1286,61 +1286,6 @@ class FilterByTagCase(unittest.TestCase):
         self.assertEquals(len(l), 1, "Not one message in messagestore")
         self.assertEquals(l[0].id, message1.id, "Message id's don't match")
         
-class ReceiveEmailByPOPTestCase(unittest.TestCase):
-    @patch.object(Demux, 'get_database_filename')
-    def setUp(self, mock_get_database_filename):
-        mock_get_database_filename.return_value = ':memory:'
-        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
-
-    def runTest(self):
-        pop = mockpoplib.POP3("mail.example.com", 0)
-        pop.user("mlockett")
-        pop.pass_("password")
-        numMessages = len(pop.list()[1])
-        self.assertEquals(numMessages, 1,"Not one message waiting on pop server")
-        rawbody = pop.retr(1)[1]
-
-        message = Message.fromrawbody(rawbody)
-
-        self.assertEquals(message.subject, "Hello world", "Incorrect subject")
-        self.assertEquals(message.body, """
-test body
-hello
-
-""", "Incorrect body")
-        self.assertFalse(message.senderislivewireenabled, "Sender not livewire enabled")
-        
-class SendEmailBySMTPTestCase(unittest.TestCase):
-    @patch.object(Demux, 'get_database_filename')
-    def setUp(self, mock_get_database_filename):
-        mock_get_database_filename.return_value = ':memory:'
-        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
-
-    def runTest(self):
-        #Is this actually testing anything? Probably not
-        message1 = Message()
-        message1.body = "Hello1"
-        message1.subject = "Test"
-        addr1 = Address()
-        addr1.email_address = "Mark_Lockett@hotmail.com"
-        addr1.message_id = message1.id
-        addr1.addresstype = "To"
-        message1.fromaddress = "mlockett@bigpond.com"
-        message1.datetime = datetime.datetime(2013,10,31,12,0,0)
-        message1.addresses.append(addr1)
-
-        msg = MIMEText(message1.body)
-        msg['Subject'] = message1.subject
-        msg['From'] = message1.fromaddress
-        msg['To'] = addr1.email_address
-
-        
-        smtp = mocksmtplib.SMTP("mail.example.com")
-        smtp.sendmail(message1.fromaddress, [addr1.email_address], msg.as_string())
-        smtp.quit()
-
 class AddMessageDoesNotDuplicateContacts(unittest.TestCase):
     @patch.object(Demux, 'get_database_filename')
     def setUp(self, mock_get_database_filename):
@@ -2142,10 +2087,6 @@ def suite():
     suite.addTest(FastSettingAccessFunctionsTestCase())
     suite.addTest(AddSettingToSettingStoreTestCase())
     suite.addTest(AddMessageDoesNotDuplicateContacts())
-    """
-    suite.addTest(SendEmailBySMTPTestCase())
-    suite.addTest(ReceiveEmailByPOPTestCase())
-    """
     suite.addTest(FilterByTagCase())
     suite.addTest(FilterContactsByEmailAddressCase())
     suite.addTest(AddContactToContactStoreTestCase())
