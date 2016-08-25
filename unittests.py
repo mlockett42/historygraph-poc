@@ -1772,12 +1772,75 @@ Frist post!!!!!!
 
         demux1.CheckEmail() #Demux 1 should receive a message from demux2 and recognise it is livewire enabled and get the public key
 
-        #messages = demux1.messagestore
-        #self.assertEqual(len(list(messages)), 1)
-        #print "messages[0] = ", messages[0]
-        #print "messages[0].fromaddress = ", messages[0].fromaddress
-        #print "messages[0].subject = ", messages[0].subject
-        #print "messages[0].body = ", messages[0].body
+        contacts = demux1.contactstore.GetContacts()
+
+        self.assertEqual(len(list(contacts)), 1)
+        self.assertTrue(contacts[0].islivewire)
+        self.assertEqual(contacts[0].publickey, demux2.key.publickey().exportKey("PEM"))
+
+        time.sleep(0.01) #Give background thread a chance to run
+
+        demux2.CheckEmail() #Demux 2 should receive a message from demux1 with it's public key
+
+        #Each demux should now have the 
+
+        contacts = demux2.contactstore.GetContacts()
+
+        self.assertEqual(len(list(contacts)), 1)
+        self.assertEqual(contacts[0].publickey, demux1.key.publickey().exportKey("PEM") )
+        self.assertTrue(contacts[0].islivewire)
+
+
+class EstablishLivewireEncryptedLinkUsingDemuxExistingContact(unittest.TestCase):
+    def setUp(self):
+        testingmailserver.ResetMailDict()
+
+    @patch.object(Demux, 'get_database_filename')
+    def runTest(self, mock_get_database_filename):
+        mock_get_database_filename.return_value = ':memory:'
+        demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+        demux2 = Demux(myemail='mlockett2@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett2',smtppass='',
+                       popuser='mlockett2',poppass='',popport=10026, popserver='localhost')
+
+        #Create the contacts manually
+        contact = Contact()
+        contact.name = "Mark Lockett"
+        contact.emailaddress = "<mlockett1@livewire.io>"
+        demux2.contactstore.AddContact(contact)
+        contacts = demux2.contactstore.GetContacts()
+
+        self.assertEqual(len(list(contacts)), 1)
+        self.assertFalse(contacts[0].islivewire)
+
+        message = """
+
+Frist post!!!!!!
+
+"""
+        demux1.SendPlainEmail(receivers = ['mlockett2@livewire.io'], subject = "SMTP e-mail test", message=message)
+
+        messages = demux1.messagestore.GetMessages()
+        self.assertEqual(len(list(messages)), 0)
+
+        time.sleep(0.01) #Give background thread a chance to run
+        
+        demux2.CheckEmail()
+
+        messages = demux2.messagestore.GetMessages()
+        self.assertEqual(len(list(messages)), 1)
+        message = messages[0]
+        self.assertTrue(message.senderislivewireenabled) # Sender is not livewire enabled
+
+        #mlockett2 now knows that mlockett1 is livewire enabled The demux should have already sent to mlockett1 our public key
+        
+        time.sleep(0.01) #Give background thread a chance to run
+        
+        messages = demux1.messagestore.GetMessages()
+        self.assertEqual(len(list(messages)), 0)
+
+
+        demux1.CheckEmail() #Demux 1 should receive a message from demux2 and recognise it is livewire enabled and get the public key
 
         contacts = demux1.contactstore.GetContacts()
 
@@ -1792,6 +1855,8 @@ Frist post!!!!!!
         #Each demux should now have the 
 
         contacts = demux2.contactstore.GetContacts()
+
+        contacts = list(contacts)
 
         self.assertEqual(len(list(contacts)), 1)
         self.assertEqual(contacts[0].publickey, demux1.key.publickey().exportKey("PEM") )
@@ -2152,6 +2217,7 @@ def suite():
     suite.addTest(SendAndReceiveEncryptedEmail())
     suite.addTest(EstablishLivewireEncryptedLink())
     suite.addTest(EstablishLivewireEncryptedLinkUsingDemux())
+    suite.addTest(EstablishLivewireEncryptedLinkUsingDemuxExistingContact())
 
     suite.addTest(DemuxTestCase())
 
