@@ -1364,27 +1364,6 @@ class AddMessageDoesNotDuplicateContacts(unittest.TestCase):
         self.assertEquals(self.demux.contactstore.GetContacts().count(), 1, "Not one contact in contactstore")
         self.assertEquals(self.demux.contactstore.GetContacts().first().emailaddress, message.fromaddress, "Contact email address not correct")
 
-class DetectsLivewireEnabledSender(unittest.TestCase):
-    @patch.object(Demux, 'get_database_filename')
-    def setUp(self, mock_get_database_filename):
-        mock_get_database_filename.return_value = ':memory:'
-        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
-
-    def runTest(self):
-        pop = mockpoplib.POP3("mail.example.com", 1)
-        pop.user("mlockett")
-        pop.pass_("password")
-        numMessages = len(pop.list()[1])
-        self.assertEquals(numMessages, 1,"Not one message waiting on pop server")
-        rawbody = pop.retr(1)[1]
-
-        message = Message.fromrawbody(rawbody)
-        self.demux.messagestore.AddMessage(message, None)
-
-        self.assertTrue(message.senderislivewireenabled, "Sender not livewire enabled")
-        self.assertTrue(self.demux.contactstore.GetContacts().first().islivewire, "Contact not set up to be livewire")
-        
 class AddSettingToSettingStoreTestCase(unittest.TestCase):
     @patch.object(Demux, 'get_database_filename')
     def setUp(self, mock_get_database_filename):
@@ -2162,9 +2141,6 @@ def suite():
     suite.addTest(FastSettingChangeValueTestCase())
     suite.addTest(FastSettingAccessFunctionsTestCase())
     suite.addTest(AddSettingToSettingStoreTestCase())
-    """
-    suite.addTest(DetectsLivewireEnabledSender())
-    """
     suite.addTest(AddMessageDoesNotDuplicateContacts())
     """
     suite.addTest(SendEmailBySMTPTestCase())
