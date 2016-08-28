@@ -1,20 +1,5 @@
-* Send our full contact details at the end of handshake
-* Handshake if we are given a livewire URI. Ask the other end for their full key (livewire URL to only have fingerprint), giving them our at the same time. Then send them our full contact details once we hae theirs
-* Handle simple encrypted text messages
 * Write demo apps relaxed and drawing app and wall app and cello
 * Write BDD tests
-* Have two parties in a conversation successfully request missing edges.
-* Make testing server thread safe by replacing Dict with FrozenDict
-* Demux plain email don't include the full name of the sender
-* Test we receive normal emails OK including not sending confirmation emails
-* Require encoded messages to be signed
-* Remove tests that manually handshake and send encrypted messages and use a Demux instead
-* testingmailserver.ResetMailDict() is used too often in tests somehow deleting things is not working correctly
-* Changes made while frozen should not be shared
-* check mockpoplib is correctly emulating the behaviour of real email
-* Remove sqlite for the messagestore and use our own document structures
-* Make sure the Demux saves and reloads our info correctly on program restart
-* Add key rotation support
 
 Currently Working on
 
@@ -58,6 +43,21 @@ On Hold
 * Put special DOOP fields into a Meta class as per Django Models
 * Replaying the graph has a pattern like ProcessGraph, RecordPastEdges, ProcessConflictWinners, Replay see Document.Unfreeze clean this up and make one function
 * Add transactions, we could store them in edges with multiple commands to reduce metadata requirements
+* Send our full contact details at the end of handshake
+* Handshake if we are given a livewire URI. Ask the other end for their full key (livewire URL to only have fingerprint), giving them our at the same time. Then send them our full contact details once we hae theirs
+* Handle simple encrypted text messages
+* Have two parties in a conversation successfully request missing edges.
+* Make testing server thread safe by replacing Dict with FrozenDict
+* Demux plain email don't include the full name of the sender
+* Test we receive normal emails OK including not sending confirmation emails
+* Require encoded messages to be signed
+* Remove tests that manually handshake and send encrypted messages and use a Demux instead
+* testingmailserver.ResetMailDict() is used too often in tests somehow deleting things is not working correctly
+* Changes made while frozen should not be shared
+* check mockpoplib is correctly emulating the behaviour of real email
+* Remove sqlite for the messagestore and use our own document structures
+* Make sure the Demux saves and reloads our info correctly on program restart
+* Add key rotation support
 
 Rejected
 * Switch to SQLite JSON storage - SQLite's JSON storage appears to be too combersome for this for now. Relational is good enough
