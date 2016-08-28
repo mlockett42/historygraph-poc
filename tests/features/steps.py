@@ -1,10 +1,44 @@
 from lettuce import *
 from formsettings import *
 from Demux import Demux
+from PySide import QtTest
+from PySide import QtCore
 
 @step(u'Go to the settings page')
 def go_to_the_settings_page(step):
-    form = FormSettings(Demux(fromfile = '/tmp/testdump.db'))
+    demux = Demux(fromfile = '/tmp/testdump.db')
+    form = FormSettings(demux)
+    QtTest.QTest.keyClicks(form.teEmailAddress, "mlockett1@livewire.io", 0, 10)
+    QtTest.QTest.keyClicks(form.tePOPServerName, "localhost1", 0, 10)
+    QtTest.QTest.keyClicks(form.tePOPServerPort, "10026", 0, 10)
+    QtTest.QTest.keyClicks(form.tePOPUserName, "mlockett1+1@livewire.io", 0, 10)
+    QtTest.QTest.keyClicks(form.tePOPPassword, "password1", 0, 10)
+    QtTest.QTest.keyClicks(form.teSMTPServerName, "localhost2", 0, 10)
+    QtTest.QTest.keyClicks(form.teSMTPServerPort, "10025", 0, 10)
+    QtTest.QTest.keyClicks(form.teSMTPUserName, "mlockett1+2@livewire.io", 0, 10)
+    QtTest.QTest.keyClicks(form.teSMTPPassword, "password2", 0, 10)
+
+    QtTest.QTest.mouseClick(form.bnOK, Qt.LeftButton)
+    
+    assert demux.myemail == "mlockett1@livewire.io"
+    assert demux.popserver == "localhost1"
+    assert demux.popport == "10026"
+    assert demux.popuser == "mlockett1+1@livewire.io"
+    assert demux.poppass == "password1"
+    assert demux.smtpserver == "localhost2"
+    assert demux.smtpuser == "mlockett1+2@livewire.io"
+    assert demux.smtppass == "password2"
+    assert demux.smtpport == "10025"
+
+    assert demux.settingsstore.LoadSetting('myemail') == "mlockett1@livewire.io"
+    assert demux.settingsstore.LoadSetting('smtpserver') == "localhost2"
+    assert demux.settingsstore.LoadSettingInt('smtpport') == 10025
+    assert demux.settingsstore.LoadSetting('smtpuser') == "mlockett1+2@livewire.io"
+    assert demux.settingsstore.LoadSetting('smtppass') == "password2"
+    assert demux.settingsstore.LoadSetting('popserver') == "localhost1"
+    assert demux.settingsstore.LoadSetting('popuser') == "mlockett1+1@livewire.io"
+    assert demux.settingsstore.LoadSetting('poppass') == "password1"
+    assert demux.settingsstore.LoadSettingInt('popport') == 10026
 
     #assert False, 'This step must be implemented'
 """

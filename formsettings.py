@@ -83,29 +83,39 @@ class FormSettings(QDialog):
         self.teSMTPPassword.setMaximumHeight(27)
         vboxRight.addWidget(self.teSMTPPassword)
 
-        bnOK = QPushButton("OK")
-        vboxLeft.addWidget(bnOK)
+        self.bnOK = QPushButton("OK")
+        vboxLeft.addWidget(self.bnOK)
 
-        bnCancel = QPushButton("Cancel")
-        vboxRight.addWidget(bnCancel)
+        self.bnCancel = QPushButton("Cancel")
+        vboxRight.addWidget(self.bnCancel)
 
-        bnCancel.clicked.connect(self.close)
+        self.bnCancel.clicked.connect(self.close)
 
-        bnOK.clicked.connect(self.OK)
+        self.bnOK.clicked.connect(self.OK)
 
         self.setLayout(hbox)
 
 
     def OK(self):
-        self.demux.settingsstore.SaveSetting("POPServerPort", self.tePOPServerPort.toPlainText())
-        self.demux.settingsstore.SaveSetting("POPServerName", self.tePOPServerName.toPlainText())
-        self.demux.settingsstore.SaveSetting("POPUserName", self.tePOPUserName.toPlainText())
-        self.demux.settingsstore.SaveSetting("POPPassword", self.tePOPPassword.toPlainText())
-        self.demux.settingsstore.SaveSetting("SMTPServerName", self.teSMTPServerName.toPlainText())
-        self.demux.settingsstore.SaveSetting("SMTPServerPort", self.teSMTPServerPort.toPlainText())
-        self.demux.settingsstore.SaveSetting("SMTPUserName", self.teSMTPUserName.toPlainText())
-        self.demux.settingsstore.SaveSetting("SMTPPassword", self.teSMTPPassword.toPlainText())
-        self.demux.settingsstore.SaveSetting("EmailAddress", self.teEmailAddress.toPlainText())
+        self.demux.settingsstore.SaveSetting("popport", self.tePOPServerPort.toPlainText())
+        self.demux.settingsstore.SaveSetting("popserver", self.tePOPServerName.toPlainText())
+        self.demux.settingsstore.SaveSetting("popuser", self.tePOPUserName.toPlainText())
+        self.demux.settingsstore.SaveSetting("poppass", self.tePOPPassword.toPlainText())
+        self.demux.settingsstore.SaveSetting("smtpserver", self.teSMTPServerName.toPlainText())
+        self.demux.settingsstore.SaveSetting("smtpport", self.teSMTPServerPort.toPlainText())
+        self.demux.settingsstore.SaveSetting("smtpuser", self.teSMTPUserName.toPlainText())
+        self.demux.settingsstore.SaveSetting("smtppass", self.teSMTPPassword.toPlainText())
+        self.demux.settingsstore.SaveSetting("myemail", self.teEmailAddress.toPlainText())
+
+        self.demux.myemail = self.teEmailAddress.toPlainText()
+        self.demux.popport = self.tePOPServerPort.toPlainText()
+        self.demux.popserver = self.tePOPServerName.toPlainText()
+        self.demux.popuser = self.tePOPUserName.toPlainText()
+        self.demux.poppass = self.tePOPPassword.toPlainText()
+        self.demux.smtpserver = self.teSMTPServerName.toPlainText()
+        self.demux.smtpport = self.teSMTPServerPort.toPlainText()
+        self.demux.smtpuser = self.teSMTPUserName.toPlainText()
+        self.demux.smtppass = self.teSMTPPassword.toPlainText()
         self.close()
 
         

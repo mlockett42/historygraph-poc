@@ -1,8 +1,10 @@
 * Write demo apps relaxed and drawing app and wall app and cello
 * Write BDD tests
+*Write BDD Test for settings dialog (pressing Cancel actually does nothing)
 
 Currently Working on
 
+*Write BDD Test for settings dialog (pressing OK actually saves data)
 
 Finished
 * Require edges received off the net to be signed by a known contact
