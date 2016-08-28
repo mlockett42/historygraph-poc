@@ -1968,18 +1968,17 @@ class DemuxEdgeAuthenticationTestCase(DemuxTestCase):
 
 class DemuxCanSaveAndLoadTestCase(unittest.TestCase):
     def setUp(self):
-        if os.path.exists('/tmp/testdump.json'):
-            os.remove('/tmp/testdump.json')
+        if os.path.exists('/tmp/testdump.db'):
+            os.remove('/tmp/testdump.db')
         else:
             pass
 
     def runTest(self):
-        self.assertFalse(os.path.exists('/tmp/testdump.json'))
+        self.assertFalse(os.path.exists('/tmp/testdump.db'))
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile='/tmp/testdump.json')
-        #self.demux.SaveFile('/tmp/testdump.json')
-        self.assertTrue(os.path.exists('/tmp/testdump.json'))
-        demux2 = Demux(fromfile = '/tmp/testdump.json')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile='/tmp/testdump.db')
+        self.assertTrue(os.path.exists('/tmp/testdump.db'))
+        demux2 = Demux(fromfile = '/tmp/testdump.db')
         self.assertEqual(self.demux.myemail, demux2.myemail)
         self.assertEqual(self.demux.smtpserver, demux2.smtpserver)
         self.assertEqual(self.demux.smtpport, demux2.smtpport)
