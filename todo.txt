@@ -4,7 +4,6 @@
 * Write demo apps relaxed and drawing app and wall app and cello
 * Write BDD tests
 * Have two parties in a conversation successfully request missing edges.
-* Required edges received off the net to be signed by a known contact
 * Make testing server thread safe by replacing Dict with FrozenDict
 * Demux plain email don't include the full name of the sender
 * Test we receive normal emails OK including not sending confirmation emails
@@ -17,9 +16,11 @@
 * Make sure the Demux saves and reloads our info correctly on program restart
 
 Currently Working on
-* test saving multiple objects (both mutable and imutable in a database)
+
+* Required edges received off the net to be signed by a known contact
 
 Finished
+* test saving multiple objects (both mutable and imutable in a database)
 * change ReceiveEmailByPOPTestCase and SendEmailBySMTPTestCase to use the demux
 * Demux needs to be able to save to a file
 * Rewrite DetectsLivewireEnabledSenderExistingContact, DetectsLivewireEnabledSender, SendEmailBySMTPTestCase, ReceiveEmailByPOPTestCase should be changed to use the testingemailserver infrastructure that more accurately emulates a real email server

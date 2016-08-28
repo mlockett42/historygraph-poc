@@ -1964,9 +1964,12 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
         demux2.RegisterApp(app2)
 
         dc1 = app1.CreateNewDocumentCollection(None)
-        test = TestPropertyOwner1(None)
-        test.covers = 1
-        dc1.AddDocumentObject(test)
+        test_a = TestPropertyOwner1(None)
+        test_a.covers = 1
+        dc1.AddDocumentObject(test_a)
+        test_b = TestPropertyOwner1(None)
+        test_b.covers = 10
+        dc1.AddDocumentObject(test_b)
         testingmailserver.ResetMailDict() #Remove this line emails not being correctly deleted over pop
         app1.Share(dc1, 'mlockett2@livewire.io')
 
@@ -1975,13 +1978,16 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
 
         dc2 = app2.GetDocumentCollectionByID(dc1.id)
 
-        self.assertEqual(len(dc2.objects[TestPropertyOwner1.__name__]), 1)
-        test2 = dc2.GetObjectByID(TestPropertyOwner1.__name__, test.id)
+        self.assertEqual(len(dc2.objects[TestPropertyOwner1.__name__]), 2)
+        test_a2 = dc2.GetObjectByID(TestPropertyOwner1.__name__, test_a.id)
+        test_b2 = dc2.GetObjectByID(TestPropertyOwner1.__name__, test_b.id)
 
-        self.assertEqual(test.id, test2.id)
-        self.assertEqual(test.covers, test2.covers)
+        self.assertEqual(test_a.id, test_a2.id)
+        self.assertEqual(test_a.covers, test_a2.covers)
+        self.assertEqual(test_b.id, test_b2.id)
+        self.assertEqual(test_b.covers, test_b2.covers)
 
-        test.covers = 2 #This should share the update automatically
+        test_a.covers = 2 #This should share the update automatically
 
         t = int(round(time.time() * 1000))
         m = MessageTest(messagetime=t, text="Hello")
@@ -1991,13 +1997,13 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
         time.sleep(0.01) #Give the email a chance to send
         demux2.CheckEmail()
         
-        self.assertEqual(len(dc2.objects[TestPropertyOwner1.__name__]), 1)
-        test2 = dc2.GetObjectByID(TestPropertyOwner1.__name__, test.id)
+        self.assertEqual(len(dc2.objects[TestPropertyOwner1.__name__]), 2)
+        test_a2 = dc2.GetObjectByID(TestPropertyOwner1.__name__, test_a.id)
 
-        self.assertEqual(test.id, test2.id)
-        self.assertEqual(test.covers, 2)
-        self.assertEqual(test2.covers, 2)
-        self.assertEqual(test.covers, test2.covers)
+        self.assertEqual(test_a.id, test_a2.id)
+        self.assertEqual(test_a.covers, 2)
+        self.assertEqual(test_a2.covers, 2)
+        self.assertEqual(test_a.covers, test_a2.covers)
 
         test1s = dc2.GetByClass(MessageTest)
         self.assertEqual(len(test1s), 1)
