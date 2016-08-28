@@ -14,12 +14,13 @@
 * check mockpoplib is correctly emulating the behaviour of real email
 * Remove sqlite for the messagestore and use our own document structures
 * Make sure the Demux saves and reloads our info correctly on program restart
+* Add key rotation support
 
 Currently Working on
 
-* Required edges received off the net to be signed by a known contact
 
 Finished
+* Require edges received off the net to be signed by a known contact
 * test saving multiple objects (both mutable and imutable in a database)
 * change ReceiveEmailByPOPTestCase and SendEmailBySMTPTestCase to use the demux
 * Demux needs to be able to save to a file
