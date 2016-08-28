@@ -42,6 +42,7 @@ from ImmutableObject import ImmutableObject
 from App import App
 from Demux import Demux
 from mock import patch, Mock, MagicMock
+import os
 
 class Covers(Document):
     def __init__(self, id):
@@ -2044,6 +2045,30 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
         self.assertEqual(m2_b.messagetime, m2.messagetime)
         self.assertEqual(m2_b.text, m2.text)
 
+class DemuxCanSaveAndLoadTestCase(unittest.TestCase):
+    def setUp(self):
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+        if os.path.exists('/tmp/testdump.json'):
+            os.remove('/tmp/testdump.json')
+        else:
+            pass
+
+    def runTest(self):
+        self.assertFalse(os.path.exists('/tmp/testdump.json'))
+        self.demux.SaveFile('/tmp/testdump.json')
+        self.assertTrue(os.path.exists('/tmp/testdump.json'))
+        demux2 = Demux(fromfile = '/tmp/testdump.json')
+        self.assertEqual(self.demux.myemail, demux2.myemail)
+        self.assertEqual(self.demux.smtpserver, demux2.smtpserver)
+        self.assertEqual(self.demux.smtpport, demux2.smtpport)
+        self.assertEqual(self.demux.smtpuser, demux2.smtpuser)
+        self.assertEqual(self.demux.smtppass, demux2.smtppass)
+        self.assertEqual(self.demux.popserver, demux2.popserver)
+        self.assertEqual(self.demux.popuser, demux2.popuser)
+        self.assertEqual(self.demux.poppass, demux2.poppass)
+        self.assertEqual(self.demux.popport, demux2.popport)
+        self.assertEqual(self.demux.key, demux2.key)
 
         
 class StartTestingMailServerDummyTest(unittest.TestCase):
@@ -2063,6 +2088,7 @@ class StopTestingMailServerDummyTest(unittest.TestCase):
 def suite():
     suite = unittest.TestSuite()
 
+    """
     suite.addTest(SimpleCoversTestCase())
     suite.addTest(MergeHistoryCoverTestCase())
     suite.addTest(MergeHistorySendEdgeCoverTestCase())
@@ -2111,6 +2137,9 @@ def suite():
     suite.addTest(DemuxTestCase())
 
     suite.addTest(StopTestingMailServerDummyTest())
+    """
+
+    suite.addTest(DemuxCanSaveAndLoadTestCase())
 
     return suite
 

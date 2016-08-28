@@ -8,7 +8,6 @@
 * Make testing server thread safe by replacing Dict with FrozenDict
 * Demux plain email don't include the full name of the sender
 * Test we receive normal emails OK including not sending confirmation emails
-* Make sure the Demux saves and reloads our info correctly on program restart
 * Require encoded messages to be signed
 * Remove tests that manually handshake and send encrypted messages and use a Demux instead
 * testingmailserver.ResetMailDict() is used too often in tests somehow deleting things is not working correctly
@@ -17,12 +16,13 @@
 * check mockpoplib is correctly emulating the behaviour of real email
 * Remove sqlite for the messagestore and use our own document structures
 * change ReceiveEmailByPOPTestCase and SendEmailBySMTPTestCase to use the demux
-* Demux needs to be able to save to a file
 
 Currently Working on
-* Rewrite DetectsLivewireEnabledSenderExistingContact, DetectsLivewireEnabledSender, SendEmailBySMTPTestCase, ReceiveEmailByPOPTestCase should be changed to use the testingemailserver infrastructure that more accurately emulates a real email server
+* Demux needs to be able to save to a file
+* Make sure the Demux saves and reloads our info correctly on program restart
 
 Finished
+* Rewrite DetectsLivewireEnabledSenderExistingContact, DetectsLivewireEnabledSender, SendEmailBySMTPTestCase, ReceiveEmailByPOPTestCase should be changed to use the testingemailserver infrastructure that more accurately emulates a real email server
 * fromrawbodytest should accept a list of lines not a single string. Also maybe the full version of this function should be used
 * add chains of mutable objects. So we can record events and know we have the correct sequence
 * Remove global variables from the old app MessageStore and place in the Demux class

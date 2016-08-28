@@ -16,6 +16,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.types import Boolean
 import uuid
+import json
 
 #A demux is a class that deals with receiving data from the email and routing it to the correct place
 class Demux(object):
@@ -308,9 +309,19 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
             c.publickey = public_key
             s.save()
 
-
-
-
+    def SaveFile(self, filename):
+        with open(filename, 'w') as outfile:
+            json.dump({"myemail" : self.myemail,
+                "smtpserver" : self.smtpserver,
+                "smtpport" : self.smtpport,
+                "smtpuser" : self.smtpuser,
+                "smtppass" : self.smtppass,
+                "popserver" : self.popserver,
+                "popuser" : self.popuser,
+                "poppass" : self.poppass,
+                "popport" : self.popport,
+                "key" : self.key.exportKey("PEM")}
+        , outfile)
 
 
 
