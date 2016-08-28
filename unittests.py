@@ -870,7 +870,7 @@ class AddMessageToMessageStoreTestCase(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
     def runTest(self):
         message = Message()
@@ -888,7 +888,7 @@ class FilterByDateTestCase(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
     def runTest(self):
         message1 = Message()
@@ -912,7 +912,7 @@ class FilterBySubjectCase(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
     def runTest(self):
         message1 = Message()
@@ -939,7 +939,7 @@ class FilterByBodyCase(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
     def runTest(self):
         message1 = Message()
@@ -966,7 +966,7 @@ class FilterAndCase(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
     def runTest(self):
         message1 = Message()
@@ -998,7 +998,7 @@ class FilterOrCase(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
     def runTest(self):
         message1 = Message()
@@ -1031,7 +1031,7 @@ class FilterByFromAddressCase(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
         
     def runTest(self):
         message1 = Message()
@@ -1061,7 +1061,7 @@ class FilterByToAddressCase(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
     def runTest(self):
         message1 = Message()
@@ -1096,7 +1096,7 @@ class FilterByCCAddressCase(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
     def runTest(self):
         message1 = Message()
@@ -1146,7 +1146,7 @@ class FilterByBCCAddressCase(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
     def runTest(self):
         message1 = Message()
@@ -1206,7 +1206,7 @@ class AddContactToContactStoreTestCase(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
     def runTest(self):
         contact = Contact()
@@ -1222,7 +1222,7 @@ class FilterContactsByEmailAddressCase(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
     def runTest(self):
         contact1 = Contact() 
@@ -1254,7 +1254,7 @@ class FilterByTagCase(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
     def runTest(self):
         message1 = Message()
@@ -1292,7 +1292,7 @@ class AddMessageDoesNotDuplicateContacts(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
     def runTest(self):
         contact = Contact()
@@ -1315,7 +1315,7 @@ class AddSettingToSettingStoreTestCase(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
     def runTest(self):
         setting = Setting()
@@ -1333,7 +1333,7 @@ class FastSettingAccessFunctionsTestCase(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
     def runTest(self):
         self.demux.settingsstore.SaveSetting("TestMe2", "Blah")
@@ -1346,7 +1346,7 @@ class FastSettingChangeValueTestCase(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
     def runTest(self):
         self.demux.settingsstore.SaveSetting("TestMe2", "Blah")
@@ -1359,7 +1359,7 @@ class SendAndReceiveUnencryptedEmail(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
     def runTest(self):
         sender = 'mark@livewire.io'
@@ -1402,7 +1402,7 @@ class SendAndReceiveEncryptedEmail(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
 
     def runTest(self):
@@ -1455,7 +1455,7 @@ class EstablishLivewireEncryptedLink(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
     def runTest(self):
         sender = 'mlockett1@livewire.io'
@@ -1639,9 +1639,9 @@ class EstablishLivewireEncryptedLinkUsingDemux(unittest.TestCase):
     def runTest(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
         demux2 = Demux(myemail='mlockett2@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett2',smtppass='',
-                       popuser='mlockett2',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett2',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
         message = """
 Frist post!!!!!!
@@ -1697,9 +1697,9 @@ class EstablishLivewireEncryptedLinkUsingDemuxExistingContact(unittest.TestCase)
     def runTest(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
         demux2 = Demux(myemail='mlockett2@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett2',smtppass='',
-                       popuser='mlockett2',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett2',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
         #Create the contacts manually
         contact = Contact()
@@ -1776,7 +1776,7 @@ class DemuxTestCase(unittest.TestCase):
     def setUp(self, mock_get_database_filename):
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
         testingmailserver.ResetMailDict()
 
@@ -1953,9 +1953,9 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
 
     def runTest(self):
         demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
         demux2 = Demux(myemail='mlockett2@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett2',smtppass='',
-                       popuser='mlockett2',poppass='',popport=10026, popserver='localhost')
+                       popuser='mlockett2',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
         app1 = CoversApp(demux1)
         app2 = CoversApp(demux2)
@@ -2047,8 +2047,6 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
 
 class DemuxCanSaveAndLoadTestCase(unittest.TestCase):
     def setUp(self):
-        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost')
         if os.path.exists('/tmp/testdump.json'):
             os.remove('/tmp/testdump.json')
         else:
@@ -2056,7 +2054,9 @@ class DemuxCanSaveAndLoadTestCase(unittest.TestCase):
 
     def runTest(self):
         self.assertFalse(os.path.exists('/tmp/testdump.json'))
-        self.demux.SaveFile('/tmp/testdump.json')
+        self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile='/tmp/testdump.json')
+        #self.demux.SaveFile('/tmp/testdump.json')
         self.assertTrue(os.path.exists('/tmp/testdump.json'))
         demux2 = Demux(fromfile = '/tmp/testdump.json')
         self.assertEqual(self.demux.myemail, demux2.myemail)
@@ -2088,7 +2088,6 @@ class StopTestingMailServerDummyTest(unittest.TestCase):
 def suite():
     suite = unittest.TestSuite()
 
-    """
     suite.addTest(SimpleCoversTestCase())
     suite.addTest(MergeHistoryCoverTestCase())
     suite.addTest(MergeHistorySendEdgeCoverTestCase())
@@ -2137,7 +2136,6 @@ def suite():
     suite.addTest(DemuxTestCase())
 
     suite.addTest(StopTestingMailServerDummyTest())
-    """
 
     suite.addTest(DemuxCanSaveAndLoadTestCase())
 

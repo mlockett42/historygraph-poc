@@ -233,6 +233,13 @@ class SettingsStore:
         else:
             return setting.value
 
+    def LoadSettingInt(self, name):
+        setting = self.GetSetting(name)
+        if setting == None:
+            return 0
+        else:
+            return int(setting.value)
+
     def __init__(self, demux):
         self.demux = demux
 

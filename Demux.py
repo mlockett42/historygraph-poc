@@ -20,23 +20,10 @@ import json
 
 #A demux is a class that deals with receiving data from the email and routing it to the correct place
 class Demux(object):
-    def __init__(self, myemail, smtpserver, smtpport, smtpuser, smtppass, popserver, popuser, poppass, popport, **kwargs):
-        self.myemail = myemail
-        self.smtpserver = smtpserver
-        self.smtpport = smtpport
-        self.smtpuser = smtpuser
-        self.smtppass = smtppass
-        self.popserver = popserver
-        self.popuser = popuser
-        self.poppass = poppass
-        self.popport = popport
-        if 'key' not in kwargs:
-            random_generator = Random.new().read
-            self.key = RSA.generate(1024, random_generator)
-        else:
-            self.key = kwargs['key']
-        self.registeredapps = dict()
+    database_file_name = 'livewire.db'
 
+    def __init__(self, fromfile, **kwargs):
+        self.database_file_name = fromfile
         filename = self.get_database_filename()
         engine = create_engine('sqlite:///' + filename, echo=False)
         Base.metadata.create_all(engine)
@@ -46,9 +33,45 @@ class Demux(object):
         self.messagestore = MessageStore(self)
         self.settingsstore = SettingsStore(self)
 
+        self.myemail = self.settingsstore.LoadSetting('myemail')
+        self.smtpserver = self.settingsstore.LoadSetting('smtpserver')
+        self.smtpport = self.settingsstore.LoadSettingInt('smtpport')
+        self.smtpuser = self.settingsstore.LoadSetting('smtpuser')
+        self.smtppass = self.settingsstore.LoadSetting('smtppass')
+        self.popserver = self.settingsstore.LoadSetting('popserver')
+        self.popuser = self.settingsstore.LoadSetting('popuser')
+        self.poppass = self.settingsstore.LoadSetting('poppass')
+        self.popport = self.settingsstore.LoadSettingInt('popport')
+        if self.settingsstore.LoadSetting('key') != "":
+            self.key = RSA.importKey(self.settingsstore.LoadSetting('key'))
+
+        self.Init_Setting('myemail', kwargs)
+        self.Init_Setting('smtpserver', kwargs)
+        self.Init_Setting('smtpport', kwargs)
+        self.Init_Setting('smtpuser', kwargs)
+        self.Init_Setting('smtppass', kwargs)
+        self.Init_Setting('popserver', kwargs)
+        self.Init_Setting('popuser', kwargs)
+        self.Init_Setting('poppass', kwargs)
+        self.Init_Setting('popport', kwargs)
+        self.Init_Setting('popport', kwargs)
+        if 'key' not in kwargs and hasattr(self, 'key') == False:
+            random_generator = Random.new().read
+            self.key = RSA.generate(1024, random_generator)
+        elif hasattr(self, 'key') == False:
+            self.key = kwargs['key']
+        self.settingsstore.SaveSetting('key', self.key.exportKey("PEM"))
+
+        self.registeredapps = dict()
+
+
+    def Init_Setting(self, settingname, init_kwargs):
+        if settingname in init_kwargs:
+            setattr(self, settingname, init_kwargs[settingname])
+            self.settingsstore.SaveSetting(settingname, init_kwargs[settingname])
 
     def get_database_filename(self):
-        return 'livewire.db'
+        return self.database_file_name
     
     def ProcessMessage(self, s):
         pass
@@ -309,6 +332,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
             c.publickey = public_key
             s.save()
 
+"""
     def SaveFile(self, filename):
         with open(filename, 'w') as outfile:
             json.dump({"myemail" : self.myemail,
@@ -324,7 +348,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
         , outfile)
 
 
-
+"""
 
 
 
