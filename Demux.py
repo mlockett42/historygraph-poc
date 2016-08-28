@@ -203,15 +203,23 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                         self.SendConfirmationEmail(contact)
                     else:
                         contact = l[0]
+                        if contact.publickey != '' and not self.is_verified(fromemail, l, sig):
+                            return #Silently ignore unverified attempts to change keys
                         contact.publickey = d["key"]
                         contact.islivewire = True
                 elif d["class"] == "createdocumentcollection": #An identity message identifies the other sender: Ie gives us their public key
+                    if not self.is_verified(fromemail, l, sig):
+                        return #Silently ignore unverified messages
                     dc = self.registeredapps[d["appname"]].CreateNewDocumentCollection(d["dcid"])
                     dc.LoadFromJSON(d["dcjson"])
                 elif d["class"] == "edges": #Some edges we should apply
+                    if not self.is_verified(fromemail, l, sig):
+                        return #Silently ignore unverified edges
                     dc = self.registeredapps[d["appname"]].GetDocumentCollectionByID(d["dcid"])
                     dc.LoadFromJSON(d["edges"])
                 elif d["class"] == "immutableobject": #immutableobject to create
+                    if not self.is_verified(fromemail, l, sig):
+                        return #Silently ignore unverified messages
                     dc = self.registeredapps[d["appname"]].GetDocumentCollectionByID(d["dcid"])
                     d2 = d["immutableobject"]
                     classname = d2["classname"]
@@ -256,6 +264,16 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                     self.SendConfirmationEmail(contact)
         M.dele(1)
         M.quit()
+
+    def is_verified(self, fromemail, l, sig):
+        contacts = [c for c in self.contactstore.GetContacts() if CleanedEmailAddress(c.emailaddress) == CleanedEmailAddress(fromemail)]
+        if len(contacts) != 1:
+            assert False
+            return False
+        contact = contacts[0]
+        public_key = RSA.importKey(contact.publickey)
+        hash = SHA256.new(l).digest()
+        return public_key.verify(hash, (sig, ))
 
     begin_livewire = "-----BEGIN-LIVEWIRE-ENCODED-MESSAGE--------"
     end_livewire   = "-----END-LIVEWIRE-ENCODED-MESSAGE----------"
@@ -313,6 +331,9 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
 
         json = base64.b64decode(body)
 
+        print "ProcessBodyLivewireMessages json",json
+
+
         l2 = JSONEncoder().decode(json)
 
         assert l2[0] == "XR1"
@@ -331,25 +352,6 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
             #print "public_key = ",public_key
             c.publickey = public_key
             s.save()
-
-"""
-    def SaveFile(self, filename):
-        with open(filename, 'w') as outfile:
-            json.dump({"myemail" : self.myemail,
-                "smtpserver" : self.smtpserver,
-                "smtpport" : self.smtpport,
-                "smtpuser" : self.smtpuser,
-                "smtppass" : self.smtppass,
-                "popserver" : self.popserver,
-                "popuser" : self.popuser,
-                "poppass" : self.poppass,
-                "popport" : self.popport,
-                "key" : self.key.exportKey("PEM")}
-        , outfile)
-
-
-"""
-
 
 
 

@@ -1772,17 +1772,65 @@ class CoversApp(App):
         return dc
         
 class DemuxTestCase(unittest.TestCase):
-    def runTest(self):
-        demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+    def setUp(self):
+        testingmailserver.ResetMailDict()
+        self.demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
                        popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
-        demux2 = Demux(myemail='mlockett2@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett2',smtppass='',
+        self.demux2 = Demux(myemail='mlockett2@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett2',smtppass='',
                        popuser='mlockett2',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
 
-        app1 = CoversApp(demux1)
-        app2 = CoversApp(demux2)
+        message = """
+Frist post!!!!!!
 
-        demux1.RegisterApp(app1)
-        demux2.RegisterApp(app2)
+"""
+        self.demux1.SendPlainEmail(receivers = ['mlockett2@livewire.io'], subject = "SMTP e-mail test", message=message)
+
+        messages = self.demux1.messagestore.GetMessages()
+        self.assertEqual(len(list(messages)), 0)
+
+        time.sleep(0.01) #Give background thread a chance to run
+        
+        self.demux2.CheckEmail()
+
+        messages = self.demux2.messagestore.GetMessages()
+        self.assertEqual(len(list(messages)), 1)
+        message = messages[0]
+        self.assertTrue(message.senderislivewireenabled) # Sender is not livewire enabled
+
+        #mlockett2 now knows that mlockett1 is livewire enabled The demux should have already sent to mlockett1 our public key
+        
+        time.sleep(0.01) #Give background thread a chance to run
+        
+        messages = self.demux1.messagestore.GetMessages()
+        self.assertEqual(len(list(messages)), 0)
+
+        self.demux1.CheckEmail() #Demux 1 should receive a message from demux2 and recognise it is livewire enabled and get the public key
+
+        contacts = self.demux1.contactstore.GetContacts()
+
+        self.assertEqual(len(list(contacts)), 1)
+        self.assertTrue(contacts[0].islivewire)
+        self.assertEqual(contacts[0].publickey, self.demux2.key.publickey().exportKey("PEM"))
+
+        time.sleep(0.01) #Give background thread a chance to run
+
+        self.demux2.CheckEmail() #Demux 2 should receive a message from demux1 with it's public key
+
+        #Each demux should now have the 
+
+        contacts = self.demux2.contactstore.GetContacts()
+
+        self.assertEqual(len(list(contacts)), 1)
+        self.assertEqual(contacts[0].publickey, self.demux1.key.publickey().exportKey("PEM") )
+        self.assertTrue(contacts[0].islivewire)
+
+    def runTest(self):
+
+        app1 = CoversApp(self.demux1)
+        app2 = CoversApp(self.demux2)
+
+        self.demux1.RegisterApp(app1)
+        self.demux2.RegisterApp(app2)
 
         dc1 = app1.CreateNewDocumentCollection(None)
         test_a = TestPropertyOwner1(None)
@@ -1795,7 +1843,7 @@ class DemuxTestCase(unittest.TestCase):
         app1.Share(dc1, 'mlockett2@livewire.io')
 
         time.sleep(0.01) #Give the email a chance to send
-        demux2.CheckEmail()
+        self.demux2.CheckEmail()
 
         dc2 = app2.GetDocumentCollectionByID(dc1.id)
 
@@ -1816,7 +1864,7 @@ class DemuxTestCase(unittest.TestCase):
         test1id = m.GetHash()
 
         time.sleep(0.01) #Give the email a chance to send
-        demux2.CheckEmail()
+        self.demux2.CheckEmail()
         
         self.assertEqual(len(dc2.objects[TestPropertyOwner1.__name__]), 2)
         test_a2 = dc2.GetObjectByID(TestPropertyOwner1.__name__, test_a.id)
@@ -1852,7 +1900,7 @@ class DemuxTestCase(unittest.TestCase):
         dc1.AddImmutableObject(m3)
 
         time.sleep(0.01) #Give the email a chance to send
-        demux2.CheckEmail()
+        self.demux2.CheckEmail()
         self.assertEqual(len(dc2.objects[MessageTest.__name__]), 3)
         m1_b = dc2.GetObjectByID(MessageTest.__name__, m1.GetHash())
         m3_b = dc2.GetObjectByID(MessageTest.__name__, m3.GetHash())
@@ -1863,14 +1911,60 @@ class DemuxTestCase(unittest.TestCase):
 
         time.sleep(0.01) #Give the email a chance to send. Demux 2 should have sent a request for m2 to demux1 
         dc1.AddImmutableObject(m2)
-        demux1.CheckEmail()
+        self.demux1.CheckEmail()
         
         time.sleep(0.01) #Give the email a chance to send. Demux 1 should have sent m2 to demux2 
-        demux2.CheckEmail()
+        self.demux2.CheckEmail()
         self.assertEqual(len(dc2.objects[MessageTest.__name__]), 4)
         m2_b = dc2.GetObjectByID(MessageTest.__name__, m2.GetHash())
         self.assertEqual(m2_b.messagetime, m2.messagetime)
         self.assertEqual(m2_b.text, m2.text)
+
+class DemuxEdgeAuthenticationTestCase(DemuxTestCase):
+    def runTest(self):
+        #demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+        #               popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
+        #demux2 = Demux(myemail='mlockett2@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett2',smtppass='',
+        #               popuser='mlockett2',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
+
+        app1 = CoversApp(self.demux1)
+        app2 = CoversApp(self.demux2)
+
+        self.demux1.RegisterApp(app1)
+        self.demux2.RegisterApp(app2)
+
+        dc1 = app1.CreateNewDocumentCollection(None)
+        test_a = TestPropertyOwner1(None)
+        test_a.covers = 1
+        dc1.AddDocumentObject(test_a)
+        testingmailserver.ResetMailDict() #Remove this line emails not being correctly deleted over pop
+        app1.Share(dc1, 'mlockett2@livewire.io')
+
+        time.sleep(0.01) #Give the email a chance to send
+        self.demux2.CheckEmail()
+
+        dc2 = app2.GetDocumentCollectionByID(dc1.id)
+
+        self.assertEqual(len(dc2.objects[TestPropertyOwner1.__name__]), 1)
+        test_a2 = dc2.GetObjectByID(TestPropertyOwner1.__name__, test_a.id)
+
+        self.assertEqual(test_a.id, test_a2.id)
+        self.assertEqual(test_a.covers, test_a2.covers)
+
+        random_generator = Random.new().read
+        self.demux1.key = RSA.generate(1024, random_generator) #Create a new key to pretend to impersonate demux1
+
+        test_a.covers = 2 #This should share the update automatically, but because we have changed the key it should be rejected
+
+        time.sleep(0.01) #Give the email a chance to send
+        self.demux2.CheckEmail()
+        
+        self.assertEqual(len(dc2.objects[TestPropertyOwner1.__name__]), 1)
+        test_a2 = dc2.GetObjectByID(TestPropertyOwner1.__name__, test_a.id)
+
+        self.assertEqual(test_a.id, test_a2.id)
+        self.assertEqual(test_a2.covers, 1) #The change to 2 above should have been rejected
+
 
 class DemuxCanSaveAndLoadTestCase(unittest.TestCase):
     def setUp(self):
@@ -1961,6 +2055,7 @@ def suite():
     suite.addTest(EstablishLivewireEncryptedLinkUsingDemuxExistingContact())
 
     suite.addTest(DemuxTestCase())
+    suite.addTest(DemuxEdgeAuthenticationTestCase())
 
     suite.addTest(StopTestingMailServerDummyTest())
 
