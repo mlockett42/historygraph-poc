@@ -1,8 +1,14 @@
+from __future__ import print_function
 from lettuce import *
 from formsettings import *
 from Demux import Demux
 from PySide import QtTest
 from PySide import QtCore
+
+def log_output(*args):
+    with open('/tmp/output.txt', 'a') as f:
+        print(*args, file=f)
+
 
 @step(u'Go to the settings page')
 def go_to_the_settings_page(step):
@@ -40,6 +46,39 @@ def go_to_the_settings_page(step):
     assert demux.settingsstore.LoadSetting('poppass') == "password1"
     assert demux.settingsstore.LoadSettingInt('popport') == 10026
 
+    #Get a new demux from the database and test everything is loaded correctly
+    demux = Demux(fromfile = '/tmp/testdump.db')
+    form = FormSettings(demux)
+
+    assert demux.myemail == "mlockett1@livewire.io"
+    assert demux.popserver == "localhost1"
+    assert demux.popport == 10026
+    assert demux.popuser == "mlockett1+1@livewire.io"
+    assert demux.poppass == "password1"
+    assert demux.smtpserver == "localhost2"
+    assert demux.smtpuser == "mlockett1+2@livewire.io"
+    assert demux.smtppass == "password2"
+    assert demux.smtpport == 10025
+
+    assert demux.settingsstore.LoadSetting('myemail') == "mlockett1@livewire.io"
+    assert demux.settingsstore.LoadSetting('smtpserver') == "localhost2"
+    assert demux.settingsstore.LoadSettingInt('smtpport') == 10025
+    assert demux.settingsstore.LoadSetting('smtpuser') == "mlockett1+2@livewire.io"
+    assert demux.settingsstore.LoadSetting('smtppass') == "password2"
+    assert demux.settingsstore.LoadSetting('popserver') == "localhost1"
+    assert demux.settingsstore.LoadSetting('popuser') == "mlockett1+1@livewire.io"
+    assert demux.settingsstore.LoadSetting('poppass') == "password1"
+    assert demux.settingsstore.LoadSettingInt('popport') == 10026
+
+    assert demux.myemail == form.teEmailAddress.toPlainText()
+    assert demux.popport == int(form.tePOPServerPort.toPlainText())
+    assert demux.popserver == form.tePOPServerName.toPlainText()
+    assert demux.popuser == form.tePOPUserName.toPlainText()
+    assert demux.poppass == form.tePOPPassword.toPlainText()
+    assert demux.smtpserver == form.teSMTPServerName.toPlainText()
+    assert demux.smtpport == int(form.teSMTPServerPort.toPlainText())
+    assert demux.smtpuser == form.teSMTPUserName.toPlainText()
+    assert demux.smtppass == form.teSMTPPassword.toPlainText()
     #assert False, 'This step must be implemented'
 """
 @step(u'Fill in the field with the name "([^"]*)" with "([^"]*)"')

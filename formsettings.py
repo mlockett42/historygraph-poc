@@ -22,35 +22,35 @@ class FormSettings(QDialog):
         l = QLabel("Email address")
         vboxLeft.addWidget(l)
 
-        self.teEmailAddress = QTextEdit(self.demux.settingsstore.LoadSetting("EmailAddress"))
+        self.teEmailAddress = QTextEdit(self.demux.settingsstore.LoadSetting("myemail"))
         self.teEmailAddress.setMaximumHeight(27)
         vboxRight.addWidget(self.teEmailAddress)
         
         l = QLabel("POP Server")
         vboxLeft.addWidget(l)
 
-        self.tePOPServerName = QTextEdit(self.demux.settingsstore.LoadSetting("POPServerName"))
+        self.tePOPServerName = QTextEdit(self.demux.settingsstore.LoadSetting("popserver"))
         self.tePOPServerName.setMaximumHeight(27)
         vboxRight.addWidget(self.tePOPServerName)
         
         l = QLabel("POP Server Port")
         vboxLeft.addWidget(l)
 
-        self.tePOPServerPort = QTextEdit(self.demux.settingsstore.LoadSetting("POPServerPort"))
+        self.tePOPServerPort = QTextEdit(self.demux.settingsstore.LoadSetting("popport"))
         self.tePOPServerPort.setMaximumHeight(27)
         vboxRight.addWidget(self.tePOPServerPort)
         
         l = QLabel("POP User Name")
         vboxLeft.addWidget(l)
 
-        self.tePOPUserName = QTextEdit(self.demux.settingsstore.LoadSetting("POPUserName"))
+        self.tePOPUserName = QTextEdit(self.demux.settingsstore.LoadSetting("popuser"))
         self.tePOPUserName.setMaximumHeight(27)
         vboxRight.addWidget(self.tePOPUserName)
         
         l = QLabel("POP Password")
         vboxLeft.addWidget(l)
 
-        self.tePOPPassword = QTextEdit(self.demux.settingsstore.LoadSetting("POPPassword"))
+        self.tePOPPassword = QTextEdit(self.demux.settingsstore.LoadSetting("poppass"))
         self.tePOPPassword.setMaximumHeight(27)
         vboxRight.addWidget(self.tePOPPassword)
 
@@ -58,28 +58,28 @@ class FormSettings(QDialog):
         l = QLabel("SMTP Server")
         vboxLeft.addWidget(l)
 
-        self.teSMTPServerName = QTextEdit(self.demux.settingsstore.LoadSetting("SMTPServerName"))
+        self.teSMTPServerName = QTextEdit(self.demux.settingsstore.LoadSetting("smtpserver"))
         self.teSMTPServerName.setMaximumHeight(27)
         vboxRight.addWidget(self.teSMTPServerName)
         
         l = QLabel("SMTP Server Port")
         vboxLeft.addWidget(l)
 
-        self.teSMTPServerPort = QTextEdit(self.demux.settingsstore.LoadSetting("SMTPServerPort"))
+        self.teSMTPServerPort = QTextEdit(self.demux.settingsstore.LoadSetting("smtpport"))
         self.teSMTPServerPort.setMaximumHeight(27)
         vboxRight.addWidget(self.teSMTPServerPort)
         
         l = QLabel("SMTP User Name")
         vboxLeft.addWidget(l)
 
-        self.teSMTPUserName = QTextEdit(self.demux.settingsstore.LoadSetting("SMTPUserName"))
+        self.teSMTPUserName = QTextEdit(self.demux.settingsstore.LoadSetting("smtpuser"))
         self.teSMTPUserName.setMaximumHeight(27)
         vboxRight.addWidget(self.teSMTPUserName)
         
         l = QLabel("SMTP Password")
         vboxLeft.addWidget(l)
 
-        self.teSMTPPassword = QTextEdit(self.demux.settingsstore.LoadSetting("SMTPPassword"))
+        self.teSMTPPassword = QTextEdit(self.demux.settingsstore.LoadSetting("smtppass"))
         self.teSMTPPassword.setMaximumHeight(27)
         vboxRight.addWidget(self.teSMTPPassword)
 

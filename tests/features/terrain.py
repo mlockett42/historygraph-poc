@@ -9,4 +9,9 @@ if hasattr(world, 'app') == False:
         os.remove('/tmp/testdump.db')
     else:
         pass
+    if os.path.exists('/tmp/output.txt'):
+        os.remove('/tmp/output.txt')
+    else:
+        pass
+
 

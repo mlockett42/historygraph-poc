@@ -1,6 +1,7 @@
 * Write demo apps relaxed and drawing app and wall app and cello
 * Write BDD tests
 *Write BDD Test for settings dialog (pressing Cancel actually does nothing)
+* SettingsStore should assert if we attempt to Load or Save an unknow setting
 
 Currently Working on
 
