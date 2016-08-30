@@ -6,8 +6,8 @@ Feature: Setup config
     Scenario: Enter settings in the dialog save them in the database
         When I open the settings page
         Given I enter the following values
-        email_address       | pop_server | pop_port | pop_username | pop_password | smtp_server | smtp_port | smtp_username | smtp_password |
-        mlockett1@timeca.io | localhost1 | 10025    | mlockett1    | password1    | localhost2  | 10026     | mlockett1     | password2     |
+          | teEmailAddress       | tePOPServerName | tePOPServerPort | tePOPUserName | tePOPPassword | teSMTPServerName | teSMTPServerPort | teSMTPUserName | teSMTPPassword |
+          | mlockett1@timeca.io  | localhost1      | 10025           | mlockett1     | password1     | localhost2       | 10026            | mlockett1      | password2      |
         Given I press the OK button
         When I create anew demux
         When I open the settings page

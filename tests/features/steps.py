@@ -10,6 +10,18 @@ def log_output(*args):
         print(*args, file=f)
 
 
+@step(u'I open the settings page')
+def open_the_settings_page(step):
+    world.demux = Demux(fromfile = '/tmp/testdump.db')
+    world.formsettings = FormSettings(world.demux)
+
+@step(u'I enter the following values')
+def I_enter_the_following_values(step):
+    assert len(step.hashes) == 1
+    control_values = step.hashes[0]
+    for (k, v) in control_values.iteritems():
+        QtTest.QTest.keyClicks(getattr(world.formsettings,k), v, 0, 10)
+
 @step(u'Go to the settings page')
 def go_to_the_settings_page(step):
     demux = Demux(fromfile = '/tmp/testdump.db')
