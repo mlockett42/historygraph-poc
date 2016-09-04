@@ -12,11 +12,11 @@ def log_output(*args):
 
 @step(u'I open the settings page')
 def open_the_settings_page(step):
-    world.formsettings = FormSettings(world.demux)
+    world.formsettings = FormSettings(world.demux1)
 
 @step(u'I create a new demux')
 def I_create_a_new_demux(step):
-    world.demux = Demux(fromfile = '/tmp/testdump.db')
+    world.demux1 = Demux(fromfile = '/tmp/testdump1.db')
 
 @step(u'I enter the following values')
 def I_enter_the_following_values(step):
