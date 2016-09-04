@@ -1,0 +1,20 @@
+Design of apps
+
+Apps are not part of doop they use it as a library
+
+An app in livewire receives data that is declared for it
+
+HGApp - class
+Register - this registers the app on start up so it can receive edges.
+Command
+
+
+
+Demux - this receives messages and sends them to the relevant app. Mutiplexer demultiplexer
+The controller is a global 
+
+Demux
+ProcessMessage - a message received on the wire 
+RegisterApp - register an app in the controller. It will be sent all messages intended for it
+
+

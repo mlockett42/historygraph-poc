@@ -5,7 +5,7 @@ from PySide.QtGui import *
 from messagestore import *
 
 class FormSettings(QDialog):
-    def __init__(self, demux, parent = None):
+    def __init__(self, parent, demux):
         super(FormSettings, self).__init__(parent)
 
         self.demux = demux

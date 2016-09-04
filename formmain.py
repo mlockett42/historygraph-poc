@@ -10,8 +10,9 @@ from formviewmessage import FormViewMessage
 from formnewmessage import FormNewMessage
 
 class FormMain(QMainWindow):
-    def __init__(self, parent = None):
+    def __init__(self, parent, demux):
         super(FormMain, self).__init__(parent)
+        self.demux = demux
         self.setWindowTitle("Livewire Communicator")
         
         hbox = QHBoxLayout()
@@ -80,19 +81,19 @@ class FormMain(QMainWindow):
         newmessageAction.setStatusTip('New Message')
         newmessageAction.triggered.connect(self.newmessage)
 
-        menubar = self.menuBar()
-        fileMenu = menubar.addMenu('&File')
+        self.menubar = self.menuBar()
+        fileMenu = self.menubar.addMenu('&File')
         fileMenu.addAction(newmessageAction)
         fileMenu.addAction(sendreceiverAction)
         fileMenu.addAction(exitAction)
         
-        optionsMenu = menubar.addMenu('&Options')
+        optionsMenu = self.menubar.addMenu('&Options')
         optionsMenu.addAction(settingsAction)
 
 
     def DisplaySettings(self):
-        form = FormSettings(self)
-        form.show()
+        self.formsettings = FormSettings(self, self.demux)
+        self.formsettings.show()
 
     def sendreceive(self):
         pop = poplib.POP3_SSL(GetGlobalSettingStore().LoadSetting("POPServerName"), int(GetGlobalSettingStore().LoadSetting("POPServerPort")))
@@ -113,7 +114,7 @@ class FormMain(QMainWindow):
 
     def DisplayMessages(self):
         self.messageheaders.setRowCount(0)
-        for message in GetGlobalMessageStore().GetMessages():
+        for message in self.demux.messagestore.GetMessages():
             self.messageheaders.setRowCount(self.messageheaders.rowCount() + 1)
             row = self.messageheaders.rowCount() - 1
             
