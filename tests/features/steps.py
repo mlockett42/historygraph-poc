@@ -25,9 +25,15 @@ def I_enter_the_following_values(step):
     for (k, v) in control_values.iteritems():
         QtTest.QTest.keyClicks(getattr(world.formsettings,k), v, 0, 10)
 
-@step(u'I press the OK button')
-def I_press_the_ok_button(step):
-    QtTest.QTest.mouseClick(world.formsettings.bnOK, Qt.LeftButton)
+@step(u'I press the (\w+) button')
+def I_press_the_ok_button(step, buttonname):
+    if buttonname == "OK":
+        button = world.formsettings.bnOK
+    elif buttonname == "Cancel":
+        button = world.formsettings.bnCancel
+    else:
+        assert False
+    QtTest.QTest.mouseClick(button, Qt.LeftButton)
 
 @step(u'Then I see following values')
 def Then_I_see_the_following_values(step):
