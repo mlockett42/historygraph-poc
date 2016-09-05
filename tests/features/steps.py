@@ -7,7 +7,7 @@ from PySide import QtCore
 import utils
 from formmain import FormMain
 from PySide.QtGui import QMenu, QAction
-
+from mock import patch
 
 
 @step(u'I open the settings page')
@@ -81,8 +81,10 @@ def I_choose_Settings_from_the_Options_menu(step):
         if type(menu_item) == QAction and (menu_item.text().upper() == menu_item_name or menu_item.text().upper() == '&' + menu_item_name):
             menu_item_found = menu_item
     assert menu_item_found is not None
-    menu_item_found.trigger()
-    world.formsettings = world.formmain.formsettings
+    with patch.object(FormSettings, 'show') as mock_show:
+        mock_show.return_value = None
+        menu_item_found.trigger()
+        world.formsettings = world.formmain.formsettings
 
 @step(u'Go to the settings page')
 def go_to_the_settings_page(step):
