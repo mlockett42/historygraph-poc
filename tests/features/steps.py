@@ -14,9 +14,10 @@ from mock import patch
 def open_the_settings_page(step):
     world.formsettings = FormSettings(None, world.demux1)
 
-@step(u'I create a new demux')
-def I_create_a_new_demux(step):
-    world.demux1 = Demux(fromfile = '/tmp/testdump1.db')
+@step(u'I create a new demux (\d+)')
+def I_create_a_new_demux(step, demux_index):
+    assert demux_index == '1' or demux_index == '2'
+    setattr(world, 'demux' + demux_index, Demux(fromfile = '/tmp/testdump' + demux_index + '.db'))
 
 @step(u'I clear the demux databases')
 def I_clear_the_demux_databases(step):
