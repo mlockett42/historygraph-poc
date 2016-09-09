@@ -8,6 +8,7 @@ import utils
 from formmain import FormMain
 from PySide.QtGui import QMenu, QAction
 from mock import patch
+import testingmailserver
 
 
 @step(u'I open the settings page')
@@ -51,24 +52,27 @@ def Then_I_see_the_following_values(step):
         utils.log_output("v = ",v)
         assert getattr(world.formsettings,k).toPlainText() == v
 
-@step(u'I set up the demux with the following values')
-def I_set_up_the_demux_with_the_following_values(step):
+@step(u'I set up demux (\d+) with the following values')
+def I_set_up_demux_with_the_following_values(step, demux_index):
+    assert demux_index == '1' or demux_index == '2'
     assert len(step.hashes) == 1
+    demux = getattr(world, 'demux' + demux_index)
     control_values = step.hashes[0]
     for (k, v) in control_values.iteritems():
-        setattr(world.demux1, k, v)
-        world.demux1.settingsstore.SaveSetting(k, v)
+        setattr(demux, k, v)
+        demux.settingsstore.SaveSetting(k, v)
 
-@step(u'I open the main window')
-def I_open_the_main_window(step):
-    world.formmain = FormMain(parent = None, demux=world.demux1)
+@step(u'I open main window (\d+)')
+def I_open_main_window(step, form_index):
+    assert form_index == '1' or form_index == '2'
+    setattr(world, 'formmain' + form_index, FormMain(parent = None, demux=world.demux1))
 
 @step(u'I choose Settings from the Options menu')
 def I_choose_Settings_from_the_Options_menu(step):
     menu_name = "OPTIONS"
     menu_item_name = "SETTINGS"
     menu_found = None
-    for menu in world.formmain.menubar.children():
+    for menu in world.formmain1.menubar.children():
         if type(menu) == QMenu and (menu.title().upper() == menu_name or menu.title().upper() == '&' + menu_name):
             menu_found = menu
     assert menu_found is not None
@@ -84,6 +88,9 @@ def I_choose_Settings_from_the_Options_menu(step):
     with patch.object(FormSettings, 'show') as mock_show:
         mock_show.return_value = None
         menu_item_found.trigger()
-        world.formsettings = world.formmain.formsettings
+        world.formsettings = world.formmain1.formsettings
 
+@step(u'I reset the email server dict')
+def I_reset_the_email_server_dict(step):
+    testingmailserver.ResetMailDict()
 
