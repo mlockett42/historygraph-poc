@@ -1373,6 +1373,7 @@ class SendAndReceiveUnencryptedEmail(unittest.TestCase):
         """
 
         smtpObj = smtplib.SMTP('localhost', 10025)
+        smtpObj.login('mlockett', '')
         smtpObj.sendmail(sender, receivers, message)         
 
         M = poplib.POP3('localhost', 10026)
@@ -1423,6 +1424,7 @@ class SendAndReceiveEncryptedEmail(unittest.TestCase):
         """ + base64.b64encode(enc_data)
 
         smtpObj = smtplib.SMTP('localhost', 10025)
+        smtpObj.login('mlockett', '')
         smtpObj.sendmail(sender, receivers, message)         
 
         M = poplib.POP3('localhost', 10026)
@@ -1476,6 +1478,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett1@livewir
         """
 
         smtpObj = smtplib.SMTP('localhost', 10025)
+        smtpObj.login('mlockett1', '')
         smtpObj.sendmail(sender, receivers, message)         
 
         M = poplib.POP3('localhost', 10026)
@@ -1536,6 +1539,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
 """
 
         smtpObj = smtplib.SMTP('localhost', 10025)
+        smtpObj.login('mlockett2', '')
         smtpObj.sendmail(sender, receivers, message)         
 
         M = poplib.POP3('localhost', 10026)

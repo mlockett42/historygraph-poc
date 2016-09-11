@@ -1,13 +1,16 @@
 * Write demo apps relaxed and drawing app and wall app and cello
 * Write BDD tests
-*Write BDD Test for settings dialog (pressing Cancel actually does nothing)
 * SettingsStore should assert if we attempt to Load or Save an unknow setting
+* Change code to use SSL - we need to patch we the test against the local server because we can't emaulate SSL locally
+* Add unittests for smtp and pop logins
+* Add unittest to test email received with Date stamps
 
 Currently Working on
 
 *Write BDD Test for settings dialog (pressing OK actually saves data)
 
 Finished
+*Write BDD Test for settings dialog (pressing Cancel actually does nothing)
 * Require edges received off the net to be signed by a known contact
 * test saving multiple objects (both mutable and imutable in a database)
 * change ReceiveEmailByPOPTestCase and SendEmailBySMTPTestCase to use the demux

@@ -279,7 +279,9 @@ def StartTestingMailServer(domain, mailnames):
 
     from twisted.internet import ssl
     # SSL stuff here... and certificates...
-    Thread(target=reactor.run, args=(False,)).start()
+    thread = Thread(target=reactor.run, args=(False,))
+    thread.daemon=True
+    thread.start()
 
 def StopTestingMailServer():
     reactor.callFromThread(reactor.stop)
@@ -291,5 +293,14 @@ def ResetMailDict():
     deletedmessages = []
 
 def GetEmailCountByAccount(accountname):
-    #Warn this is not exactly thread staff
+    global mailDict
+    #Warning this is not exactly thread staff
     return len(mailDict[accountname])
+
+
+def GetTotalEmailCount():
+    global mailDict
+    #Warning this is not exactly thread staff
+    return sum([len(mailDict[accountname]) for accountname in mailDict])
+
+

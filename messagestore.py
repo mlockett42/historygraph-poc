@@ -59,7 +59,10 @@ class Message(Base):
         toaddress.message_id = ret.id
         toaddress.addresstype = "To"
         ret.addresses.append(toaddress)
-        ret.datetime = parser.parse(emailmsg["Date"])
+        if "Date" in emailmsg:
+            ret.datetime = parser.parse(emailmsg["Date"])
+        else:
+            ret.datetime = datetime.datetime.now()
         if emailmsg.is_multipart() == False:
             ret.body = emailmsg.get_payload()
         else:

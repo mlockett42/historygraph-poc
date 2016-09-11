@@ -39,8 +39,8 @@ class FormViewMessage(QDialog):
         l = QLabel(self.message.subject)
         vboxRight.addWidget(l)
         
-        teBody = QTextEdit(message.body)
-        vbox.addWidget(teBody)
+        self.teBody = QTextEdit(message.body)
+        vbox.addWidget(self.teBody)
 
         self.setLayout(vbox)
         

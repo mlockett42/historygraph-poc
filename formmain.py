@@ -8,6 +8,8 @@ import poplib
 import string
 from formviewmessage import FormViewMessage
 from formnewmessage import FormNewMessage
+import utils
+import testingmailserver
 
 class FormMain(QMainWindow):
     def __init__(self, parent, demux):
@@ -96,19 +98,25 @@ class FormMain(QMainWindow):
         self.formsettings.show()
 
     def sendreceive(self):
-        pop = poplib.POP3_SSL(GetGlobalSettingStore().LoadSetting("POPServerName"), int(GetGlobalSettingStore().LoadSetting("POPServerPort")))
-        pop.user(GetGlobalSettingStore().LoadSetting("POPUserName")) 
-        pop.pass_(GetGlobalSettingStore().LoadSetting("POPPassword"))
+        pop = poplib.POP3(self.demux.popserver, int(self.demux.popport))
+        pop.user(self.demux.popuser) 
+        pop.pass_(self.demux.poppass)
 
         (numMsgs, totalSize) = pop.stat()
+        utils.log_output("numMsgs=",numMsgs)
+        utils.log_output("totalSize=",totalSize)
 
         for number in range(numMsgs):
             (server_msg, body, octets) = pop.retr(number + 1)
+            #utils.log_output("server_msg=",server_msg)
+            #utils.log_output("body=",body)
+            #utils.log_output("octets=",octets)
             body = string.join(body, "\n")
+            #utils.log_output("body=",body)
 
             message = Message.fromrawbody(body)
 
-            GetGlobalMessageStore().AddMessage(message)
+            self.demux.messagestore.AddMessage(message, None)
 
         self.DisplayMessages()
 
@@ -137,10 +145,10 @@ class FormMain(QMainWindow):
         row = mi.row()
         column = mi.column()
         message = self.messageheaders.item(row,column).data(1)
-        formviewmessage = FormViewMessage(message, self)
-        formviewmessage.show()
+        self.formviewmessage = FormViewMessage(message, self)
+        self.formviewmessage.show()
         
     def newmessage(self):
-        form = FormNewMessage(self)
-        form.show()
+        self.formnewmessage = FormNewMessage(self, self.demux)
+        self.formnewmessage.show()
     

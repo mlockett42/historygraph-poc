@@ -5,10 +5,12 @@ from messagestore import *
 from email.mime.text import MIMEText
 import smtplib
 import datetime
+import utils
 
 class FormNewMessage(QDialog):
-    def __init__(self, parent = None):
+    def __init__(self, parent, demux):
         super(FormNewMessage, self).__init__(parent)
+        self.demux = demux
         self.setWindowTitle("New Message")
 
         vbox = QVBoxLayout()
@@ -44,23 +46,23 @@ class FormNewMessage(QDialog):
         hbox2.addStretch(0)
         vbox.addLayout(hbox2)
 
-        bnOK = QPushButton("OK")
-        hbox2.addWidget(bnOK)
+        self.bnOK = QPushButton("OK")
+        hbox2.addWidget(self.bnOK)
 
         bnCancel = QPushButton("Cancel")
         hbox2.addWidget(bnCancel)
 
         bnCancel.clicked.connect(self.close)
 
-        bnOK.clicked.connect(self.OK)
+        self.bnOK.clicked.connect(self.OK)
 
         self.setLayout(vbox)
 
-        
+
     def OK(self):
         message1 = Message()
         message1.body = self.teBody.toPlainText() + """\n=========================================================================================\n
-Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + GetGlobalSettingStore().LoadSetting("EmailAddress") + """)\n
+Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.demux.myemail + """)\n
 =========================================================================================\n"""
 
         message1.subject = self.tesubject.toPlainText() 
@@ -68,7 +70,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + GetGlobalSe
         addr1.email_address = self.tetoaddress.toPlainText() 
         addr1.message_id = message1.id
         addr1.addresstype = "To"
-        message1.fromaddress = GetGlobalSettingStore().LoadSetting("EmailAddress")
+        message1.fromaddress = self.demux.myemail
         message1.datetime = datetime.datetime.now()
         message1.addresses.append(addr1)
 
@@ -78,8 +80,9 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + GetGlobalSe
         msg['To'] = addr1.email_address
 
         
-        smtp = smtplib.SMTP_SSL(GetGlobalSettingStore().LoadSetting("SMTPServerName"), int(GetGlobalSettingStore().LoadSetting("SMTPServerPort")))
-        smtp.login(GetGlobalSettingStore().LoadSetting("SMTPUserName"), GetGlobalSettingStore().LoadSetting("SMTPPassword"))
+        smtp = smtplib.SMTP(self.demux.smtpserver, int(self.demux.smtpport))
+        if self.demux.smtpserver != "localhost":
+            smtp.login(self.demux.smtpuser, self.demux.smtppass)
         smtp.sendmail(message1.fromaddress, [addr1.email_address], msg.as_string())
         smtp.quit()
 
