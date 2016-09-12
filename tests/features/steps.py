@@ -118,7 +118,7 @@ def I_reset_the_email_server_dict(step):
 
 @step(u'I wait for the email server to run')
 def I_wait_for_the_email_server_to_run(step):
-    time.sleep(0.01) #Give background thread a chance to run
+    time.sleep(0.1) #Give background thread a chance to run
 
 @step(u'When I release the email server')
 def when_i_release_the_email_server(step):
@@ -158,4 +158,10 @@ def then_the_body_of_the_message_in_main_window_2_view_message_window_is_group1(
 def When_I_close_the_message_window_in_main_window(step, window_index):
     formmain = getattr(world, 'formmain' + window_index)
     formmain.formviewmessage.close()
+
+@step(u'there is one contact in main window (\d+) contact window')
+def there_is_one_contact_in_main_window_contact_window(step, window_index):
+    formmain = getattr(world, 'formmain' + window_index)
+    assert formmain.formcontacts.contacts.rowCount() == 1
+
 

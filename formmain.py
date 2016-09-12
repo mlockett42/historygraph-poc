@@ -10,6 +10,7 @@ from formviewmessage import FormViewMessage
 from formnewmessage import FormNewMessage
 import utils
 import testingmailserver
+from formcontacts import FormContacts
 
 class FormMain(QMainWindow):
     def __init__(self, parent, demux):
@@ -83,10 +84,15 @@ class FormMain(QMainWindow):
         newmessageAction.setStatusTip('New Message')
         newmessageAction.triggered.connect(self.newmessage)
 
+        contactsAction = QAction('&Contacts', self)
+        contactsAction.setStatusTip('View Contacts')
+        contactsAction.triggered.connect(self.viewcontacts)
+
         self.menubar = self.menuBar()
         fileMenu = self.menubar.addMenu('&File')
         fileMenu.addAction(newmessageAction)
         fileMenu.addAction(sendreceiverAction)
+        fileMenu.addAction(contactsAction)
         fileMenu.addAction(exitAction)
         
         optionsMenu = self.menubar.addMenu('&Options')
@@ -151,4 +157,8 @@ class FormMain(QMainWindow):
     def newmessage(self):
         self.formnewmessage = FormNewMessage(self, self.demux)
         self.formnewmessage.show()
+
+    def viewcontacts(self):
+        self.formcontacts = FormContacts(self, self.demux)
+        self.formcontacts.show()
     

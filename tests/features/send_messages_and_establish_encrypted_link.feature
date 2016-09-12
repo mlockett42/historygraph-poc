@@ -28,8 +28,8 @@ Feature: Open up 2 main windows send a message between them and check they are o
         When I open message 0 in main window 2
         Then the body of the message in main window 2 view message window is 'Frist post'
         When I close the message window in main window 2
-        #When I open the contact window in main window 2
-        #Then there is one contact in main window 2 contact window
+        When I choose Contacts from the File menu on main window 2
+        Then there is one contact in main window 2 contact window
         #Then the one contact is 'mlocket1@localhost' in main window 2 contact window
         #The contact 'mlockett1@localhost' in main window 2 has the same public key as main window 1 private key
         
