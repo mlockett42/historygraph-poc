@@ -82,6 +82,7 @@ class Message(Base):
                 elif foundfirstsigline == True and foundsecondsigline == False \
                     and foundthirdsigline == False:
                     if re.match("^Livewire enabled emailer http://wwww.livewirecommunicator.org \([a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\)$", line):
+                    #or re.match("^Livewire enabled emailer http://wwww.livewirecommunicator.org \([a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@localhost\)$", line): #Remove this line and make all tests use valid email addresses
                         foundsecondsigline = True
                     else:
                         foundfirstsigline = False

@@ -4,6 +4,7 @@
 * Change code to use SSL - we need to patch we the test against the local server because we can't emaulate SSL locally
 * Add unittests for smtp and pop logins
 * Add unittest to test email received with Date stamps
+* Change new message dialog to sending emails via the demux
 
 Currently Working on
 

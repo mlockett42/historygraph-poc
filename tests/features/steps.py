@@ -1,6 +1,9 @@
 from __future__ import print_function, absolute_import
 from lettuce import *
 from formsettings import *
+from formviewmessage import FormViewMessage
+from formnewmessage import FormNewMessage
+from formcontacts import FormContacts
 from Demux import Demux
 from PySide import QtTest
 from PySide import QtCore
@@ -9,7 +12,6 @@ from formmain import FormMain
 from PySide.QtGui import QMenu, QAction
 from mock import patch
 import testingmailserver
-from formnewmessage import FormNewMessage
 import time
 import smtplib
 
@@ -75,6 +77,8 @@ def I_set_up_demux_with_the_following_values(step, demux_index):
     demux = getattr(world, 'demux' + demux_index)
     control_values = step.hashes[0]
     for (k, v) in control_values.iteritems():
+        if k == 'popport' or k == 'smtpport':
+            v = int(v)
         setattr(demux, k, v)
         demux.settingsstore.SaveSetting(k, v)
 
@@ -102,15 +106,19 @@ def I_choose_Settings_from_the_Options_menu(step, menu_item_name, menu_name, win
     assert menu_item_found is not None, "No matching menu item was found"
     with patch.object(FormSettings, 'show') as mock_show1:
         with patch.object(FormNewMessage, 'show') as mock_show2:
-            mock_show1.return_value = None
-            mock_show2.return_value = None
-            """if menu_item_name == "NEW MESSAGE": #This test randomly fail the menu item trigger seems to not execute the function
-                formmain.newmessage()
-            else:
-                menu_item_found.trigger()"""
-            menu_item_found.trigger()
-            if hasattr(formmain, "formsettings"):
-                world.formsettings = formmain.formsettings
+            with patch.object(FormViewMessage, 'show') as mock_show3:
+                with patch.object(FormContacts, 'show') as mock_show4:
+                    mock_show1.return_value = None
+                    mock_show2.return_value = None
+                    mock_show3.return_value = None
+                    mock_show4.return_value = None
+                    """if menu_item_name == "NEW MESSAGE": #This test randomly fail the menu item trigger seems to not execute the function
+                        formmain.newmessage()
+                    else:
+                        menu_item_found.trigger()"""
+                    menu_item_found.trigger()
+                    if hasattr(formmain, "formsettings"):
+                        world.formsettings = formmain.formsettings
 
 @step(u'I reset the email server dict')
 def I_reset_the_email_server_dict(step):
@@ -134,7 +142,8 @@ def there_is_exactly_one_message_in_main_window_2_with_subject_group1(step, wind
 
 @step(u'Then the email server has exactly (\d+) waiting message')
 def then_the_email_server_has_exactly_1_waiting_message(step, num_messages):
-    assert testingmailserver.GetTotalEmailCount() == 1, "There must be exactly one email on the server"
+    count = testingmailserver.GetTotalEmailCount()
+    assert count == 1, "There must be exactly one email on the server " + str(count) + " found"
 
 @step(u'When I open message (\d+) in main window (\d+)')
 def when_i_open_message_1_in_main_window_2(step, message_index, window_index):
@@ -152,16 +161,30 @@ def when_i_open_message_1_in_main_window_2(step, message_index, window_index):
 @step(u'Then the body of the message in main window (\d+) view message window is \'([^\']*)\'')
 def then_the_body_of_the_message_in_main_window_2_view_message_window_is_group1(step, window_index, body):
     formmain = getattr(world, 'formmain' + window_index)
-    assert formmain.formviewmessage.teBody.toPlainText().find(body) == 0, "Body receive not the same as sent"
+    assert formmain.formviewmessage.teBody.toPlainText().find(body) == 0, "Body receive not the same as sent " + formmain.formviewmessage.teBody.toPlainText() + " vs " + body
 
 @step(u'When I close the message window in main window (\d+)')
 def When_I_close_the_message_window_in_main_window(step, window_index):
     formmain = getattr(world, 'formmain' + window_index)
     formmain.formviewmessage.close()
 
-@step(u'there is one contact in main window (\d+) contact window')
-def there_is_one_contact_in_main_window_contact_window(step, window_index):
+@step(u'there is one contact in main window (\d+) contact window and the contacts name is \'([^\']*)\'')
+def there_is_one_contact_in_main_window_contact_window(step, window_index, contact_name):
     formmain = getattr(world, 'formmain' + window_index)
-    assert formmain.formcontacts.contacts.rowCount() == 1
+    assert formmain.formcontacts.contacts.rowCount() == 1, "1 contact expected actually found " + str(formmain.formcontacts.contacts.rowCount())
+    control_name = formmain.formcontacts.contacts.item(0,0).text()
+    if control_name[0] == '<':
+        control_name = control_name[1:]
+    if control_name[-1] == '>':
+        control_name = control_name[:-1]
+    assert control_name == contact_name, "Contact name does not match " + str(control_name) + " vs " + str(contact_name)
+
+@step(u'The contact \'([^\']*)\' in main window (\d+) has the same public key as main window (\d+) private key')
+def the_contact_group1_in_main_window_2_has_the_same_public_key_as_main_window_1_private_key(step, contact_name, window_index1, window_index2):
+    formmain1 = getattr(world, 'formmain' + window_index1)
+    formmain2 = getattr(world, 'formmain' + window_index2)
+    contacts = list(formmain1.demux.contactstore.GetContacts())
+    assert len(contacts) == 1
+    assert contacts[0].publickey == formmain2.demux.key.publickey().exportKey("PEM"), contacts[0].publickey + " vs " + formmain2.demux.key.publickey().exportKey("PEM")
 
 

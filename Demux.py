@@ -17,6 +17,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.types import Boolean
 import uuid
 import json
+import utils
 
 #A demux is a class that deals with receiving data from the email and routing it to the correct place
 class Demux(object):
@@ -118,7 +119,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
     def CheckEmail(self):
         M = poplib.POP3(self.popserver, self.popport)
         M.user(self.popuser)
-        M.pass_("")
+        M.pass_(self.poppass)
         numMessages = len(M.list()[1])
         #print "CheckEmail numMessages = ",numMessages
         public_key = None
@@ -141,18 +142,19 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                     #print "body.append "
                     body.append(line)
 
-            
             isencodedmessage = False
             for line in headers:
                 if line[:8] == "Subject:":
                     isencodedmessage = line == "Subject: Livewire encoded message"
                 if line[:6] == "From: ":
                     k = line.find("<")
-                    assert k > 0 # "< not found")
-                    fromemail = line[k + 1:]
-                    k = fromemail.find(">")
-                    assert k > 0 # "> not found")
-                    fromemail = fromemail[:k]
+                    if k > 0:
+                        fromemail = line[k + 1:]
+                        k = fromemail.find(">")
+                        assert k > 0 # "> not found")
+                        fromemail = fromemail[:k]
+                    else:
+                        fromemail = line[6:]
             
             if isencodedmessage:
                 inlivewirearea = False
@@ -181,6 +183,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                 d = l2[1]
                 assert isinstance(d, dict) # "d must be a dict"
                 if d["class"] == "identity": #An identity message identifies the other sender: Ie gives us their public key
+                    utils.log_output("Receive identity message from ", d["email"])
                     assert len(d) == 4 #"d must contain 4 elements")
                     assert d["email"] == fromemail # "Source email must match the message")
                     public_key = RSA.importKey(d["key"])
@@ -200,6 +203,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                         contact.islivewire = True
                         self.contactstore.AddContact(contact)
                         #print "CheckEmail contact.public_key ",contact.publickey
+                        utils.log_output("Sending confirmation email to ", d["email"])
                         self.SendConfirmationEmail(contact)
                     else:
                         contact = l[0]
@@ -236,7 +240,9 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                 else:
                     assert False #Message type not implemented yet
             else:
-                message2 = Message.fromrawbody('\n'.join(lines))
+                lines = [line for line in lines if line != "Content-Type: text/plain"]
+                rawmessage = '\n'.join(lines)
+                message2 = Message.fromrawbody(rawmessage)
                 assert message2.fromaddress != ""
                 self.messagestore.AddMessage(message2, None)
                 self.ProcessBodyLivewireMessages(message2)
@@ -288,6 +294,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
 
         public_key = self.key.publickey().exportKey("PEM")        
     
+        utils.log_output("Sending identitfy message to ", emailaddress)
         message = self.GetEncodedMessage({"id":str(uuid.uuid4()),"class":"identity","email": sender,"key":public_key})
 
         self.SendPlainEmail(receivers, "Livewire encoded message", message)

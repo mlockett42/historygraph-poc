@@ -60,10 +60,11 @@ class FormNewMessage(QDialog):
 
 
     def OK(self):
+        """
         message1 = Message()
-        message1.body = self.teBody.toPlainText() + """\n=========================================================================================\n
-Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.demux.myemail + """)\n
-=========================================================================================\n"""
+        message1.body = self.teBody.toPlainText() + "\n=========================================================================================
+Livewire enabled emailer http://wwww.livewirecommunicator.org (" + self.demux.myemail + ")
+=========================================================================================\n"
 
         message1.subject = self.tesubject.toPlainText() 
         addr1 = Address()
@@ -85,5 +86,8 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.demux.
             smtp.login(self.demux.smtpuser, self.demux.smtppass)
         smtp.sendmail(message1.fromaddress, [addr1.email_address], msg.as_string())
         smtp.quit()
+"""
+        self.demux.SendPlainEmail(receivers = [self.tetoaddress.toPlainText()], subject = self.tesubject.toPlainText(), message=self.teBody.toPlainText())
+
 
         self.close()

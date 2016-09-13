@@ -104,30 +104,12 @@ class FormMain(QMainWindow):
         self.formsettings.show()
 
     def sendreceive(self):
-        pop = poplib.POP3(self.demux.popserver, int(self.demux.popport))
-        pop.user(self.demux.popuser) 
-        pop.pass_(self.demux.poppass)
-
-        (numMsgs, totalSize) = pop.stat()
-        utils.log_output("numMsgs=",numMsgs)
-        utils.log_output("totalSize=",totalSize)
-
-        for number in range(numMsgs):
-            (server_msg, body, octets) = pop.retr(number + 1)
-            #utils.log_output("server_msg=",server_msg)
-            #utils.log_output("body=",body)
-            #utils.log_output("octets=",octets)
-            body = string.join(body, "\n")
-            #utils.log_output("body=",body)
-
-            message = Message.fromrawbody(body)
-
-            self.demux.messagestore.AddMessage(message, None)
-
+        self.demux.CheckEmail()
         self.DisplayMessages()
 
     def DisplayMessages(self):
         self.messageheaders.setRowCount(0)
+        messages = list(self.demux.messagestore.GetMessages())
         for message in self.demux.messagestore.GetMessages():
             self.messageheaders.setRowCount(self.messageheaders.rowCount() + 1)
             row = self.messageheaders.rowCount() - 1

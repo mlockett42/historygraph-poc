@@ -8,11 +8,11 @@ Feature: Open up 2 main windows send a message between them and check they are o
         When I create a new demux 1
         When I create a new demux 2
         Given I set up demux 1 with the following values
-          | myemail              | popserver  | popport | popuser   | poppass   | smtpserver | smtpport | smtpuser  | smtppass  |
-          | mlockett1@localhost  | localhost  | 10026   | mlockett1 |           | localhost  | 10025    | mlockett1 |           |
+          | myemail                | popserver  | popport | popuser   | poppass   | smtpserver | smtpport | smtpuser  | smtppass  |
+          | mlockett1@livewire.io  | localhost  | 10026   | mlockett1 |           | localhost  | 10025    | mlockett1 |           |
         Given I set up demux 2 with the following values
-          | myemail              | popserver  | popport | popuser   | poppass   | smtpserver | smtpport | smtpuser  | smtppass  |
-          | mlockett2@localhost  | localhost  | 10026   | mlockett2 |           | localhost  | 10025    | mlockett2 |           |
+          | myemail                | popserver  | popport | popuser   | poppass   | smtpserver | smtpport | smtpuser  | smtppass  |
+          | mlockett2@livewire.io  | localhost  | 10026   | mlockett2 |           | localhost  | 10025    | mlockett2 |           |
         When I open main window 1
         When I open main window 2
         When I choose New Message from the File menu on main window 1
@@ -23,20 +23,23 @@ Feature: Open up 2 main windows send a message between them and check they are o
         When I wait for the email server to run
         Then the email server has exactly 1 waiting message
         When I choose Send/Receive from the File menu on main window 2
+        Then the email server has exactly 1 waiting message
         Then there is exactly one message in main window 2 with subject 'Hello world'
 
         When I open message 0 in main window 2
         Then the body of the message in main window 2 view message window is 'Frist post'
         When I close the message window in main window 2
         When I choose Contacts from the File menu on main window 2
-        Then there is one contact in main window 2 contact window
-        #Then the one contact is 'mlocket1@localhost' in main window 2 contact window
-        #The contact 'mlockett1@localhost' in main window 2 has the same public key as main window 1 private key
+        Then there is one contact in main window 2 contact window and the contacts name is 'mlockett1@livewire.io'
         
-        #When I wait for the email server to run
-        #When I press the Send/Receive button on main window 1
+        When I wait for the email server to run
+        When I choose Send/Receive from the File menu on main window 1
+        When I choose Contacts from the File menu on main window 1
+        Then there is one contact in main window 1 contact window and the contacts name is 'mlockett2@livewire.io'
         #When I open the contact window in main window 1
         #Then there is one contact in main window 1 contact window
         #Then the one contact is 'mlockett2@localhost'
-        #The contact 'mlockett2@localhost' in main window 1 has the same public key as main window 2 private key
+        The contact 'mlockett2@livewire.io' in main window 1 has the same public key as main window 2 private key
+        When I choose Send/Receive from the File menu on main window 2
+        The contact 'mlockett1@livewire.io' in main window 2 has the same public key as main window 1 private key
         #When I release the email server
