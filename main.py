@@ -4,12 +4,12 @@ import sys
 from PySide.QtCore import *
 from PySide.QtGui import *
 from formmain import *
+from Demux import Demux
 
-InitSession()
 # Create the Qt Application
 app = QApplication(sys.argv)
 # Create and show the form
-form = FormMain()
+form = FormMain(parent = None, demux=Demux(fromfile = 'livewire.db'))
 form.show()
 
 # Run the main Qt loop

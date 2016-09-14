@@ -1,16 +1,15 @@
 * Write demo apps relaxed and drawing app and wall app and cello
-* Write BDD tests
-* SettingsStore should assert if we attempt to Load or Save an unknow setting
-* Change code to use SSL - we need to patch we the test against the local server because we can't emaulate SSL locally
-* Add unittests for smtp and pop logins
-* Add unittest to test email received with Date stamps
-* Change new message dialog to sending emails via the demux
+* Write checkers app
+* Write Lean Canvas App
+* Write simple encrypted email app
 
 Currently Working on
 
-*Write BDD Test for settings dialog (pressing OK actually saves data)
+* Change code to use SSL - we need to patch we the test against the local server because we can't emaulate SSL locally
 
 Finished
+* Change new message dialog to sending emails via the demux
+*Write BDD Test for settings dialog (pressing OK actually saves data)
 *Write BDD Test for settings dialog (pressing Cancel actually does nothing)
 * Require edges received off the net to be signed by a known contact
 * test saving multiple objects (both mutable and imutable in a database)
@@ -43,6 +42,8 @@ Finished
 * Add the ability to freeze edges - this is from the traingles app
 
 On Hold
+* Add unittests for smtp and pop logins
+* Add unittest to test email received with Date stamps
 * createdocumentcollection message creates a document without asking the user for permission
 * Documents with no activity cannot be shared. This may or may not be a problem
 * Make edge reversible so we can get back to data that used to exist
@@ -65,6 +66,7 @@ On Hold
 * Remove sqlite for the messagestore and use our own document structures
 * Make sure the Demux saves and reloads our info correctly on program restart
 * Add key rotation support
+* SettingsStore should assert if we attempt to Load or Save an unknown setting
 
 Rejected
 * Switch to SQLite JSON storage - SQLite's JSON storage appears to be too combersome for this for now. Relational is good enough
