@@ -1,13 +1,13 @@
-* Write demo apps relaxed and drawing app and wall app and cello
+* Write Drawing app
 * Write checkers app
 * Write Lean Canvas App
-* Write simple encrypted email app
 
 Currently Working on
 
-* Change code to use SSL - we need to patch we the test against the local server because we can't emaulate SSL locally
+* Write simple encrypted email app
 
 Finished
+* Change code to use SSL - we need to patch we the test against the local server because we can't emaulate SSL locally
 * Change new message dialog to sending emails via the demux
 *Write BDD Test for settings dialog (pressing OK actually saves data)
 *Write BDD Test for settings dialog (pressing Cancel actually does nothing)
