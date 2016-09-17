@@ -1,5 +1,5 @@
-import smtplib
-import poplib
+import mysmtplib as smtplib
+import mypoplib as poplib
 import datetime
 from messagestore import ContactStore, MessageStore, SettingsStore, Base, Message, Contact, CleanedEmailAddress
 from Crypto.PublicKey import RSA
@@ -86,7 +86,7 @@ class Demux(object):
             #print "message = ",message
             #assert False
         #print "SendPlainEmail subject = ",subject," message = ",message
-        smtpObj = smtplib.SMTP(self.smtpserver, self.smtpport)
+        smtpObj = smtplib.SMTP_SSL(self.smtpserver, self.smtpport)
         prcoessedmessage = "From: <" + self.myemail + ">\n" 
         receivers = ",".join(["<" + r + ">" for r in receivers])
         prcoessedmessage += "To: " + receivers + " \n"
@@ -104,7 +104,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
         smtpObj.sendmail(self.myemail, receivers, prcoessedmessage)         
 
     def GetNumMessages(self):
-        M = poplib.POP3(self.popserver, self.popport)
+        M = poplib.POP3_SSL(self.popserver, self.popport)
         M.user(self.popuser)
         M.pass_("")
         numMessages = len(M.list()[1])
@@ -117,7 +117,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
 
 
     def CheckEmail(self):
-        M = poplib.POP3(self.popserver, self.popport)
+        M = poplib.POP3_SSL(self.popserver, self.popport)
         M.user(self.popuser)
         M.pass_(self.poppass)
         numMessages = len(M.list()[1])

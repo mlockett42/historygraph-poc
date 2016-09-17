@@ -4,6 +4,8 @@ import sys
 import os
 import utils
 import testingmailserver
+import mysmtplib as smtplib
+import mypoplib as poplib
 
 def removepath(pathname):
     utils.log_output("removepath(",pathname,")")
@@ -25,5 +27,7 @@ if hasattr(world, 'app') == False:
     utils.removepath('/tmp/testdump2.db')
     testingmailserver.StartTestingMailServer("livewire.io", {"mlockett":"","mlockett1":"","mlockett2":""})
     world.mail_server_tests = 1 # The number of tests which use the mail server when this becomes zero we can safely stop it
+    smtplib.testingmode = True
+    poplib.testingmode = True
 
 

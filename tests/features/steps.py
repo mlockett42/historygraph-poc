@@ -13,7 +13,7 @@ from PySide.QtGui import QMenu, QAction
 from mock import patch
 import testingmailserver
 import time
-import smtplib
+import mysmtplib as smtplib
 
 
 @step(u'I open the settings page')

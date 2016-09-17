@@ -3,7 +3,7 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 from messagestore import *
 from email.mime.text import MIMEText
-import smtplib
+#import mysmtplib as smtplib
 import datetime
 import utils
 

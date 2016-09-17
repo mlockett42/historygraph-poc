@@ -26,8 +26,8 @@ from email.mime.text import MIMEText
 from contactfilteremailaddress import ContactFilterEmailAddress
 from messagestore import *
 import testingmailserver
-import smtplib
-import poplib
+import mysmtplib as smtplib
+import mypoplib as poplib
 from Crypto.PublicKey import RSA
 from Crypto import Random
 import base64
@@ -1372,10 +1372,10 @@ class SendAndReceiveUnencryptedEmail(unittest.TestCase):
         Frist post!!!!!!
         """
 
-        smtpObj = smtplib.SMTP('localhost', 10025)
+        smtpObj = smtplib.SMTP_SSL('localhost', 10025)
         smtpObj.sendmail(sender, receivers, message)         
 
-        M = poplib.POP3('localhost', 10026)
+        M = poplib.POP3_SSL('localhost', 10026)
         M.user("mlockett")
         M.pass_("")
         numMessages = len(M.list()[1])
@@ -1390,7 +1390,7 @@ class SendAndReceiveUnencryptedEmail(unittest.TestCase):
         self.assertEquals(numMessages, 1, "Messages should not be deleted yet")
         M.quit()
 
-        M = poplib.POP3('localhost', 10026)
+        M = poplib.POP3_SSL('localhost', 10026)
         M.user("mlockett")
         M.pass_("")
         numMessages = len(M.list()[1])
@@ -1422,10 +1422,10 @@ class SendAndReceiveEncryptedEmail(unittest.TestCase):
 
         """ + base64.b64encode(enc_data)
 
-        smtpObj = smtplib.SMTP('localhost', 10025)
+        smtpObj = smtplib.SMTP_SSL('localhost', 10025)
         smtpObj.sendmail(sender, receivers, message)         
 
-        M = poplib.POP3('localhost', 10026)
+        M = poplib.POP3_SSL('localhost', 10026)
         M.user("mlockett")
         M.pass_("")
         numMessages = len(M.list()[1])
@@ -1444,7 +1444,7 @@ class SendAndReceiveEncryptedEmail(unittest.TestCase):
         self.assertEquals(numMessages, 1, "Messages should not be deleted yet")
         M.quit()
 
-        M = poplib.POP3('localhost', 10026)
+        M = poplib.POP3_SSL('localhost', 10026)
         M.user("mlockett")
         M.pass_("")
         numMessages = len(M.list()[1])
@@ -1475,10 +1475,10 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett1@livewir
 ======================================================================================
         """
 
-        smtpObj = smtplib.SMTP('localhost', 10025)
+        smtpObj = smtplib.SMTP_SSL('localhost', 10025)
         smtpObj.sendmail(sender, receivers, message)         
 
-        M = poplib.POP3('localhost', 10026)
+        M = poplib.POP3_SSL('localhost', 10026)
         M.user("mlockett2")
         M.pass_("")
         numMessages = len(M.list()[1])
@@ -1535,10 +1535,10 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
 ======================================================================================
 """
 
-        smtpObj = smtplib.SMTP('localhost', 10025)
+        smtpObj = smtplib.SMTP_SSL('localhost', 10025)
         smtpObj.sendmail(sender, receivers, message)         
 
-        M = poplib.POP3('localhost', 10026)
+        M = poplib.POP3_SSL('localhost', 10026)
         M.user("mlockett1")
         M.pass_("")
         numMessages = len(M.list()[1])
@@ -1625,7 +1625,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
         self.assertEquals(numMessages, 1, "Messages should not be deleted yet")
         M.quit()
 
-        M = poplib.POP3('localhost', 10026)
+        M = poplib.POP3_SSL('localhost', 10026)
         M.user("mlockett")
         M.pass_("")
         numMessages = len(M.list()[1])
@@ -2006,6 +2006,9 @@ class StopTestingMailServerDummyTest(unittest.TestCase):
         pass        
 
 def suite():
+    smtplib.testingmode = True
+    poplib.testingmode = True
+
     suite = unittest.TestSuite()
 
     suite.addTest(SimpleCoversTestCase())
