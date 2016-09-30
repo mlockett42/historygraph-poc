@@ -1,9 +1,12 @@
 * Write Trello app
+* Add support for list CFRDT
 * Write Lean Canvas App
+* Write checkers app
+* Add support for counter CFRDT
 
 Currently Working on
 
-* Write checkers app
+* Rename FieldInt to FieldIntRegister since we are adding FieldIntCounter to stop confusion
 
 Finished
 * Write simple encrypted email app

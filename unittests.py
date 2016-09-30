@@ -3,7 +3,7 @@ sys.path.insert(0, '/home/mark/code/livewirepy/doop')
 
 import unittest
 from Document import Document
-from FieldInt import FieldInt
+from FieldIntRegister import FieldInt
 from DocumentObject import DocumentObject
 from FieldList import FieldList
 import uuid
