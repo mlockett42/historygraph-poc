@@ -60,33 +60,13 @@ class FormNewMessage(QDialog):
 
 
     def OK(self):
-        """
-        message1 = Message()
-        message1.body = self.teBody.toPlainText() + "\n=========================================================================================
-Livewire enabled emailer http://wwww.livewirecommunicator.org (" + self.demux.myemail + ")
-=========================================================================================\n"
-
-        message1.subject = self.tesubject.toPlainText() 
-        addr1 = Address()
-        addr1.email_address = self.tetoaddress.toPlainText() 
-        addr1.message_id = message1.id
-        addr1.addresstype = "To"
-        message1.fromaddress = self.demux.myemail
-        message1.datetime = datetime.datetime.now()
-        message1.addresses.append(addr1)
-
-        msg = MIMEText(message1.body)
-        msg['Subject'] = message1.subject
-        msg['From'] = message1.fromaddress
-        msg['To'] = addr1.email_address
-
-        
-        smtp = smtplib.SMTP(self.demux.smtpserver, int(self.demux.smtpport))
-        if self.demux.smtpserver != "localhost":
-            smtp.login(self.demux.smtpuser, self.demux.smtppass)
-        smtp.sendmail(message1.fromaddress, [addr1.email_address], msg.as_string())
-        smtp.quit()
-"""
+        #If the email matches a contact with encryption send encrypted otherwise don't
+        contacts = self.demux.contactstore.GetContacts()
+        for contact in contacts:
+            if contact.islivewire and CleanedEmailAddress(self.tetoaddress.toPlainText()) == CleanedEmailAddress(contact.emailaddress):
+                self.demux.SendEncryptedEmail(contact, subject = self.tesubject.toPlainText(), message=self.teBody.toPlainText())
+                #self.demux.SendPlainEmail(receivers = [self.tetoaddress.toPlainText()], subject = self.tesubject.toPlainText(), message=self.teBody.toPlainText())
+                return
         self.demux.SendPlainEmail(receivers = [self.tetoaddress.toPlainText()], subject = self.tesubject.toPlainText(), message=self.teBody.toPlainText())
 
 

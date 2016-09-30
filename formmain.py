@@ -44,7 +44,7 @@ class FormMain(QMainWindow):
         tagnames.setRowCount(0)
         hbox2.addWidget(tagnames)
 
-        self.messageheaders = QTableWidget(0,3)
+        self.messageheaders = QTableWidget(0,4)
         self.messageheaders.verticalHeader().setVisible(False)
         self.messageheaders.horizontalHeader().setVisible(False)
         self.messageheaders.setMinimumWidth(600)
@@ -128,6 +128,11 @@ class FormMain(QMainWindow):
             wi3.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled )
             wi3.setData(1, message)
             self.messageheaders.setItem(row, 2, wi3)
+            
+            wi3 = QTableWidgetItem("Encrypted" if message.messageisencrypted else "Not Encrypted")
+            wi3.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled )
+            wi3.setData(1, message)
+            self.messageheaders.setItem(row, 3, wi3)
 
     def messagedoubleclicked(self, mi):
         row = mi.row()

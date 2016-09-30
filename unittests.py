@@ -1680,13 +1680,33 @@ Frist post!!!!!!
 
         demux2.CheckEmail() #Demux 2 should receive a message from demux1 with it's public key
 
-        #Each demux should now have the 
+        #Each demux should now have the public key of the other one
 
         contacts = demux2.contactstore.GetContacts()
 
         self.assertEqual(len(list(contacts)), 1)
         self.assertEqual(contacts[0].publickey, demux1.key.publickey().exportKey("PEM") )
         self.assertTrue(contacts[0].islivewire)
+
+        #Send an encrypted email 
+        message = """
+Second post!!!!!!
+
+
+"""
+        demux1.SendEncryptedEmail(demux1.contactstore.GetContacts()[0], subject = "Encrypted SMTP e-mail test", message=message)
+
+        time.sleep(0.01) #Give background thread a chance to run
+
+        demux2.CheckEmail() #Demux 2 should receive an encrypted message from demux1
+        
+        messages = demux2.messagestore.GetMessages()
+        self.assertEqual(len(list(messages)), 2)
+        message = messages[1]
+        self.assertEqual(message.subject, "Encrypted SMTP e-mail test")
+        self.assertTrue(message.body.find("Second post!!!!!!") > 0, "Second post!!!!!!")
+        self.assertTrue(message.senderislivewireenabled) # Sender is not livewire enabled
+        self.assertTrue(message.messageisencrypted) # This message was encrypted
 
 
 class EstablishLivewireEncryptedLinkUsingDemuxExistingContact(unittest.TestCase):

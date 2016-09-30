@@ -31,6 +31,7 @@ class Message(Base):
     fromaddress = Column(String)
     datetime = Column(DateTime)
     senderislivewireenabled = Column(Boolean)
+    messageisencrypted = Column(Boolean)
 
     addresses = relationship("Address", order_by="Address.id", backref="messages")
     tags = relationship("Tag", order_by="Tag.id", backref="messages")

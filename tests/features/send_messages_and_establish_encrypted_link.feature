@@ -24,7 +24,7 @@ Feature: Open up 2 main windows send a message between them and check they are o
         Then the email server has exactly 1 waiting message
         When I choose Send/Receive from the File menu on main window 2
         Then the email server has exactly 1 waiting message
-        Then there is exactly one message in main window 2 with subject 'Hello world'
+        Then there is exactly 1 message in main window 2 with subject 'Hello world' and is not encrypted
 
         When I open message 0 in main window 2
         Then the body of the message in main window 2 view message window is 'Frist post'
@@ -36,10 +36,19 @@ Feature: Open up 2 main windows send a message between them and check they are o
         When I choose Send/Receive from the File menu on main window 1
         When I choose Contacts from the File menu on main window 1
         Then there is one contact in main window 1 contact window and the contacts name is 'mlockett2@livewire.io'
-        #When I open the contact window in main window 1
-        #Then there is one contact in main window 1 contact window
-        #Then the one contact is 'mlockett2@localhost'
         The contact 'mlockett2@livewire.io' in main window 1 has the same public key as main window 2 private key
         When I choose Send/Receive from the File menu on main window 2
         The contact 'mlockett1@livewire.io' in main window 2 has the same public key as main window 1 private key
-        #When I release the email server
+
+        When I reset the email server dict
+        When I choose New Message from the File menu on main window 1
+        Given I enter the following values into main window 1 new message window
+          |  tesubject       |  teBody     | tetoaddress
+          | Hello encryption | Second post | mlockett2@livewire.io
+        When I press the bnOK button on main window 1 new message window
+        When I wait for the email server to run
+        Then the email server has exactly 1 waiting message
+        When I choose Send/Receive from the File menu on main window 2
+        #Then the email server has exactly 1 waiting message
+        Then there is exactly 2 message in main window 2 with subject 'Hello encryption' and is encrypted
+        

@@ -183,7 +183,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                 d = l2[1]
                 assert isinstance(d, dict) # "d must be a dict"
                 if d["class"] == "identity": #An identity message identifies the other sender: Ie gives us their public key
-                    utils.log_output("Receive identity message from ", d["email"])
+                    #utils.log_output("Receive identity message from ", d["email"])
                     assert len(d) == 4 #"d must contain 4 elements")
                     assert d["email"] == fromemail # "Source email must match the message")
                     public_key = RSA.importKey(d["key"])
@@ -237,6 +237,15 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                     io = theclass(**d2)
                     if io.GetHash() not in dc.objects[classname]:
                         dc.objects[classname][io.GetHash()] = io
+                elif d["class"] == "encryptedemail": #Some edges we should apply
+                    message2 = Message()
+                    message2.body = d["message"]
+                    message2.subject = d["subject"]
+                    message2.fromaddress = d["sender"]
+                    message2.senderislivewireenabled = True
+                    message2.messageisencrypted = True
+                    message2.datetime = datetime.datetime.now()
+                    self.messagestore.AddMessage(message2, None)
                 else:
                     assert False #Message type not implemented yet
             else:
@@ -294,8 +303,27 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
 
         public_key = self.key.publickey().exportKey("PEM")        
     
-        utils.log_output("Sending identitfy message to ", emailaddress)
         message = self.GetEncodedMessage({"id":str(uuid.uuid4()),"class":"identity","email": sender,"key":public_key})
+
+        self.SendPlainEmail(receivers, "Livewire encoded message", message)
+
+    def SendEncryptedEmail(self, contact, subject, message):
+        sender = self.myemail
+        utils.log_output("sender = ", sender)
+        emailaddress = CleanedEmailAddress(contact.emailaddress)
+        utils.log_output("emailaddress = ", emailaddress)
+        assert emailaddress[0] != '<'
+        assert emailaddress[-1] != '>'
+        assert emailaddress != ''
+        receivers = [emailaddress]
+
+        key =  RSA.importKey(contact.publickey)
+        utils.log_output("contact.publickey = ", contact.publickey)
+
+        d = {"id":str(uuid.uuid4()),"class":"encryptedemail","sender": sender,"message":message,"subject":subject}
+
+        message = self.GetEncodedMessage(d)
+        utils.log_output("message = ", message)
 
         self.SendPlainEmail(receivers, "Livewire encoded message", message)
 

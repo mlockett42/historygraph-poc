@@ -134,11 +134,13 @@ def when_i_release_the_email_server(step):
     if world.mail_server_tests <= 0:
         testingmailserver.StopTestingMailServer()
 
-@step(u'there is exactly one message in main window (\d+) with subject \'([^\']*)\'')
-def there_is_exactly_one_message_in_main_window_2_with_subject_group1(step, window_index, subject):
+@step(u'there is exactly (\d+) message in main window (\d+) with subject \'([^\']*)\' and (is|is not) encrypted')
+def there_is_exactly_one_message_in_main_window_2_with_subject_group1(step, num_messages, window_index, subject, encryption_status):
     formmain = getattr(world, 'formmain' + window_index)
-    assert formmain.messageheaders.rowCount() == 1, "There must be exactly one message " + str(formmain.messageheaders.rowCount())  + " found"
-    assert formmain.messageheaders.item(0,1).text() == subject, "Subject does not match " + str(formmain.messageheaders.item(0,1).text()) + " vs " + str(subject)
+    assert formmain.messageheaders.rowCount() == int(num_messages), "There must be exactly " + num_messages + " message " + str(formmain.messageheaders.rowCount())  + " found"
+    assert formmain.messageheaders.item(int(num_messages) - 1,1).text() == subject, "Subject does not match " + str(formmain.messageheaders.item(0,1).text()) + " vs " + str(subject)
+    expected_encryption_status = "Encrypted" if (encryption_status == "is") else "Not Encrypted"
+    assert formmain.messageheaders.item(int(num_messages) - 1,3).text() == expected_encryption_status, "Message not flagged as " + expected_encryption_status + " actuall got " + formmain.messageheaders.item(int(num_messages) - 1,3).text()
 
 @step(u'Then the email server has exactly (\d+) waiting message')
 def then_the_email_server_has_exactly_1_waiting_message(step, num_messages):

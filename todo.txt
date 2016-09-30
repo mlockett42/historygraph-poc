@@ -1,16 +1,16 @@
-* Write Drawing app
-* Write checkers app
+* Write Trello app
 * Write Lean Canvas App
 
 Currently Working on
 
-* Write simple encrypted email app
+* Write checkers app
 
 Finished
+* Write simple encrypted email app
 * Change code to use SSL - we need to patch we the test against the local server because we can't emaulate SSL locally
 * Change new message dialog to sending emails via the demux
-*Write BDD Test for settings dialog (pressing OK actually saves data)
-*Write BDD Test for settings dialog (pressing Cancel actually does nothing)
+* Write BDD Test for settings dialog (pressing OK actually saves data)
+* Write BDD Test for settings dialog (pressing Cancel actually does nothing)
 * Require edges received off the net to be signed by a known contact
 * test saving multiple objects (both mutable and imutable in a database)
 * change ReceiveEmailByPOPTestCase and SendEmailBySMTPTestCase to use the demux
