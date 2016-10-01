@@ -1,14 +1,15 @@
 * Write Trello app
 * Add support for list CFRDT
 * Write Lean Canvas App
-* Write checkers app
-* Add support for counter CFRDT
+* Look into the return value of GetTypeName in FieldIntRegister and FieldIntCounter
 
 Currently Working on
 
-* Rename FieldInt to FieldIntRegister since we are adding FieldIntCounter to stop confusion
+* Write checkers app
 
 Finished
+* Add support for counter CFRDT
+* Rename FieldInt to FieldIntRegister since we are adding FieldIntCounter to stop confusion
 * Write simple encrypted email app
 * Change code to use SSL - we need to patch we the test against the local server because we can't emaulate SSL locally
 * Change new message dialog to sending emails via the demux

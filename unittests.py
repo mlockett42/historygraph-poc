@@ -3,7 +3,7 @@ sys.path.insert(0, '/home/mark/code/livewirepy/doop')
 
 import unittest
 from Document import Document
-from FieldIntRegister import FieldInt
+from FieldIntRegister import FieldIntRegister
 from DocumentObject import DocumentObject
 from FieldList import FieldList
 import uuid
@@ -43,11 +43,12 @@ from App import App
 from Demux import Demux
 from mock import patch, Mock, MagicMock
 import os
+from FieldIntCounter import FieldIntCounter
 
 class Covers(Document):
     def __init__(self, id):
         super(Covers, self).__init__(id)
-    covers = FieldInt()
+    covers = FieldIntRegister()
 
 class SimpleCoversTestCase(unittest.TestCase):
     def setUp(self):
@@ -99,11 +100,11 @@ class MergeHistoryCoverTestCase(unittest.TestCase):
         self.assertEqual(test3.covers, 3)
 
 class TestPropertyOwner2(DocumentObject):
-    cover = FieldInt()
-    quantity = FieldInt()
+    cover = FieldIntRegister()
+    quantity = FieldIntRegister()
 
 class TestPropertyOwner1(Document):
-    covers = FieldInt()
+    covers = FieldIntRegister()
     propertyowner2s = FieldList(TestPropertyOwner2)
     def WasChanged(self, changetype, propertyowner, propertyname, propertyvalue, propertytype):
         super(TestPropertyOwner1, self).WasChanged(changetype, propertyowner, propertyname, propertyvalue, propertytype)
@@ -728,7 +729,7 @@ class LargeMergeTestCase(unittest.TestCase):
 class MessageTest(ImmutableObject):
     # A demo class of an immutable object. It emulated a simple text message broadcast at a certain time
     # similar to a tweet
-    messagetime = FieldInt() # The time in epoch milliseconds of the message
+    messagetime = FieldIntRegister() # The time in epoch milliseconds of the message
     text = FieldText() # The text of the message
 
 class ImmutableClassTestCase(unittest.TestCase):
@@ -2010,7 +2011,96 @@ class DemuxCanSaveAndLoadTestCase(unittest.TestCase):
         self.assertEqual(self.demux.popport, demux2.popport)
         self.assertEqual(self.demux.key, demux2.key)
 
+class CounterTestContainer(Document):
+    def __init__(self, id):
+        super(CounterTestContainer, self).__init__(id)
+    testcounter = FieldIntCounter()
+
+class SimpleCounterTestCase(unittest.TestCase):
+    def runTest(self):
+        #Test merging together simple counter documents
+        test = CounterTestContainer(None)
+        #Test we default to zero
+        self.assertEqual(test.testcounter.get(), 0)
+        #Test adding and subtract gives reasonable values
+        test.testcounter.add(1)
+        self.assertEqual(test.testcounter.get(), 1)
+        test.testcounter.add(1)
+        self.assertEqual(test.testcounter.get(), 2)
+        test.testcounter.subtract(1)
+        self.assertEqual(test.testcounter.get(), 1)
+
+class MergeCounterTestCase(unittest.TestCase):
+    def setUp(self):
+        self.dc = DocumentCollection.DocumentCollection()
+
+    def runTest(self):
+        #Test merge together two simple covers objects
+        test = CounterTestContainer(None)
+        test.testcounter.add(1)
+        self.assertEqual(test.testcounter.get(), 1)
+        test2 = test.Clone()
+        test.testcounter.subtract(1)
+        test2.testcounter.add(1)
+        test3 = test.Merge(test2)
+        self.assertEqual(test3.testcounter.get(), 1)
         
+
+class MergeCounterChangesMadeInJSONTestCase(unittest.TestCase):
+    def setUp(self):
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(CounterTestContainer)
+
+    def runTest(self):
+        #Create an object and set some values
+        test1 = CounterTestContainer(None)
+        test1id = test1.id
+
+        self.dc.AddDocumentObject(test1)
+        test1.testcounter.add(1)
+        self.assertEqual(test1.testcounter.get(), 1)
+
+        olddc = self.dc
+
+        sharedcurrentnode = test1.currentnode
+        #Simulate sending the object to another user via conversion to JSON and emailing
+        jsontext = self.dc.asJSON()
+
+        #Simulate making local conflicting changes
+        test1.testcounter.subtract(1)
+        self.assertEqual(test1.testcounter.get(), 0)
+
+        #Simulate the other user (who received the email with the edges) getting the document and loading it into memory
+        self.dc = DocumentCollection.DocumentCollection()
+        self.dc.Register(CounterTestContainer)
+        self.dc.LoadFromJSON(jsontext)
+        self.assertEqual(jsontext, self.dc.asJSON())
+        tpo1s = self.dc.GetByClass(CounterTestContainer)
+        self.assertEqual(len(tpo1s), 1)
+        test2 = tpo1s[0]
+
+        #print "test1 edges=",[str(edge) for edge in test1.history.GetAllEdges()]
+        #print "test2 edges=",[str(edge) for edge in test2.history.GetAllEdges()]
+        self.assertEqual(sharedcurrentnode, test2.currentnode)
+        #The second user makes some changes and sends them back to the first
+        test2.testcounter.add(1)
+        self.assertEqual(test2.testcounter.get(), 2)
+
+        edgenext = test2.history.edgesbyendnode[test2.currentnode]
+
+
+        #Simulate the first user received the second users changes out of order
+        #the second edge is received first. Test it is right 
+        self.dc = olddc
+        self.dc.LoadFromJSON(JSONEncoder().encode({"history":[edgenext.asTuple()],"immutableobjects":[]}))
+        test2s = self.dc.GetByClass(CounterTestContainer)
+        self.assertEqual(len(test2s), 1)
+        test2 = test2s[0]
+        #print "test2 edges=",[str(edge) for edge in test2.history.GetAllEdges()]
+
+        self.assertEqual(test2.testcounter.get(), 1)
+
+    
 class StartTestingMailServerDummyTest(unittest.TestCase):
     def setUp(self):
         testingmailserver.StartTestingMailServer("livewire.io", {"mlockett":"","mlockett1":"","mlockett2":""})
@@ -2050,6 +2140,10 @@ def suite():
     suite.addTest(StoreImmutableObjectsInDatabaseTestCase())
     suite.addTest(SimpleCoversUpdateTestCase())
     suite.addTest(FreezeUpdateTestCase())
+
+    suite.addTest(SimpleCounterTestCase())
+    suite.addTest(MergeCounterTestCase())
+    suite.addTest(MergeCounterChangesMadeInJSONTestCase())
 
     suite.addTest(FastSettingChangeValueTestCase())
     suite.addTest(FastSettingAccessFunctionsTestCase())
