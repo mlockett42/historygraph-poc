@@ -88,12 +88,19 @@ class FormMain(QMainWindow):
         contactsAction.setStatusTip('View Contacts')
         contactsAction.triggered.connect(self.viewcontacts)
 
+        checkersAction = QAction('&Checkers', self)
+        checkersAction.setStatusTip('Checkers App')
+        checkersAction.triggered.connect(self.playcheckers)
+
         self.menubar = self.menuBar()
         fileMenu = self.menubar.addMenu('&File')
         fileMenu.addAction(newmessageAction)
         fileMenu.addAction(sendreceiverAction)
         fileMenu.addAction(contactsAction)
         fileMenu.addAction(exitAction)
+
+        appsMenu = self.menubar.addMenu('&Apps')
+        appsMenu.addAction(checkersAction)
         
         optionsMenu = self.menubar.addMenu('&Options')
         optionsMenu.addAction(settingsAction)
@@ -106,6 +113,9 @@ class FormMain(QMainWindow):
     def sendreceive(self):
         self.demux.CheckEmail()
         self.DisplayMessages()
+
+    def playcheckers(self):
+        pass
 
     def DisplayMessages(self):
         self.messageheaders.setRowCount(0)
