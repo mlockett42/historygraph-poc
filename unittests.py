@@ -2363,6 +2363,25 @@ class CheckersBoardValidMovesTestCase(unittest.TestCase):
         self.assertIn((1,2), validmoves)
         self.assertIn((4,3), validmoves)
 
+        # Check a pawn cannot capture backwards
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','','','','','','',''],
+                                  ['','','B','','','','',''],
+                                  ['','','','WK','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        w = checkersgame.GetPieceAt(2,1)
+        validcaptures = w.GetValidCaptures()[0]
+        self.assertEqual(len(validcaptures),0)
+        validmoves = w.GetValidMoves()
+        self.assertEqual(len(validmoves), 2)
+        self.assertIn((1,0), validmoves)
+        self.assertIn((3,0), validmoves)
+
         # Check a we cannot capture an opposing piece if it is blocked
         checkersgame = CheckersGame(None)
         checkersgame.CreateBoard([['','','','','','','',''],
