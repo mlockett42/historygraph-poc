@@ -145,6 +145,18 @@ class CheckersGame(Document):
     def GetTurnColour(self):
         return "W" if (self.turn.get() % 2 == 0) else "B"
 
+    def GetOppositeColour(self, side):
+        assert side in {"W", "B"}
+        return "W" if side == "B" else "B"
+
+    def HasPlayerWon(self, player):
+        # A player has won if the other player has no valid moves left. including if the 
+        for p in self.pieces:
+            if p.pieceside == self.GetOppositeColour(player):
+                if len(p.GetValidMoves()) > 0:
+                    return False
+        return True
+
 """
 class ClickableImageLabel(QLabel):
     def __init__(self, parent, location):

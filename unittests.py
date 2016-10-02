@@ -2552,6 +2552,65 @@ class CheckersBoardValidMovesTestCase(unittest.TestCase):
 
 
     
+class CheckersBoardVictoryConditionTestCase(unittest.TestCase):     
+    def runTest(self):
+        # If all of the other players pieces are gone we have won
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','W','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        self.assertTrue(checkersgame.HasPlayerWon("W"))
+        self.assertFalse(checkersgame.HasPlayerWon("B"))
+
+        # If all of the other players pieces are gone we have won
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','','','','','','',''],
+                                  ['','','B','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        self.assertFalse(checkersgame.HasPlayerWon("W"))
+        self.assertTrue(checkersgame.HasPlayerWon("B"))
+
+        # A player has lost if they have no move available
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','','','','','','','W'],
+                                  ['','','','','','','B',''],
+                                  ['','','','','','B','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        self.assertFalse(checkersgame.HasPlayerWon("W"))
+        self.assertTrue(checkersgame.HasPlayerWon("B"))
+
+        # If both players have moves available no body has won
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','W','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','B','','','','',''],
+                                  ])
+        self.assertFalse(checkersgame.HasPlayerWon("W"))
+        self.assertFalse(checkersgame.HasPlayerWon("B"))
+
+
 class StartTestingMailServerDummyTest(unittest.TestCase):
     def setUp(self):
         testingmailserver.StartTestingMailServer("livewire.io", {"mlockett":"","mlockett1":"","mlockett2":""})
@@ -2631,6 +2690,7 @@ def suite():
     suite.addTest(CheckersBoardSquareColourTestCase())
     suite.addTest(CheckersBoardInitialValidityTestCase())
     suite.addTest(CheckersBoardValidMovesTestCase())
+    suite.addTest(CheckersBoardVictoryConditionTestCase())
 
     return suite
 
