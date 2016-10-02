@@ -44,6 +44,7 @@ from Demux import Demux
 from mock import patch, Mock, MagicMock
 import os
 from FieldIntCounter import FieldIntCounter
+from checkers import CheckersGame
 
 class Covers(Document):
     def __init__(self, id):
@@ -2100,6 +2101,437 @@ class MergeCounterChangesMadeInJSONTestCase(unittest.TestCase):
 
         self.assertEqual(test2.testcounter.get(), 1)
 
+
+class CheckersBoardSquareColourTestCase(unittest.TestCase):
+    def runTest(self):
+        checkersgame = CheckersGame(None)
+        for x in range(8):
+            for y in range(8):
+                assert checkersgame.GetSquareColour(x, y) == "W" if ((x + y) % 2 == 0) else "B"
+
+class CheckersBoardInitialValidityTestCase(unittest.TestCase):
+    def runTest(self):
+        # CreateBoard needs a list of 8 lists of 8 strings
+        # Test if rejects non lists
+        with self.assertRaises(AssertionError):
+            checkersgame = CheckersGame(None)
+            checkersgame.CreateBoard(None)
+        #Test it reject len != 8
+        with self.assertRaises(AssertionError):
+            checkersgame = CheckersGame(None)
+            checkersgame.CreateBoard(list())
+        #Test in rejects list items not being lists themselves
+        with self.assertRaises(AssertionError):
+            checkersgame = CheckersGame(None)
+            checkersgame.CreateBoard(list(range(8)))
+        #Test it rejects in the inner lists don't have length 8
+        with self.assertRaises(AssertionError):
+            checkersgame = CheckersGame(None)
+            checkersgame.CreateBoard([list() for r in range(8)])
+        #Test it rejects if the members of the inner list are not string
+        with self.assertRaises(AssertionError):
+            checkersgame = CheckersGame(None)
+            checkersgame.CreateBoard([list(range(8)) for r in range(8)])
+        #Test we cannot enter an invalid piece code
+        with self.assertRaises(AssertionError):
+            checkersgame = CheckersGame(None)
+            checkersgame.CreateBoard([['','Hello','','','','','',''],
+                                      ['','','','','','','',''],
+                                      ['','','','','','','',''],
+                                      ['','','','','','','',''],
+                                      ['','','','','','','',''],
+                                      ['','','','','','','',''],
+                                      ['','','','','','','',''],
+                                      ['','','','','','','',''],
+                                      ])
+        #Test we cannot place a piece on a white square
+        with self.assertRaises(AssertionError):
+            checkersgame = CheckersGame(None)
+            checkersgame.CreateBoard([['W','','','','','','',''],
+                                      ['','','','','','','',''],
+                                      ['','','','','','','',''],
+                                      ['','','','','','','',''],
+                                      ['','','','','','','',''],
+                                      ['','','','','','','',''],
+                                      ['','','','','','','',''],
+                                      ['','','','','','','',''],
+                                      ])
+        #Check we can create a valid board
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','W','','B','','WK','','BK'],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        self.assertIs(checkersgame.GetPieceAt(0,0), None)
+        p = checkersgame.GetPieceAt(1,0)
+        self.assertEqual(p.pieceside, "W")
+        self.assertEqual(p.piecetype, "")
+        p = checkersgame.GetPieceAt(3,0)
+        self.assertEqual(p.pieceside, "B")
+        self.assertEqual(p.piecetype, "")
+        p = checkersgame.GetPieceAt(5,0)
+        self.assertEqual(p.pieceside, "W")
+        self.assertEqual(p.piecetype, "K")
+        p = checkersgame.GetPieceAt(7,0)
+        self.assertEqual(p.pieceside, "B")
+        self.assertEqual(p.piecetype, "K")
+
+        #Check we can create a valid board to start a game
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateDefaultStartBoard()
+        for y in range(8):
+            for x in range(8):
+                if ((x + y) % 2) == 0:
+                    self.assertIs(checkersgame.GetPieceAt(x,y), None)
+                else:
+                    p = checkersgame.GetPieceAt(x,y)
+                    if y <= 2:
+                        self.assertEqual(p.pieceside, "W")
+                        self.assertEqual(p.piecetype, "")
+                    elif y >= 5:
+                        self.assertEqual(p.pieceside, "B")
+                        self.assertEqual(p.piecetype, "")
+                    else:
+                        self.assertIs(p, None)
+
+class CheckersBoardValidMovesTestCase(unittest.TestCase):     
+    def runTest(self):
+        # Check a white pawn can move as expected     
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','W','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        w = checkersgame.GetPieceAt(1,0)
+        validmoves = w.GetValidMoves()
+        self.assertEqual(len(validmoves), 2)
+        self.assertIn((0,1), validmoves)
+        self.assertIn((2,1), validmoves)
+
+        # Check a black pawn can move as expected     
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','B','','','','',''],
+                                  ])
+        w = checkersgame.GetPieceAt(2,7)
+        validmoves = w.GetValidMoves()
+        self.assertEqual(len(validmoves), 2)
+        self.assertIn((1,6), validmoves)
+        self.assertIn((3,6), validmoves)
+
+        # Check a white king can move as expected     
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','','','','','','',''],
+                                  ['','','WK','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        w = checkersgame.GetPieceAt(2,1)
+        validmoves = w.GetValidMoves()
+        self.assertEqual(len(validmoves), 4)
+        self.assertIn((1,0), validmoves)
+        self.assertIn((3,0), validmoves)
+        self.assertIn((1,2), validmoves)
+        self.assertIn((3,2), validmoves)
+
+        # Check a black king can move as expected     
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','','','','','','',''],
+                                  ['','','BK','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        w = checkersgame.GetPieceAt(2,1)
+        validmoves = w.GetValidMoves()
+        self.assertEqual(len(validmoves), 4)
+        self.assertIn((1,0), validmoves)
+        self.assertIn((3,0), validmoves)
+        self.assertIn((1,2), validmoves)
+        self.assertIn((3,2), validmoves)
+
+        # Check a piece cannot move off the board     
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','WK','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        w = checkersgame.GetPieceAt(1,0)
+        validmoves = w.GetValidMoves()
+        self.assertEqual(len(validmoves), 2)
+        self.assertIn((0,1), validmoves)
+        self.assertIn((2,1), validmoves)
+
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','','','','','','',''],
+                                  ['WK','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        w = checkersgame.GetPieceAt(0,1)
+        validmoves = w.GetValidMoves()
+        self.assertEqual(len(validmoves), 2)
+        self.assertIn((1,0), validmoves)
+        self.assertIn((1,2), validmoves)
+
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','','','','','','','WK'],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        w = checkersgame.GetPieceAt(7,0)
+        validmoves = w.GetValidMoves()
+        self.assertEqual(len(validmoves), 1)
+        self.assertIn((6,1), validmoves)
+
+        # Check a piece cannot move in the space occupied by another piece and we cannot capture our own pieces
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','','','','','','',''],
+                                  ['','','BK','','','','',''],
+                                  ['','','','BK','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        w = checkersgame.GetPieceAt(2,1)
+        validcaptures = w.GetValidCaptures()[0]
+        self.assertEqual(len(validcaptures),0)
+        validmoves = w.GetValidMoves()
+        self.assertEqual(len(validmoves), 3)
+        self.assertIn((1,0), validmoves)
+        self.assertIn((3,0), validmoves)
+        self.assertIn((1,2), validmoves)
+
+        # Check a we can capture an opposing piece
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','','','','','','',''],
+                                  ['','','BK','','','','',''],
+                                  ['','','','WK','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        w = checkersgame.GetPieceAt(2,1)
+        validcaptures = w.GetValidCaptures()[0]
+        self.assertEqual(len(validcaptures),1)
+        self.assertIn((4,3), validcaptures)
+        validmoves = w.GetValidMoves()
+        self.assertEqual(len(validmoves), 4)
+        self.assertIn((1,0), validmoves)
+        self.assertIn((3,0), validmoves)
+        self.assertIn((1,2), validmoves)
+        self.assertIn((4,3), validmoves)
+
+        # Check a we cannot capture an opposing piece if it is blocked
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','','','','','','',''],
+                                  ['','','BK','','','','',''],
+                                  ['','','','WK','','','',''],
+                                  ['','','','','WK','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        w = checkersgame.GetPieceAt(2,1)
+        validcaptures = w.GetValidCaptures()[0]
+        self.assertEqual(len(validcaptures),0)
+        validmoves = w.GetValidMoves()
+        self.assertEqual(len(validmoves), 3)
+        self.assertIn((1,0), validmoves)
+        self.assertIn((3,0), validmoves)
+        self.assertIn((1,2), validmoves)
+
+        # Check a we cannot capture an opposing piece by moving off screen
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','','','WK','','','',''],
+                                  ['','','BK','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        w = checkersgame.GetPieceAt(2,1)
+        validcaptures = w.GetValidCaptures()[0]
+        self.assertEqual(len(validcaptures),0)
+        validmoves = w.GetValidMoves()
+        self.assertEqual(len(validmoves), 3)
+        self.assertIn((1,0), validmoves)
+        self.assertIn((1,2), validmoves)
+        self.assertIn((3,2), validmoves)
+
+        # Check a can move a piece to a valid location
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','W','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        w = checkersgame.GetPieceAt(1, 0)
+        w.MoveTo(2,1)
+        checkersgame.assertBoardEquals([
+                                  ['','','','','','','',''],
+                                  ['','','W','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+
+        # Check we cannot move a piece out of turn
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['B','','','','','','',''],
+                                  ])
+        w = checkersgame.GetPieceAt(0, 7)
+        with self.assertRaises(AssertionError):
+            w.MoveTo(1,6)
+
+        # Check we can manually advance the turn and move
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['B','','','','','','',''],
+                                  ])
+        checkersgame.turn.add(1)
+        w = checkersgame.GetPieceAt(0, 7)
+        w.MoveTo(1,6)
+
+        # Check we cannot move a piece to an invalid location
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['B','','','','','','',''],
+                                  ])
+        checkersgame.turn.add(1)
+        w = checkersgame.GetPieceAt(0, 7)
+        with self.assertRaises(AssertionError):
+            w.MoveTo(2,5)
+
+        # Check we can capture a piece
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','W','','','','','',''],
+                                  ['','','B','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        w = checkersgame.GetPieceAt(1, 0)
+        w.MoveTo(3,2)
+        checkersgame.assertBoardEquals([
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','W','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        # Check we can capture multiple pieces
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','W','','','','','',''],
+                                  ['','','B','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','B','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        w = checkersgame.GetPieceAt(1, 0)
+        w.MoveTo(3,2)
+        checkersgame.assertBoardEquals([
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','W','','','',''],
+                                  ['','','B','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        w.MoveTo(1,4)
+        checkersgame.assertBoardEquals([
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','W','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+
+
     
 class StartTestingMailServerDummyTest(unittest.TestCase):
     def setUp(self):
@@ -2176,6 +2608,10 @@ def suite():
     suite.addTest(StopTestingMailServerDummyTest())
 
     suite.addTest(DemuxCanSaveAndLoadTestCase())
+
+    suite.addTest(CheckersBoardSquareColourTestCase())
+    suite.addTest(CheckersBoardInitialValidityTestCase())
+    suite.addTest(CheckersBoardValidMovesTestCase())
 
     return suite
 
