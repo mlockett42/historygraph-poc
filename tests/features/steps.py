@@ -56,10 +56,14 @@ def I_press_the_ok_button(step, buttonname):
         assert False
     QtTest.QTest.mouseClick(button, Qt.LeftButton)
 
-@step(u'I press the (\w+) button on main window (\d+) new message window')
-def I_press_the_ok_button_on_main_window_1_new_message_window(step, buttonname, window_index):
+@step(u'I press the (\w+) button on main window (\d+) (new message|manage checkers games) window')
+def I_press_the_ok_button_on_main_window_1_new_message_window(step, buttonname, window_index, which_window):
     formmain = getattr(world, 'formmain' + window_index)
-    button = getattr(formmain.formnewmessage, buttonname, None)
+    if which_window == "new message":
+        theform = formmain.formnewmessage
+    elif which_window == "manage checkers games":
+        theform = formmain.form_manage_checkers_games
+    button = getattr(theform, buttonname, None)
     assert button is not None, "No matching button with that name"
     QtTest.QTest.mouseClick(button, Qt.LeftButton)
 

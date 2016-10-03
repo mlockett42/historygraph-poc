@@ -11,6 +11,7 @@ from formnewmessage import FormNewMessage
 import utils
 import testingmailserver
 from formcontacts import FormContacts
+from formmanagecheckersgames import FormManageCheckersGames
 
 class FormMain(QMainWindow):
     def __init__(self, parent, demux):
@@ -115,7 +116,8 @@ class FormMain(QMainWindow):
         self.DisplayMessages()
 
     def playcheckers(self):
-        pass
+        self.form_manage_checkers_games = FormManageCheckersGames(self, self.demux)
+        self.form_manage_checkers_games.show()
 
     def DisplayMessages(self):
         self.messageheaders.setRowCount(0)

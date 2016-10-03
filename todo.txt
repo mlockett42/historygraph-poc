@@ -3,6 +3,7 @@
 * Write Lean Canvas App
 * Look into the return value of GetTypeName in FieldIntRegister and FieldIntCounter
 * Rename FieldList to FieldCollection since it is not a list because it is not ordered
+* Add a test for viewing an email we have received also display it encryption status
 
 Currently Working on
 
