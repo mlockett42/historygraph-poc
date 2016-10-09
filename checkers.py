@@ -8,6 +8,8 @@ from FieldIntRegister import FieldIntRegister
 from FieldIntCounter import FieldIntCounter
 from FieldList import FieldList
 from App import App
+import utils
+
 
 class CheckersPiece(DocumentObject):
     pieceside = FieldText() # W or B
@@ -103,6 +105,10 @@ class CheckersGame(Document):
             if piece.x == x and piece.y == y:
                 return piece
         return None
+
+    def GetCurrentPieces(self):
+        #Return a dict of positions and the piece (if any at them)
+        return dict([((piece.x, piece.y), piece) for piece in self.pieces])
 
     def CreateDefaultStartBoard(self):
         return self.CreateBoard(

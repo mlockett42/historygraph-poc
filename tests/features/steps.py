@@ -245,7 +245,7 @@ def given_the_main_window_1_play_checkers_window_board_displayed_matches(step):
     for y in range(8):
         for x in range(8):
             piece = pieces[y][x]
-            cellwidget = formtarget.boardScreen.cellWidget(y,x)
+            cellwidget = formtarget.boardScreen.cellWidget(x,y)
             if piece == "":
                 assert isinstance(cellwidget, ImgWhiteSquare) or isinstance(cellwidget, ImgBlackSquare), "piece == '', cellwidget = " + str(cellwidget) + "x = " + str(x) + " y = " + str(y)
             elif piece == "W":
@@ -255,5 +255,18 @@ def given_the_main_window_1_play_checkers_window_board_displayed_matches(step):
             else:
                 assert False, "Unknown piece type '" + piece + "'"
 
-    #assert False, 'This step must be implemented'
+@step(u'the main window 1 play checkers window current player is \'([^\']*)\'')
+def then_the_main_window_1_play_checkers_window_current_player_is_group1(step, player_colour):
+    formmain = getattr(world, 'formmain1', None)
+    formtarget = formmain.form_manage_checkers_games.form_play_checkers
+    assert formtarget.labelCurrentPlayer.text() == "Current Player: " + player_colour, "label says = " + formtarget.labelCurrentPlayer.text() + " expected " + "Current Player: " + player_colour
+
+@step(u'Then click on square (\d+) (\d+)')
+def then_click_on_square_x_y(step, x, y):
+    formmain = getattr(world, 'formmain1', None)
+    formtarget = formmain.form_manage_checkers_games.form_play_checkers
+    x = int(x)
+    y = int(y)
+    cellwidget = formtarget.boardScreen.cellWidget(y,x)
+    QtTest.QTest.mouseClick(cellwidget, Qt.LeftButton)
 

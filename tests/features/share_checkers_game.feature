@@ -60,6 +60,22 @@ Feature: Open up 2 main windows and play a shared checkers games
           | B  |    | B  |    | B  |    | B  |    |
           |    | B  |    | B  |    | B  |    | B  |
           | B  |    | B  |    | B  |    | B  |    |
+        Given the main window 1 play checkers window current player is 'White'
           
+        Then click on square 1 2
+        Then click on square 2 3
+        Given the main window 1 play checkers window board displayed matches
+          | 0  | 1  | 2  | 3  | 4  | 5  | 6  | 7  |
+          |    | W  |    | W  |    | W  |    | W  |
+          | W  |    | W  |    | W  |    | W  |    |
+          |    |    |    | W  |    | W  |    | W  |
+          |    |    | W  |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |
+          | B  |    | B  |    | B  |    | B  |    |
+          |    | B  |    | B  |    | B  |    | B  |
+          | B  |    | B  |    | B  |    | B  |    |
+        Given the main window 1 play checkers window current player is 'Black'
+
+
 
 
