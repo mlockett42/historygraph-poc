@@ -270,3 +270,15 @@ def then_click_on_square_x_y(step, x, y):
     cellwidget = formtarget.boardScreen.cellWidget(y,x)
     QtTest.QTest.mouseClick(cellwidget, Qt.LeftButton)
 
+@step(u'the main window 1 play checkers window status does not start with \'([^\']*)\'')
+def given_the_main_window_1_play_checkers_window_status_does_not_start_with_group1(step, status):
+    formmain = getattr(world, 'formmain1', None)
+    formtarget = formmain.form_manage_checkers_games.form_play_checkers
+    assert formtarget.labelStatus.text().startswith(status) == False
+
+@step(u'the main window 1 play checkers window equals \'([^\']*)\'')
+def given_the_main_window_1_play_checkers_window_equals_group1(step, status):
+    formmain = getattr(world, 'formmain1', None)
+    formtarget = formmain.form_manage_checkers_games.form_play_checkers
+    assert formtarget.labelStatus.text() == status, "status was " + str(formtarget.labelStatus.text()) + " expected " + str(status)
+
