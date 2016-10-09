@@ -31,6 +31,9 @@ class App(object):
     def GetDocumentCollectionByID(self, id):
         return self.dcdict[id]
 
+    def GetDocumentCollections(self):
+        return [v for (k,v) in self.dcdict.iteritems()]
+
     def AddDocumentObject(self, dc, obj):
         pass #We ignore document objects being added for now because they are not automatically shared until something happens with them
 

@@ -12,6 +12,7 @@ import utils
 import testingmailserver
 from formcontacts import FormContacts
 from formmanagecheckersgames import FormManageCheckersGames
+from checkers import CheckersApp
 
 class FormMain(QMainWindow):
     def __init__(self, parent, demux):
@@ -105,6 +106,11 @@ class FormMain(QMainWindow):
         
         optionsMenu = self.menubar.addMenu('&Options')
         optionsMenu.addAction(settingsAction)
+
+        self.checkersapp = CheckersApp(self.demux)
+        self.demux.RegisterApp(self.checkersapp)
+        if len(self.checkersapp.GetDocumentCollections()) == 0:
+            self.checkersapp.CreateNewDocumentCollection(None)
 
 
     def DisplaySettings(self):

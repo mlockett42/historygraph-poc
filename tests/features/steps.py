@@ -14,6 +14,7 @@ from mock import patch
 import testingmailserver
 import time
 import mysmtplib as smtplib
+from formmanagecheckersgames import FormManageCheckersGames
 
 
 @step(u'I open the settings page')
@@ -37,14 +38,18 @@ def I_enter_the_following_values(step):
     for (k, v) in control_values.iteritems():
         QtTest.QTest.keyClicks(getattr(world.formsettings,k), v, 0, 10)
 
-@step(u'I enter the following values into main window (\d+) new message window')
-def I_enter_the_following_values_into_main_window_new_message_window(step, window_index):
+@step(u'I enter the following values into main window (\d+) (new message|new checkers game) window')
+def I_enter_the_following_values_into_main_window_new_message_window(step, window_index, sub_window_type):
     assert len(step.hashes) == 1
     control_values = step.hashes[0]
     formmain = getattr(world, 'formmain' + window_index, None)
+    if sub_window_type == "new message":
+        formtarget = formmain.formnewmessage
+    elif sub_window_type == "new checkers game":
+        formtarget = formmain.form_manage_checkers_games.form_new_checkers_game
     assert formmain is not None, "Matching form not found"
     for (k, v) in control_values.iteritems():
-        QtTest.QTest.keyClicks(getattr(formmain.formnewmessage,k), v, 0, 10)
+        QtTest.QTest.keyClicks(getattr(formtarget,k), v, 0, 10)
 
 @step(u'I press the (\w+) button on the settings windows')
 def I_press_the_ok_button(step, buttonname):
@@ -56,16 +61,26 @@ def I_press_the_ok_button(step, buttonname):
         assert False
     QtTest.QTest.mouseClick(button, Qt.LeftButton)
 
-@step(u'I press the (\w+) button on main window (\d+) (new message|manage checkers games) window')
+@step(u'I press the (\w+) button on main window (\d+) (new message|manage checkers games|new checkers game) window')
 def I_press_the_ok_button_on_main_window_1_new_message_window(step, buttonname, window_index, which_window):
     formmain = getattr(world, 'formmain' + window_index)
     if which_window == "new message":
         theform = formmain.formnewmessage
     elif which_window == "manage checkers games":
         theform = formmain.form_manage_checkers_games
+    elif which_window == "new checkers game":
+        theform = formmain.form_manage_checkers_games.form_new_checkers_game
     button = getattr(theform, buttonname, None)
-    assert button is not None, "No matching button with that name"
-    QtTest.QTest.mouseClick(button, Qt.LeftButton)
+    assert button is not None, "No matching button with that name, looking for " + buttonname
+    with patch.object(FormSettings, 'show') as mock_show1:
+        with patch.object(FormNewMessage, 'show') as mock_show2:
+            with patch.object(FormViewMessage, 'show') as mock_show3:
+                with patch.object(FormContacts, 'show') as mock_show4:
+                    mock_show1.return_value = None
+                    mock_show2.return_value = None
+                    mock_show3.return_value = None
+                    mock_show4.return_value = None
+                    QtTest.QTest.mouseClick(button, Qt.LeftButton)
 
 @step(u'Then I see following values')
 def Then_I_see_the_following_values(step):
@@ -112,17 +127,15 @@ def I_choose_Settings_from_the_Options_menu(step, menu_item_name, menu_name, win
         with patch.object(FormNewMessage, 'show') as mock_show2:
             with patch.object(FormViewMessage, 'show') as mock_show3:
                 with patch.object(FormContacts, 'show') as mock_show4:
-                    mock_show1.return_value = None
-                    mock_show2.return_value = None
-                    mock_show3.return_value = None
-                    mock_show4.return_value = None
-                    """if menu_item_name == "NEW MESSAGE": #This test randomly fail the menu item trigger seems to not execute the function
-                        formmain.newmessage()
-                    else:
-                        menu_item_found.trigger()"""
-                    menu_item_found.trigger()
-                    if hasattr(formmain, "formsettings"):
-                        world.formsettings = formmain.formsettings
+                    with patch.object(FormManageCheckersGames, 'show') as mock_show5:
+                        mock_show1.return_value = None
+                        mock_show2.return_value = None
+                        mock_show3.return_value = None
+                        mock_show4.return_value = None
+                        mock_show5.return_value = None
+                        menu_item_found.trigger()
+                        if hasattr(formmain, "formsettings"):
+                            world.formsettings = formmain.formsettings
 
 @step(u'I reset the email server dict')
 def I_reset_the_email_server_dict(step):
@@ -174,16 +187,21 @@ def When_I_close_the_message_window_in_main_window(step, window_index):
     formmain = getattr(world, 'formmain' + window_index)
     formmain.formviewmessage.close()
 
-@step(u'there is one contact in main window (\d+) contact window and the contacts name is \'([^\']*)\'')
-def there_is_one_contact_in_main_window_contact_window(step, window_index, contact_name):
+@step(u'there is 1 (contact|checkers game) in main window (\d+) (contact|manage checkers games) window and the (contacts|checkers game) name is \'([^\']*)\'')
+def there_is_one_contact_in_main_window_contact_window(step, object_type, window_index, window_name, object_type2, object_name):
     formmain = getattr(world, 'formmain' + window_index)
-    assert formmain.formcontacts.contacts.rowCount() == 1, "1 contact expected actually found " + str(formmain.formcontacts.contacts.rowCount())
-    control_name = formmain.formcontacts.contacts.item(0,0).text()
+    #assert object_type == object_type2
+    if object_type == "contact":
+        l = formmain.formcontacts.contacts
+    else:
+        l = formmain.form_manage_checkers_games.games
+    assert l.rowCount() == 1, "1 " + object_type + " expected actually found " + str(l.rowCount())
+    control_name = l.item(0,0).text()
     if control_name[0] == '<':
         control_name = control_name[1:]
     if control_name[-1] == '>':
         control_name = control_name[:-1]
-    assert control_name == contact_name, "Contact name does not match " + str(control_name) + " vs " + str(contact_name)
+    assert control_name == object_name, "Contact name does not match " + str(control_name) + " vs " + str(object_name)
 
 @step(u'The contact \'([^\']*)\' in main window (\d+) has the same public key as main window (\d+) private key')
 def the_contact_group1_in_main_window_2_has_the_same_public_key_as_main_window_1_private_key(step, contact_name, window_index1, window_index2):
@@ -193,4 +211,23 @@ def the_contact_group1_in_main_window_2_has_the_same_public_key_as_main_window_1
     assert len(contacts) == 1
     assert contacts[0].publickey == formmain2.demux.key.publickey().exportKey("PEM"), contacts[0].publickey + " vs " + formmain2.demux.key.publickey().exportKey("PEM")
 
+@step(u'I select checkers game 1 in main window 1 manage checkers games window and press \'([^\']*)\'')
+def then_select_checkers_game_1_in_main_window_1_manage_checkers_games_window_and_press_group1(step, button_name):
+    formmain = getattr(world, 'formmain1', None)
+    formtarget = formmain.form_manage_checkers_games
+    assert formmain is not None, "Matching form not found"
+    button = getattr(formtarget, button_name)
+    #QtTest.QTest.mouseClick(formtarget.games, Qt.LeftButton ,pos=QtCore.QPoint(1,1))
+    formtarget.games.setCurrentCell(0,0)
+    selecteditems = formtarget.games.selectedItems()
+    assert len(selecteditems) == 1, "Unexpected selected items " + str(selecteditems)
+    QtTest.QTest.mouseClick(button, Qt.LeftButton)
+
+@step(u'the main window 1 play checkers window has the title \'([^\']*)\'')
+def then_the_main_window_1_play_checkers_window_has_the_title_group1(step, title):
+    formmain = getattr(world, 'formmain1', None)
+    formtarget = formmain.form_manage_checkers_games.form_play_checkers
+    assert formmain is not None, "Matching form not found"
+    assert formtarget.windowTitle() == title, "Title does not match " + str(formtarget.windowTitle()) + " vs " + str(title)
+    #assert False, 'This step must be implemented'
 

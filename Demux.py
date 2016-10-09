@@ -183,7 +183,6 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                 d = l2[1]
                 assert isinstance(d, dict) # "d must be a dict"
                 if d["class"] == "identity": #An identity message identifies the other sender: Ie gives us their public key
-                    #utils.log_output("Receive identity message from ", d["email"])
                     assert len(d) == 4 #"d must contain 4 elements")
                     assert d["email"] == fromemail # "Source email must match the message")
                     public_key = RSA.importKey(d["key"])
@@ -202,8 +201,6 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                         contact.publickey = d["key"]
                         contact.islivewire = True
                         self.contactstore.AddContact(contact)
-                        #print "CheckEmail contact.public_key ",contact.publickey
-                        utils.log_output("Sending confirmation email to ", d["email"])
                         self.SendConfirmationEmail(contact)
                     else:
                         contact = l[0]
@@ -309,21 +306,17 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
 
     def SendEncryptedEmail(self, contact, subject, message):
         sender = self.myemail
-        utils.log_output("sender = ", sender)
         emailaddress = CleanedEmailAddress(contact.emailaddress)
-        utils.log_output("emailaddress = ", emailaddress)
         assert emailaddress[0] != '<'
         assert emailaddress[-1] != '>'
         assert emailaddress != ''
         receivers = [emailaddress]
 
         key =  RSA.importKey(contact.publickey)
-        utils.log_output("contact.publickey = ", contact.publickey)
 
         d = {"id":str(uuid.uuid4()),"class":"encryptedemail","sender": sender,"message":message,"subject":subject}
 
         message = self.GetEncodedMessage(d)
-        utils.log_output("message = ", message)
 
         self.SendPlainEmail(receivers, "Livewire encoded message", message)
 

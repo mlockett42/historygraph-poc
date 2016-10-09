@@ -7,6 +7,7 @@ from FieldText import FieldText
 from FieldIntRegister import FieldIntRegister
 from FieldIntCounter import FieldIntCounter
 from FieldList import FieldList
+from App import App
 
 class CheckersPiece(DocumentObject):
     pieceside = FieldText() # W or B
@@ -157,4 +158,13 @@ class CheckersGame(Document):
                     return False
         return True
 
+class CheckersApp(App):
+    def MessageReceived(s):
+        pass
+
+    def CreateNewDocumentCollection(self, dcid):
+        dc = super(CheckersApp, self).CreateNewDocumentCollection(dcid)
+        dc.Register(CheckersPiece)
+        dc.Register(CheckersGame)
+        return dc
 

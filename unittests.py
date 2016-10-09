@@ -1965,7 +1965,9 @@ class DemuxEdgeAuthenticationTestCase(DemuxTestCase):
         time.sleep(0.01) #Give the email a chance to send
         self.demux2.CheckEmail()
 
-        dc2 = app2.GetDocumentCollectionByID(dc1.id)
+        l = app2.GetDocumentCollections()
+        self.assertEqual(len(l), 1)
+        dc2 = l[0]
 
         self.assertEqual(len(dc2.objects[TestPropertyOwner1.__name__]), 1)
         test_a2 = dc2.GetObjectByID(TestPropertyOwner1.__name__, test_a.id)

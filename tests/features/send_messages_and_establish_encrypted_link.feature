@@ -30,12 +30,12 @@ Feature: Open up 2 main windows send a message between them and check they are o
         Then the body of the message in main window 2 view message window is 'Frist post'
         When I close the message window in main window 2
         When I choose Contacts from the File menu on main window 2
-        Then there is one contact in main window 2 contact window and the contacts name is 'mlockett1@livewire.io'
+        Then there is 1 contact in main window 2 contact window and the contacts name is 'mlockett1@livewire.io'
         
         When I wait for the email server to run
         When I choose Send/Receive from the File menu on main window 1
         When I choose Contacts from the File menu on main window 1
-        Then there is one contact in main window 1 contact window and the contacts name is 'mlockett2@livewire.io'
+        Then there is 1 contact in main window 1 contact window and the contacts name is 'mlockett2@livewire.io'
         The contact 'mlockett2@livewire.io' in main window 1 has the same public key as main window 2 private key
         When I choose Send/Receive from the File menu on main window 2
         The contact 'mlockett1@livewire.io' in main window 2 has the same public key as main window 1 private key

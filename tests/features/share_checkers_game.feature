@@ -30,19 +30,26 @@ Feature: Open up 2 main windows and play a shared checkers games
         Then the body of the message in main window 2 view message window is 'Frist post'
         When I close the message window in main window 2
         When I choose Contacts from the File menu on main window 2
-        Then there is one contact in main window 2 contact window and the contacts name is 'mlockett1@livewire.io'
+        Then there is 1 contact in main window 2 contact window and the contacts name is 'mlockett1@livewire.io'
         
         When I wait for the email server to run
         When I choose Send/Receive from the File menu on main window 1
         When I choose Contacts from the File menu on main window 1
-        Then there is one contact in main window 1 contact window and the contacts name is 'mlockett2@livewire.io'
+        Then there is 1 contact in main window 1 contact window and the contacts name is 'mlockett2@livewire.io'
         The contact 'mlockett2@livewire.io' in main window 1 has the same public key as main window 2 private key
         When I choose Send/Receive from the File menu on main window 2
         The contact 'mlockett1@livewire.io' in main window 2 has the same public key as main window 1 private key
         
         When I choose Checkers from the Apps menu on main window 1
         When I press the bnNewGame button on main window 1 manage checkers games window
-        #Given I enter the following values into the settings page
-        #  | teEmailAddress       | tePOPServerName | tePOPServerPort | tePOPUserName | tePOPPassword | teSMTPServerName | teSMTPServerPort | teSMTPUserName | teSMTPPassword |
-        #  | mlockett1@timeca.io  | localhost1      | 10025           | mlockett1     | password1     | localhost2       | 10026            | mlockett1      | password2      |
+        Given I enter the following values into main window 1 new checkers game window
+          | teEmailAddress       | teGameName |
+          | mlockett2@timeca.io  | Checkers1  |
+        When I press the bnOK button on main window 1 new checkers game window
+        Then there is 1 checkers game in main window 1 manage checkers games window and the checkers game name is 'Checkers1'
+        Given I select checkers game 1 in main window 1 manage checkers games window and press 'bnPlayGame'
+        Then the main window 1 play checkers window has the title 'Play Checkers: Checkers1'
+
+        
+
 
