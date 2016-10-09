@@ -15,6 +15,7 @@ import testingmailserver
 import time
 import mysmtplib as smtplib
 from formmanagecheckersgames import FormManageCheckersGames
+from formcheckers import ImgWhiteSquare, ImgBlackSquare, ImgWhiteOnBlack, ImgBlackOnBlack
 
 
 @step(u'I open the settings page')
@@ -229,5 +230,30 @@ def then_the_main_window_1_play_checkers_window_has_the_title_group1(step, title
     formtarget = formmain.form_manage_checkers_games.form_play_checkers
     assert formmain is not None, "Matching form not found"
     assert formtarget.windowTitle() == title, "Title does not match " + str(formtarget.windowTitle()) + " vs " + str(title)
+
+@step(u'Given the main window 1 play checkers window board displayed matches')
+def given_the_main_window_1_play_checkers_window_board_displayed_matches(step):
+    formmain = getattr(world, 'formmain1', None)
+    formtarget = formmain.form_manage_checkers_games.form_play_checkers
+    assert len(step.hashes) == 8, "step.hashes=" + str(step.hashes)
+    pieces = list()
+    for control_values in step.hashes:
+        l = list()
+        pieces.append(l)
+        for k in range(8):
+            l.append(control_values[str(k)])
+    for y in range(8):
+        for x in range(8):
+            piece = pieces[y][x]
+            cellwidget = formtarget.boardScreen.cellWidget(y,x)
+            if piece == "":
+                assert isinstance(cellwidget, ImgWhiteSquare) or isinstance(cellwidget, ImgBlackSquare), "piece == '', cellwidget = " + str(cellwidget) + "x = " + str(x) + " y = " + str(y)
+            elif piece == "W":
+                assert isinstance(cellwidget, ImgWhiteOnBlack), "piece == 'W', cellwidget = " + str(cellwidget) + "x = " + str(x) + " y = " + str(y)
+            elif piece == "B":
+                assert isinstance(cellwidget, ImgBlackOnBlack), "piece == 'B', cellwidget = " + str(cellwidget) + "x = " + str(x) + " y = " + str(y)
+            else:
+                assert False, "Unknown piece type '" + piece + "'"
+
     #assert False, 'This step must be implemented'
 

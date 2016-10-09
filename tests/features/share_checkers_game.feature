@@ -50,6 +50,16 @@ Feature: Open up 2 main windows and play a shared checkers games
         Given I select checkers game 1 in main window 1 manage checkers games window and press 'bnPlayGame'
         Then the main window 1 play checkers window has the title 'Play Checkers: Checkers1'
 
-        
+        Given the main window 1 play checkers window board displayed matches
+          | 0  | 1  | 2  | 3  | 4  | 5  | 6  | 7  |
+          |    | W  |    | W  |    | W  |    | W  |
+          | W  |    | W  |    | W  |    | W  |    |
+          |    | W  |    | W  |    | W  |    | W  |
+          |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |
+          | B  |    | B  |    | B  |    | B  |    |
+          |    | B  |    | B  |    | B  |    | B  |
+          | B  |    | B  |    | B  |    | B  |    |
+          
 
 
