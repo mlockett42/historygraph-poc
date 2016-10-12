@@ -45,6 +45,8 @@ from mock import patch, Mock, MagicMock
 import os
 from FieldIntCounter import FieldIntCounter
 from checkers import CheckersGame
+import utils
+
 
 class Covers(Document):
     def __init__(self, id):
@@ -2612,6 +2614,51 @@ class CheckersBoardVictoryConditionTestCase(unittest.TestCase):
         self.assertFalse(checkersgame.HasPlayerWon("W"))
         self.assertFalse(checkersgame.HasPlayerWon("B"))
 
+class ReloadAppTestCase(unittest.TestCase):
+    def setUp(self):
+        testingmailserver.ResetMailDict()
+        utils.setup_app_dir("/tmp/demux1")
+        self.demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/tmp/demux1")
+
+    def runTest(self):
+
+        app1 = CoversApp(self.demux1)
+
+        self.demux1.RegisterApp(app1)
+
+        dc1 = app1.CreateNewDocumentCollection(None)
+        app1.SaveAndKeepUpToDate(dc1, "/tmp/demux1")
+        test_a = TestPropertyOwner1(None)
+        test_a.covers = 1
+        dc1.AddDocumentObject(test_a)
+        test_b = TestPropertyOwner1(None)
+        test_b.covers = 10
+        dc1.AddDocumentObject(test_b)
+
+        time.sleep(0.5)
+
+        demux2 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/tmp/demux1")
+
+
+        app2 = CoversApp(demux2)
+
+        demux2.RegisterApp(app2)
+
+        self.assertEqual(len(app2.GetDocumentCollections()), 1)
+        dc2 = app2.GetDocumentCollections()[0]
+
+        self.assertEqual(len(dc2.objects[TestPropertyOwner1.__name__]), 2)
+        test_a2 = dc2.GetObjectByID(TestPropertyOwner1.__name__, test_a.id)
+        test_b2 = dc2.GetObjectByID(TestPropertyOwner1.__name__, test_b.id)
+        
+        self.assertEqual(test_a.id, test_a2.id)
+        self.assertEqual(test_a.covers, test_a2.covers)
+        self.assertEqual(test_b.id, test_b2.id)
+        self.assertEqual(test_b.covers, test_b2.covers)
+
+
 
 class StartTestingMailServerDummyTest(unittest.TestCase):
     def setUp(self):
@@ -2675,6 +2722,11 @@ def suite():
     suite.addTest(FilterByDateTestCase())
     suite.addTest(AddMessageToMessageStoreTestCase())
 
+    suite.addTest(CheckersBoardSquareColourTestCase())
+    suite.addTest(CheckersBoardInitialValidityTestCase())
+    suite.addTest(CheckersBoardValidMovesTestCase())
+    suite.addTest(CheckersBoardVictoryConditionTestCase())
+
     suite.addTest(StartTestingMailServerDummyTest())
     suite.addTest(SendAndReceiveUnencryptedEmail())
     suite.addTest(SendAndReceiveEncryptedEmail())
@@ -2685,14 +2737,10 @@ def suite():
     suite.addTest(DemuxTestCase())
     suite.addTest(DemuxEdgeAuthenticationTestCase())
 
+    suite.addTest(ReloadAppTestCase())
+    #suite.addTest(ShareAndReloadCheckersGameTestCase())
     suite.addTest(StopTestingMailServerDummyTest())
-
     suite.addTest(DemuxCanSaveAndLoadTestCase())
-
-    suite.addTest(CheckersBoardSquareColourTestCase())
-    suite.addTest(CheckersBoardInitialValidityTestCase())
-    suite.addTest(CheckersBoardValidMovesTestCase())
-    suite.addTest(CheckersBoardVictoryConditionTestCase())
 
     return suite
 

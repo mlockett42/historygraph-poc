@@ -62,6 +62,7 @@ class Demux(object):
         elif hasattr(self, 'key') == False:
             self.key = kwargs['key']
         self.settingsstore.SaveSetting('key', self.key.exportKey("PEM"))
+        self.appdir = kwargs.get("appdir", None)
 
         self.registeredapps = dict()
 
@@ -79,6 +80,8 @@ class Demux(object):
 
     def RegisterApp(self, app):
         self.registeredapps[app.__class__.__name__] = app
+        if self.appdir is not None:
+            app.LoadDocumentCollectionFromDisk(self.appdir)
 
     def SendPlainEmail(self, receivers, subject, message):
         if subject == "Livewire encoded message":
