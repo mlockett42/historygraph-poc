@@ -81,6 +81,7 @@ class Demux(object):
     def RegisterApp(self, app):
         self.registeredapps[app.__class__.__name__] = app
         if self.appdir is not None:
+            #print "Attempting to load from " + self.appdir
             app.LoadDocumentCollectionFromDisk(self.appdir)
 
     def SendPlainEmail(self, receivers, subject, message):
@@ -362,7 +363,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
 
         json = base64.b64decode(body)
 
-        print "ProcessBodyLivewireMessages json",json
+        #print "ProcessBodyLivewireMessages json",json
 
 
         l2 = JSONEncoder().decode(json)

@@ -109,8 +109,8 @@ class FormMain(QMainWindow):
 
         self.checkersapp = CheckersApp(self.demux)
         self.demux.RegisterApp(self.checkersapp)
-        if len(self.checkersapp.GetDocumentCollections()) == 0:
-            self.checkersapp.CreateNewDocumentCollection(None)
+        #if len(self.checkersapp.GetDocumentCollections()) == 0:
+        #    self.checkersapp.CreateNewDocumentCollection(None)
 
 
     def DisplaySettings(self):

@@ -92,11 +92,11 @@ class CheckersGame(Document):
                 assert s == "" or self.GetSquareColour(x, y) == "B"
                 if s != "":
                     piece = CheckersPiece(None)
+                    self.pieces.add(piece)
                     piece.x = x
                     piece.y = y
                     piece.pieceside = s[0]
                     piece.piecetype = s[1:]
-                    self.pieces.add(piece)
                 x = x + 1
             y = y + 1
 

@@ -65,7 +65,9 @@ class App(object):
             self.SaveAndKeepUpToDate(dc, self.loaddir)
         
     def LoadDocumentCollectionFromDisk(self, loaddir):
+        #print "LoadDocumentCollectionFromDisk Looking for files in " + loaddir
         for filename in os.listdir(loaddir):
+            #print "LoadDocumentCollectionFromDisk Found file " + filename
             if filename.endswith(".history.db") or filename.startswith(self.__class__.__name__): 
                 dcid = filename[len(self.__class__.__name__):-len(".history.db")]
                 dc = self.CreateNewDocumentCollection(dcid)
