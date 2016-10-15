@@ -6,7 +6,7 @@ from DocumentObject import DocumentObject
 from FieldText import FieldText
 from FieldIntRegister import FieldIntRegister
 from FieldIntCounter import FieldIntCounter
-from FieldList import FieldList
+from FieldCollection import FieldCollection
 from App import App
 import utils
 
@@ -69,7 +69,7 @@ class CheckersPiece(DocumentObject):
 class CheckersGame(Document):
     name = FieldText()
     turn = FieldIntCounter() # Even = white's turn odd = black's
-    pieces = FieldList(CheckersPiece)
+    pieces = FieldCollection(CheckersPiece)
 
     def GetSquareColour(self, x, y):
         return "W" if ((x + y) % 2 == 0) else "B"

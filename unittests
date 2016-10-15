@@ -1,4 +1,6 @@
 PYTHONPATH="${PYTHONPATH}:./doop"
 export PYTHONPATH
+rm *.pyc
+rm doop/*.pyc
 python -B unittests.py
 

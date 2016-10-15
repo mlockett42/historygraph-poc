@@ -5,7 +5,7 @@ import unittest
 from Document import Document
 from FieldIntRegister import FieldIntRegister
 from DocumentObject import DocumentObject
-from FieldList import FieldList
+from FieldCollection import FieldCollection
 import uuid
 from FieldText import FieldText
 import DocumentCollection
@@ -109,7 +109,7 @@ class TestPropertyOwner2(DocumentObject):
 
 class TestPropertyOwner1(Document):
     covers = FieldIntRegister()
-    propertyowner2s = FieldList(TestPropertyOwner2)
+    propertyowner2s = FieldCollection(TestPropertyOwner2)
     def WasChanged(self, changetype, propertyowner, propertyname, propertyvalue, propertytype):
         super(TestPropertyOwner1, self).WasChanged(changetype, propertyowner, propertyname, propertyvalue, propertytype)
         self.bWasChanged = True
