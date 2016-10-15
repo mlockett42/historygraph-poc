@@ -133,19 +133,20 @@ class CheckersGame(Document):
         assert len(ll) == 8
         y = 0
         for l in ll:
-            assert type(l) == list
-            assert len(l) == 8
+            assert type(l) == list, "l = " + str(l)
+            assert len(l) == 8, "l = " + str(l)
             x = 0
             for s in l:
-                assert isinstance(s, basestring)
-                assert s in {"W", "B", "WK", "BK", ""}
-                assert s == "" or self.GetSquareColour(x, y) == "B"
+                #print "x = " + str(x) + ", y = " + str(y)
+                assert isinstance(s, basestring), "x = " + str(x) + ", y = " + str(y)
+                assert s in {"W", "B", "WK", "BK", ""}, "x = " + str(x) + ", y = " + str(y)
+                assert s == "" or self.GetSquareColour(x, y) == "B", "x = " + str(x) + ", y = " + str(y)
                 p = self.GetPieceAt(x,y)
                 if s == "":
-                    assert p is None
+                    assert p is None, "x = " + str(x) + ", y = " + str(y)
                 else:
-                    assert p.pieceside == s[0]
-                    assert p.piecetype == s[1:]
+                    assert p.pieceside == s[0], "x = " + str(x) + ", y = " + str(y)
+                    assert p.piecetype == s[1:], "x = " + str(x) + ", y = " + str(y)
                 x = x + 1
             y = y + 1
 

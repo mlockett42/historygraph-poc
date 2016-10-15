@@ -2618,9 +2618,9 @@ class CheckersBoardVictoryConditionTestCase(unittest.TestCase):
 class ReloadAppTestCase(unittest.TestCase):
     def setUp(self):
         testingmailserver.ResetMailDict()
-        utils.setup_app_dir("/tmp/demux1")
+        utils.setup_app_dir("/run/shm/demux1")
         self.demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/tmp/demux1")
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/run/shm/demux1")
 
     def runTest(self):
 
@@ -2629,18 +2629,19 @@ class ReloadAppTestCase(unittest.TestCase):
         self.demux1.RegisterApp(app1)
 
         dc1 = app1.CreateNewDocumentCollection(None)
-        app1.SaveAndKeepUpToDate(dc1, "/tmp/demux1")
+        app1.SaveAndKeepUpToDate(dc1, "/run/shm/demux1")
         test_a = TestPropertyOwner1(None)
         test_a.covers = 1
         dc1.AddDocumentObject(test_a)
         test_b = TestPropertyOwner1(None)
         test_b.covers = 10
         dc1.AddDocumentObject(test_b)
+        app1.SaveDC(dc1, "/run/shm/demux1")
 
         time.sleep(0.5)
 
         demux2 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/tmp/demux1")
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/run/shm/demux1")
 
 
         app2 = CoversApp(demux2)
@@ -2663,12 +2664,12 @@ class ReloadAppTestCase(unittest.TestCase):
 class ShareAndReloadCheckersGameTestCase(unittest.TestCase):
     def setUp(self):
         testingmailserver.ResetMailDict()
-        utils.setup_app_dir("/tmp/demux1")
-        utils.setup_app_dir("/tmp/demux2")
+        utils.setup_app_dir("/run/shm/demux1")
+        utils.setup_app_dir("/run/shm/demux2")
         self.demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/tmp/demux1")
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/run/shm/demux1")
         self.demux2 = Demux(myemail='mlockett2@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett2',smtppass='',
-                       popuser='mlockett2',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/tmp/demux2")
+                       popuser='mlockett2',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/run/shm/demux2")
         message = """
 Frist post!!!!!!
 
@@ -2724,12 +2725,15 @@ Frist post!!!!!!
         self.demux2.RegisterApp(app2)
 
         dc1 = app1.CreateNewDocumentCollection(None)
-        app1.SaveAndKeepUpToDate(dc1, "/tmp/demux1")
+        app1.SaveAndKeepUpToDate(dc1, "/run/shm/demux1")
         app1.Share(dc1, 'mlockett2@livewire.io')
 
         checkersgame = CheckersGame(None)
         dc1.AddDocumentObject(checkersgame)
         checkersgame.CreateDefaultStartBoard()
+        self.assertEqual(len(checkersgame.history.edgesbyendnode), 120)
+
+        self.assertEqual(checkersgame.GetTurnColour(), "W")
 
         #Test the default board is laid out correctly
         for y in range(8):
@@ -2749,14 +2753,21 @@ Frist post!!!!!!
 
         self.assertEqual(len(dc1.objects[CheckersGame.__name__]), 1)
 
+        app1.SaveDC(dc1, "/run/shm/demux1")
+
         time.sleep(0.01) #Give the email a chance to send
         self.demux2.CheckEmail()
 
         dc2 = app2.GetDocumentCollectionByID(dc1.id)
-        app2.SaveAndKeepUpToDate(dc2, "/tmp/demux2")
+        checkersgame2 = dc2.GetObjectByID(CheckersGame.__name__, checkersgame.id)
+        self.assertEqual(len(checkersgame2.history.edgesbyendnode), 120)
+        app2.SaveAndKeepUpToDate(dc2, "/run/shm/demux2")
 
         self.assertEqual(len(dc2.objects[CheckersGame.__name__]), 1)
         checkersgame2 = dc2.GetObjectByID(CheckersGame.__name__, checkersgame.id)
+        self.assertEqual(len(checkersgame2.history.edgesbyendnode), 120)
+
+        self.assertEqual(checkersgame2.GetTurnColour(), "W")
 
         #print "All pieces = " + str([(p.x, p.y) for p in checkersgame2.pieces])
 
@@ -2776,30 +2787,6 @@ Frist post!!!!!!
                     else:
                         self.assertIs(p, None)
 
-        time.sleep(1)
-
-        demux2 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/tmp/demux2")
-
-
-        time.sleep(1)
-        print "Reloading"
-
-        app2 = CheckersApp(demux2)
-
-        demux2.RegisterApp(app2)
-
-        self.assertEqual(len(app2.GetDocumentCollections()), 1)
-        dc2 = app2.GetDocumentCollections()[0]
-        games = dc2.GetByClass(CheckersGame)
-        self.assertEqual(len(games), 1)
-
-        #print "dc2.objects=",dc2.objects
-
-        #self.assertEqual(len(dc2.objects[CheckersGame.__name__]), 1)
-        #checkersgame2 = dc2.GetObjectByID(CheckersGame.__name__, checkersgame.id)
-        checkersgame2 = games[0]
-
         #Test the default board is laid out correctly
         for y in range(8):
             for x in range(8):
@@ -2816,11 +2803,77 @@ Frist post!!!!!!
                     else:
                         self.assertIs(p, None)
 
+        w = checkersgame.GetPieceAt(1, 2)
+        w.MoveTo(2,3)
+        self.assertEqual(len(checkersgame.history.edgesbyendnode), 122)
+        checkersgame.turn.add(1)
+        self.assertEqual(len(checkersgame.history.edgesbyendnode), 123)
+        checkersgame.assertBoardEquals([
+                                  ['','W','','W','','W','','W'],
+                                  ['W','','W','','W','','W',''],
+                                  ['','','','W','','W','','W'],
+                                  ['','','W','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['B','','B','','B','','B',''],
+                                  ['','B','','B','','B','','B'],
+                                  ['B','','B','','B','','B',''],
+                                  ])
+
+        self.assertEqual(checkersgame.GetTurnColour(), "B")
+
+        time.sleep(0.01) #Give the email a chance to send
+        self.demux2.CheckEmail()
+
+        self.assertEqual(len(app2.GetDocumentCollections()), 1)
+        dc2 = app2.GetDocumentCollections()[0]
+        games = dc2.GetByClass(CheckersGame)
+        self.assertEqual(len(games), 1)
+
+        checkersgame2 = games[0]
+        self.assertEqual(len(checkersgame2.history.edgesbyendnode), 123)
+
+        app2.SaveDC(dc2, "/run/shm/demux2")
+
+        time.sleep(1)
+
+        demux2 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/run/shm/demux2")
 
 
+        time.sleep(1)
+        #print "Reloading"
+
+        app2 = CheckersApp(demux2)
 
 
+        demux2.RegisterApp(app2)
 
+        self.assertEqual(len(app2.GetDocumentCollections()), 1)
+        dc2 = app2.GetDocumentCollections()[0]
+        games = dc2.GetByClass(CheckersGame)
+        self.assertEqual(len(games), 1)
+
+        #print "dc2.objects=",dc2.objects
+
+        #self.assertEqual(len(dc2.objects[CheckersGame.__name__]), 1)
+        #checkersgame2 = dc2.GetObjectByID(CheckersGame.__name__, checkersgame.id)
+        checkersgame2 = games[0]
+        self.assertEqual(len(checkersgame2.history.edgesbyendnode), 123)
+
+        self.assertEqual(checkersgame2.GetTurnColour(), "B")
+
+        currentpieces2 = [(t.x, t.y, t.id) for t in checkersgame2.GetCurrentPieces().values()]
+        #print "currentpieces2 = " + str(currentpieces2)
+        checkersgame2.assertBoardEquals([
+                                  ['','W','','W','','W','','W'],
+                                  ['W','','W','','W','','W',''],
+                                  ['','','','W','','W','','W'],
+                                  ['','','W','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['B','','B','','B','','B',''],
+                                  ['','B','','B','','B','','B'],
+                                  ['B','','B','','B','','B',''],
+                                  ])
 
 
 
@@ -2914,9 +2967,9 @@ def suite():
     suite.addTest(DemuxEdgeAuthenticationTestCase())
 
     #Next two test comment due to timing related non deterministric failures also they run slow
-    #suite.addTest(ReloadAppTestCase())
+    suite.addTest(ReloadAppTestCase())
 
-    #suite.addTest(ShareAndReloadCheckersGameTestCase())
+    suite.addTest(ShareAndReloadCheckersGameTestCase())
     suite.addTest(StopTestingMailServerDummyTest())
 
     suite.addTest(DemuxCanSaveAndLoadTestCase())

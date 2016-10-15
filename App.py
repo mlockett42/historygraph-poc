@@ -65,6 +65,8 @@ class App(object):
             self.SaveAndKeepUpToDate(dc, self.loaddir)
         
     def LoadDocumentCollectionFromDisk(self, loaddir):
+        saveddcs = self.saveddcs
+        self.saveddcs = set()
         #print "LoadDocumentCollectionFromDisk Looking for files in " + loaddir
         for filename in os.listdir(loaddir):
             #print "LoadDocumentCollectionFromDisk Found file " + filename
@@ -72,11 +74,16 @@ class App(object):
                 dcid = filename[len(self.__class__.__name__):-len(".history.db")]
                 dc = self.CreateNewDocumentCollection(dcid)
                 DocumentCollectionHelper.LoadDocumentCollection(dc, os.path.join(loaddir, filename), os.path.join(loaddir, filename.replace('.history.', '.content.')))
-
+        self.saveddcs = saveddcs
         
     def SaveAndKeepUpToDate(self, dc, loaddir):
-        self.loaddir = loaddir
-        self.saveddcs.add(dc.id)
+        pass
+        #self.loaddir = loaddir
+        #self.saveddcs.add(dc.id)
+        #DocumentCollectionHelper.SaveDocumentCollection(dc, os.path.join(loaddir, self.__class__.__name__ + dc.id + '.history.db'),
+        #                                                os.path.join(loaddir, self.__class__.__name__ + dc.id + '.content.db'))
+
+    def SaveDC(self, dc, loaddir):
         DocumentCollectionHelper.SaveDocumentCollection(dc, os.path.join(loaddir, self.__class__.__name__ + dc.id + '.history.db'),
                                                         os.path.join(loaddir, self.__class__.__name__ + dc.id + '.content.db'))
 
