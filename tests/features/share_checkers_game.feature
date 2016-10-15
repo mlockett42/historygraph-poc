@@ -65,19 +65,19 @@ Feature: Open up 2 main windows and play a shared checkers games
           | B  |    | B  |    | B  |    | B  |    |
         Given the main window 1 play checkers window current player is 'White'
 
-        Then click on square 0 0
+        Then click on square 0 0 in checkers window for main window 1
         Given the main window 1 play checkers window status does not start with 'Selected piece at '
-        Then click on square 0 5
+        Then click on square 0 5 in checkers window for main window 1
         Given the main window 1 play checkers window status does not start with 'Selected piece at '
           
-        Then click on square 1 2
+        Then click on square 1 2 in checkers window for main window 1
         Given the main window 1 play checkers window equals 'Selected piece at (1, 2)'
-        Then click on square 7 7
+        Then click on square 7 7 in checkers window for main window 1
         Given the main window 1 play checkers window equals 'Invalid move.'
 
-        Then click on square 1 2
+        Then click on square 1 2 in checkers window for main window 1
         Given the main window 1 play checkers window equals 'Selected piece at (1, 2)'
-        Then click on square 2 3
+        Then click on square 2 3 in checkers window for main window 1
         Given the main window 1 play checkers window equals 'Piece moved from (1, 2) to (2, 3)'
         Given the main window 1 play checkers window board displayed matches
           | 0  | 1  | 2  | 3  | 4  | 5  | 6  | 7  |

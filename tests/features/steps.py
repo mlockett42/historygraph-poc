@@ -262,9 +262,9 @@ def then_the_main_window_1_play_checkers_window_current_player_is_group1(step, w
     formtarget = formmain.form_manage_checkers_games.form_play_checkers
     assert formtarget.labelCurrentPlayer.text() == "Current Player: " + player_colour, "label says = " + formtarget.labelCurrentPlayer.text() + " expected " + "Current Player: " + player_colour
 
-@step(u'Then click on square (\d+) (\d+)')
-def then_click_on_square_x_y(step, x, y):
-    formmain = getattr(world, 'formmain1', None)
+@step(u'Then click on square (\d+) (\d+) in checkers window for main window (\d+)')
+def then_click_on_square_x_y(step, x, y, window_index):
+    formmain = getattr(world, 'formmain' + window_index, None)
     formtarget = formmain.form_manage_checkers_games.form_play_checkers
     x = int(x)
     y = int(y)
