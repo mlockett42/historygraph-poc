@@ -120,6 +120,7 @@ class FormCheckers(QDialog):
             status = "Piece moved from " + str(self.selected_piece) + " to " + str(location)
             if len(piece.GetValidCaptures()[0]) == 0:
                 self.game.turn.add(1)
+            self.parent().checkersapp.UpdateShares()
             self.UpdateStatus(status)
             self.DisplayCurrentPlayer()
             self.LayoutBoard()
