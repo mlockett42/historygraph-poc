@@ -2638,7 +2638,7 @@ class ReloadAppTestCase(unittest.TestCase):
         dc1.AddDocumentObject(test_b)
         app1.SaveDC(dc1, "/run/shm/demux1")
 
-        time.sleep(0.5)
+        time.sleep(0.1)
 
         demux2 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
                        popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/run/shm/demux1")
@@ -2834,13 +2834,13 @@ Frist post!!!!!!
 
         app2.SaveDC(dc2, "/run/shm/demux2")
 
-        time.sleep(1)
+        time.sleep(0.1)
 
         demux2 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
                        popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/run/shm/demux2")
 
 
-        time.sleep(1)
+        #time.sleep(1)
         #print "Reloading"
 
         app2 = CheckersApp(demux2)
