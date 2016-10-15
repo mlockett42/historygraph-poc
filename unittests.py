@@ -1887,6 +1887,7 @@ Frist post!!!!!!
         m = MessageTest(messagetime=t, text="Hello")
         dc1.AddImmutableObject(m)
         test1id = m.GetHash()
+        app1.UpdateShares()
 
         time.sleep(0.01) #Give the email a chance to send
         self.demux2.CheckEmail()
@@ -1923,6 +1924,7 @@ Frist post!!!!!!
         #Add two objects to the dc we expect a request for the second one
         dc1.AddImmutableObject(m1)
         dc1.AddImmutableObject(m3)
+        app1.UpdateShares()
 
         time.sleep(0.01) #Give the email a chance to send
         self.demux2.CheckEmail()
@@ -1933,10 +1935,13 @@ Frist post!!!!!!
         self.assertEqual(m1_b.text, m1.text)
         self.assertEqual(m3_b.messagetime, m3.messagetime)
         self.assertEqual(m3_b.text, m3.text)
+        app2.UpdateShares()
 
         time.sleep(0.01) #Give the email a chance to send. Demux 2 should have sent a request for m2 to demux1 
         dc1.AddImmutableObject(m2)
         self.demux1.CheckEmail()
+
+        app1.UpdateShares()
         
         time.sleep(0.01) #Give the email a chance to send. Demux 1 should have sent m2 to demux2 
         self.demux2.CheckEmail()
@@ -2666,6 +2671,7 @@ class ShareAndReloadCheckersGameTestCase(unittest.TestCase):
         testingmailserver.ResetMailDict()
         utils.setup_app_dir("/run/shm/demux1")
         utils.setup_app_dir("/run/shm/demux2")
+        utils.setup_app_dir("/run/shm/testdbs")
         self.demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
                        popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/run/shm/demux1")
         self.demux2 = Demux(myemail='mlockett2@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett2',smtppass='',
@@ -2730,8 +2736,10 @@ Frist post!!!!!!
 
         checkersgame = CheckersGame(None)
         dc1.AddDocumentObject(checkersgame)
+        checkersgame.player_w = "mlockett1@livewire.io"
+        checkersgame.player_b = "mlockett2@livewire.io"
         checkersgame.CreateDefaultStartBoard()
-        self.assertEqual(len(checkersgame.history.edgesbyendnode), 120)
+        self.assertEqual(len(checkersgame.history.edgesbyendnode), 122)
 
         self.assertEqual(checkersgame.GetTurnColour(), "W")
 
@@ -2754,18 +2762,22 @@ Frist post!!!!!!
         self.assertEqual(len(dc1.objects[CheckersGame.__name__]), 1)
 
         app1.SaveDC(dc1, "/run/shm/demux1")
+        app1.UpdateShares()
 
         time.sleep(0.01) #Give the email a chance to send
         self.demux2.CheckEmail()
 
         dc2 = app2.GetDocumentCollectionByID(dc1.id)
         checkersgame2 = dc2.GetObjectByID(CheckersGame.__name__, checkersgame.id)
-        self.assertEqual(len(checkersgame2.history.edgesbyendnode), 120)
+        self.assertEqual(checkersgame2.player_w, "mlockett1@livewire.io")
+        self.assertEqual(checkersgame2.player_b, "mlockett2@livewire.io")
+        self.assertEqual(len(checkersgame2.history.edgesbyendnode), 122)
+        app2.Share(dc2, checkersgame2.player_w)
         app2.SaveAndKeepUpToDate(dc2, "/run/shm/demux2")
 
         self.assertEqual(len(dc2.objects[CheckersGame.__name__]), 1)
         checkersgame2 = dc2.GetObjectByID(CheckersGame.__name__, checkersgame.id)
-        self.assertEqual(len(checkersgame2.history.edgesbyendnode), 120)
+        self.assertEqual(len(checkersgame2.history.edgesbyendnode), 122)
 
         self.assertEqual(checkersgame2.GetTurnColour(), "W")
 
@@ -2805,9 +2817,9 @@ Frist post!!!!!!
 
         w = checkersgame.GetPieceAt(1, 2)
         w.MoveTo(2,3)
-        self.assertEqual(len(checkersgame.history.edgesbyendnode), 122)
+        self.assertEqual(len(checkersgame.history.edgesbyendnode), 124)
         checkersgame.turn.add(1)
-        self.assertEqual(len(checkersgame.history.edgesbyendnode), 123)
+        self.assertEqual(len(checkersgame.history.edgesbyendnode), 125)
         checkersgame.assertBoardEquals([
                                   ['','W','','W','','W','','W'],
                                   ['W','','W','','W','','W',''],
@@ -2820,9 +2832,13 @@ Frist post!!!!!!
                                   ])
 
         self.assertEqual(checkersgame.GetTurnColour(), "B")
+        testingmailserver.ResetMailDict()
+        app1.UpdateShares()
 
         time.sleep(0.01) #Give the email a chance to send
         self.demux2.CheckEmail()
+
+        #self.assertEqual(testingmailserver.GetTotalEmailCount(), 0)
 
         self.assertEqual(len(app2.GetDocumentCollections()), 1)
         dc2 = app2.GetDocumentCollections()[0]
@@ -2830,14 +2846,51 @@ Frist post!!!!!!
         self.assertEqual(len(games), 1)
 
         checkersgame2 = games[0]
-        self.assertEqual(len(checkersgame2.history.edgesbyendnode), 123)
+        self.assertEqual(len(checkersgame2.history.edgesbyendnode), 125)
+
+        w = checkersgame2.GetPieceAt(2, 5)
+        w.MoveTo(1,4)
+        checkersgame2.turn.add(1)
+
+        self.assertEqual(checkersgame2.GetTurnColour(), "W")
+        checkersgame2.assertBoardEquals([
+                                  ['','W','','W','','W','','W'],
+                                  ['W','','W','','W','','W',''],
+                                  ['','','','W','','W','','W'],
+                                  ['','','W','','','','',''],
+                                  ['','B','','','','','',''],
+                                  ['B','','','','B','','B',''],
+                                  ['','B','','B','','B','','B'],
+                                  ['B','','B','','B','','B',''],
+                                  ])
+        testingmailserver.ResetMailDict()
+
+        app2.UpdateShares()
+
+        time.sleep(0.01) #Give the email a chance to send
+        self.demux1.CheckEmail()
+
+        dc1 = app1.GetDocumentCollectionByID(dc1.id)
+        checkersgame = dc1.GetObjectByID(CheckersGame.__name__, checkersgame.id)
+
+        self.assertEqual(checkersgame2.GetTurnColour(), "W")
+        checkersgame.assertBoardEquals([
+                                  ['','W','','W','','W','','W'],
+                                  ['W','','W','','W','','W',''],
+                                  ['','','','W','','W','','W'],
+                                  ['','','W','','','','',''],
+                                  ['','B','','','','','',''],
+                                  ['B','','','','B','','B',''],
+                                  ['','B','','B','','B','','B'],
+                                  ['B','','B','','B','','B',''],
+                                  ])
 
         app2.SaveDC(dc2, "/run/shm/demux2")
 
         time.sleep(0.1)
 
-        demux2 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/run/shm/demux2")
+        demux2 = Demux(myemail='mlockett2@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett2',smtppass='',
+                       popuser='mlockett2',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/run/shm/demux2")
 
 
         #time.sleep(1)
@@ -2850,6 +2903,7 @@ Frist post!!!!!!
 
         self.assertEqual(len(app2.GetDocumentCollections()), 1)
         dc2 = app2.GetDocumentCollections()[0]
+        #app2.Share(dc2, 'mlockett1@livewire.io')
         games = dc2.GetByClass(CheckersGame)
         self.assertEqual(len(games), 1)
 
@@ -2858,9 +2912,9 @@ Frist post!!!!!!
         #self.assertEqual(len(dc2.objects[CheckersGame.__name__]), 1)
         #checkersgame2 = dc2.GetObjectByID(CheckersGame.__name__, checkersgame.id)
         checkersgame2 = games[0]
-        self.assertEqual(len(checkersgame2.history.edgesbyendnode), 123)
+        self.assertEqual(len(checkersgame2.history.edgesbyendnode), 128)
 
-        self.assertEqual(checkersgame2.GetTurnColour(), "B")
+        self.assertEqual(checkersgame2.GetTurnColour(), "W")
 
         currentpieces2 = [(t.x, t.y, t.id) for t in checkersgame2.GetCurrentPieces().values()]
         #print "currentpieces2 = " + str(currentpieces2)
@@ -2869,14 +2923,11 @@ Frist post!!!!!!
                                   ['W','','W','','W','','W',''],
                                   ['','','','W','','W','','W'],
                                   ['','','W','','','','',''],
-                                  ['','','','','','','',''],
-                                  ['B','','B','','B','','B',''],
+                                  ['','B','','','','','',''],
+                                  ['B','','','','B','','B',''],
                                   ['','B','','B','','B','','B'],
                                   ['B','','B','','B','','B',''],
                                   ])
-
-
-
 
 
 
@@ -2957,6 +3008,7 @@ def suite():
     suite.addTest(CheckersBoardVictoryConditionTestCase())
 
     suite.addTest(StartTestingMailServerDummyTest())
+
     suite.addTest(SendAndReceiveUnencryptedEmail())
     suite.addTest(SendAndReceiveEncryptedEmail())
     suite.addTest(EstablishLivewireEncryptedLink())

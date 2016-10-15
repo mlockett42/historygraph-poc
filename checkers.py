@@ -69,6 +69,8 @@ class CheckersPiece(DocumentObject):
 class CheckersGame(Document):
     name = FieldText()
     turn = FieldIntCounter() # Even = white's turn odd = black's
+    player_w = FieldText()
+    player_b = FieldText()
     pieces = FieldCollection(CheckersPiece)
 
     def GetSquareColour(self, x, y):
@@ -137,7 +139,7 @@ class CheckersGame(Document):
             assert len(l) == 8, "l = " + str(l)
             x = 0
             for s in l:
-                #print "x = " + str(x) + ", y = " + str(y)
+                #print "assertBoardEquals x = " + str(x) + ", y = " + str(y)
                 assert isinstance(s, basestring), "x = " + str(x) + ", y = " + str(y)
                 assert s in {"W", "B", "WK", "BK", ""}, "x = " + str(x) + ", y = " + str(y)
                 assert s == "" or self.GetSquareColour(x, y) == "B", "x = " + str(x) + ", y = " + str(y)

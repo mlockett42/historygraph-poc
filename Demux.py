@@ -208,7 +208,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                         self.contactstore.AddContact(contact)
                         self.SendConfirmationEmail(contact)
                     else:
-                        contact = l[0]
+                        contact = l[0]  
                         if contact.publickey != '' and not self.is_verified(fromemail, l, sig):
                             return #Silently ignore unverified attempts to change keys
                         contact.publickey = d["key"]
@@ -285,7 +285,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
     def is_verified(self, fromemail, l, sig):
         contacts = [c for c in self.contactstore.GetContacts() if CleanedEmailAddress(c.emailaddress) == CleanedEmailAddress(fromemail)]
         if len(contacts) != 1:
-            assert False
+            assert False, "fromemail = " + str(fromemail)
             return False
         contact = contacts[0]
         public_key = RSA.importKey(contact.publickey)

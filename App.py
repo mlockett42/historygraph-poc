@@ -42,7 +42,23 @@ class App(object):
         if dc.id in self.saveddcs:
             self.SaveAndKeepUpToDate(dc, self.loaddir)
 
+    def UpdateShares(self):
+        #Resend to all of our sharees
+        for dc in self.dcdict.values():
+            shares = self.shares[dc.id]
+            (historyedges, immutableobjects) = dc.getAllEdges()
+            if len(shares) > 0:
+                #l = [a.asTuple() for a in edges]
+                #utils.log_output("EdgesAdded l = ",l)
+                l = JSONEncoder().encode({"history":historyedges,"immutableobjects":immutableobjects})
+                for emailaddress in shares:
+                    message = self.demux.GetEncodedMessage({"id":str(uuid.uuid4()),"class":"edges","email": emailaddress,
+                        "appname":self.__class__.__name__,"dcid":dc.id,"edges":l})
+                    self.demux.SendPlainEmail([emailaddress], "Livewire encoded message", message)
+
+
     def EdgesAdded(self, dc, edges):
+        """
         shares = self.shares[dc.id]
         if len(shares) > 0:
             l = [a.asTuple() for a in edges]
@@ -52,6 +68,7 @@ class App(object):
                 message = self.demux.GetEncodedMessage({"id":str(uuid.uuid4()),"class":"edges","email": emailaddress,
                     "appname":self.__class__.__name__,"dcid":dc.id,"edges":l})
                 self.demux.SendPlainEmail([emailaddress], "Livewire encoded message", message)
+        """
         if dc.id in self.saveddcs:
             self.SaveAndKeepUpToDate(dc, self.loaddir)
 
