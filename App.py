@@ -4,6 +4,7 @@ import uuid
 from json import JSONEncoder, JSONDecoder
 import DocumentCollectionHelper
 import os
+import utils
 
 class App(object):
     #A livewire app. A thing that shall send and receive edges
@@ -45,6 +46,7 @@ class App(object):
         shares = self.shares[dc.id]
         if len(shares) > 0:
             l = [a.asTuple() for a in edges]
+            #utils.log_output("EdgesAdded l = ",l)
             l = JSONEncoder().encode({"history":l,"immutableobjects":[]})
             for emailaddress in shares:
                 message = self.demux.GetEncodedMessage({"id":str(uuid.uuid4()),"class":"edges","email": emailaddress,
@@ -86,4 +88,11 @@ class App(object):
     def SaveDC(self, dc, loaddir):
         DocumentCollectionHelper.SaveDocumentCollection(dc, os.path.join(loaddir, self.__class__.__name__ + dc.id + '.history.db'),
                                                         os.path.join(loaddir, self.__class__.__name__ + dc.id + '.content.db'))
+
+    def SaveAllDCs(self):
+        loaddir = self.demux.appdir
+        for dc in self.dcdict.values():
+            DocumentCollectionHelper.SaveDocumentCollection(dc, os.path.join(loaddir, self.__class__.__name__ + dc.id + '.history.db'),
+                                                            os.path.join(loaddir, self.__class__.__name__ + dc.id + '.content.db'))
+            
 

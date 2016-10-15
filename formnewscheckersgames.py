@@ -27,6 +27,7 @@ class FormNewsCheckersGames(QDialog):
     def OK(self):
         dc = self.parent().checkersapp.CreateNewDocumentCollection(None)
         self.parent().checkersapp.SaveDC(dc, "/run/shm/demux1")
+        self.parent().checkersapp.Share(dc, 'mlockett2@livewire.io')
         checkersgame = CheckersGame(None)
         dc.AddDocumentObject(checkersgame)
         checkersgame.name = self.teGameName.toPlainText()

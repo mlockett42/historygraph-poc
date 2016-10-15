@@ -125,10 +125,11 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
         M.user(self.popuser)
         M.pass_(self.poppass)
         numMessages = len(M.list()[1])
-        #print "CheckEmail numMessages = ",numMessages
+        #utils.log_output("CheckEmail numMessages = ",numMessages)
         public_key = None
         #print "numMessages = ",numMessages
         for i in range(numMessages):
+            #utils.log_output("Reading message = ",i)
             lines = M.retr(i+1)[1]
             
             headers = list()
@@ -386,7 +387,9 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
             s.save()
 
 
-
+    def SaveAllDCs(self):
+        for app in self.registeredapps.values():
+            app.SaveAllDCs()
 
 
 

@@ -22,13 +22,13 @@ class FormManageCheckersGames(QDialog):
         self.games.setMaximumWidth(200)
         self.games.setMinimumHeight(400)
         self.games.setColumnWidth(0,self.games.width())
-        self.refresh_game_list()
         self.games.setRowCount(0)
         vbox.addWidget(self.games)
         self.bnNewGame = QPushButton("New Game")
         vbox.addWidget(self.bnNewGame)
         self.bnPlayGame = QPushButton("Play Game")
         vbox.addWidget(self.bnPlayGame)
+        self.refresh_game_list()
 
         self.bnNewGame.clicked.connect(self.newgame)
         self.bnPlayGame.clicked.connect(self.playgame)
@@ -49,6 +49,7 @@ class FormManageCheckersGames(QDialog):
         games = dc2.GetByClass(CheckersGame)
         assert len(games) == 1
         game = games[0]
+        #utils.log_output("output = " + str(game.GetCurrentPieces()))
         self.form_play_checkers = FormCheckers(self, self.demux, dc, game)
         self.form_play_checkers.show()
 

@@ -16,6 +16,7 @@ import time
 import mysmtplib as smtplib
 from formmanagecheckersgames import FormManageCheckersGames
 from formcheckers import ImgWhiteSquare, ImgBlackSquare, ImgWhiteOnBlack, ImgBlackOnBlack
+import os
 
 
 @step(u'I open the settings page')
@@ -212,9 +213,9 @@ def the_contact_group1_in_main_window_2_has_the_same_public_key_as_main_window_1
     assert len(contacts) == 1
     assert contacts[0].publickey == formmain2.demux.key.publickey().exportKey("PEM"), contacts[0].publickey + " vs " + formmain2.demux.key.publickey().exportKey("PEM")
 
-@step(u'I select checkers game 1 in main window 1 manage checkers games window and press \'([^\']*)\'')
-def then_select_checkers_game_1_in_main_window_1_manage_checkers_games_window_and_press_group1(step, button_name):
-    formmain = getattr(world, 'formmain1', None)
+@step(u'I select checkers game 1 in main window (\d+) manage checkers games window and press \'([^\']*)\'')
+def then_select_checkers_game_1_in_main_window_1_manage_checkers_games_window_and_press_group1(step, window_index, button_name):
+    formmain = getattr(world, 'formmain' + window_index, None)
     formtarget = formmain.form_manage_checkers_games
     assert formmain is not None, "Matching form not found"
     button = getattr(formtarget, button_name)
@@ -224,16 +225,16 @@ def then_select_checkers_game_1_in_main_window_1_manage_checkers_games_window_an
     assert len(selecteditems) == 1, "Unexpected selected items " + str(selecteditems)
     QtTest.QTest.mouseClick(button, Qt.LeftButton)
 
-@step(u'the main window 1 play checkers window has the title \'([^\']*)\'')
-def then_the_main_window_1_play_checkers_window_has_the_title_group1(step, title):
-    formmain = getattr(world, 'formmain1', None)
+@step(u'the main window (\d+) play checkers window has the title \'([^\']*)\'')
+def then_the_main_window_1_play_checkers_window_has_the_title_group1(step, window_index, title):
+    formmain = getattr(world, 'formmain' + window_index, None)
     formtarget = formmain.form_manage_checkers_games.form_play_checkers
     assert formmain is not None, "Matching form not found"
     assert formtarget.windowTitle() == title, "Title does not match " + str(formtarget.windowTitle()) + " vs " + str(title)
 
-@step(u'Given the main window 1 play checkers window board displayed matches')
-def given_the_main_window_1_play_checkers_window_board_displayed_matches(step):
-    formmain = getattr(world, 'formmain1', None)
+@step(u'Given the main window (\d+) play checkers window board displayed matches')
+def given_the_main_window_1_play_checkers_window_board_displayed_matches(step, window_index):
+    formmain = getattr(world, 'formmain' + window_index, None)
     formtarget = formmain.form_manage_checkers_games.form_play_checkers
     assert len(step.hashes) == 8, "step.hashes=" + str(step.hashes)
     pieces = list()
@@ -255,9 +256,9 @@ def given_the_main_window_1_play_checkers_window_board_displayed_matches(step):
             else:
                 assert False, "Unknown piece type '" + piece + "'"
 
-@step(u'the main window 1 play checkers window current player is \'([^\']*)\'')
-def then_the_main_window_1_play_checkers_window_current_player_is_group1(step, player_colour):
-    formmain = getattr(world, 'formmain1', None)
+@step(u'the main window (\d+) play checkers window current player is \'([^\']*)\'')
+def then_the_main_window_1_play_checkers_window_current_player_is_group1(step, window_index, player_colour):
+    formmain = getattr(world, 'formmain' + window_index, None)
     formtarget = formmain.form_manage_checkers_games.form_play_checkers
     assert formtarget.labelCurrentPlayer.text() == "Current Player: " + player_colour, "label says = " + formtarget.labelCurrentPlayer.text() + " expected " + "Current Player: " + player_colour
 
@@ -270,19 +271,20 @@ def then_click_on_square_x_y(step, x, y):
     cellwidget = formtarget.boardScreen.cellWidget(y,x)
     QtTest.QTest.mouseClick(cellwidget, Qt.LeftButton)
 
-@step(u'the main window 1 play checkers window status does not start with \'([^\']*)\'')
-def given_the_main_window_1_play_checkers_window_status_does_not_start_with_group1(step, status):
-    formmain = getattr(world, 'formmain1', None)
+@step(u'the main window (\d+) play checkers window status does not start with \'([^\']*)\'')
+def given_the_main_window_1_play_checkers_window_status_does_not_start_with_group1(step, window_index, status):
+    formmain = getattr(world, 'formmain' + window_index, None)
     formtarget = formmain.form_manage_checkers_games.form_play_checkers
     assert formtarget.labelStatus.text().startswith(status) == False
 
-@step(u'the main window 1 play checkers window equals \'([^\']*)\'')
-def given_the_main_window_1_play_checkers_window_equals_group1(step, status):
-    formmain = getattr(world, 'formmain1', None)
+@step(u'the main window (\d+) play checkers window equals \'([^\']*)\'')
+def given_the_main_window_1_play_checkers_window_equals_group1(step, window_index, status):
+    formmain = getattr(world, 'formmain' + window_index, None)
     formtarget = formmain.form_manage_checkers_games.form_play_checkers
     assert formtarget.labelStatus.text() == status, "status was " + str(formtarget.labelStatus.text()) + " expected " + str(status)
 
 @step(u'I clear directory \'([^\']*)\'')
 def i_clear_directory_group1(step, dirname):
     utils.setup_app_dir(dirname)
+    assert len(os.listdir(dirname)) == 0
 
