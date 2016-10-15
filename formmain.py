@@ -119,7 +119,7 @@ class FormMain(QMainWindow):
 
     def sendreceive(self):
         self.demux.CheckEmail()
-        #self.demux.SaveAllDCs()
+        self.demux.SaveAllDCs()
         self.DisplayMessages()
 
     def playcheckers(self):
