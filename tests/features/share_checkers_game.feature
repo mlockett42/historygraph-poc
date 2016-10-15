@@ -7,12 +7,14 @@ Feature: Open up 2 main windows and play a shared checkers games
         When I clear the demux databases
         When I create a new demux 1
         When I create a new demux 2
+        When I clear directory '/run/shm/demux1'
+        When I clear directory '/run/shm/demux2'
         Given I set up demux 1 with the following values
-          | myemail                | popserver  | popport | popuser   | poppass   | smtpserver | smtpport | smtpuser  | smtppass  |
-          | mlockett1@livewire.io  | localhost  | 10026   | mlockett1 |           | localhost  | 10025    | mlockett1 |           |
+          | myemail                | popserver  | popport | popuser   | poppass   | smtpserver | smtpport | smtpuser  | smtppass  | appdir          |
+          | mlockett1@livewire.io  | localhost  | 10026   | mlockett1 |           | localhost  | 10025    | mlockett1 |           | /run/shm/demux1 |
         Given I set up demux 2 with the following values
-          | myemail                | popserver  | popport | popuser   | poppass   | smtpserver | smtpport | smtpuser  | smtppass  |
-          | mlockett2@livewire.io  | localhost  | 10026   | mlockett2 |           | localhost  | 10025    | mlockett2 |           |
+          | myemail                | popserver  | popport | popuser   | poppass   | smtpserver | smtpport | smtpuser  | smtppass  | appdir          |
+          | mlockett2@livewire.io  | localhost  | 10026   | mlockett2 |           | localhost  | 10025    | mlockett2 |           | /run/shm/demux2 |
         When I open main window 1
         When I open main window 2
         When I choose New Message from the File menu on main window 1

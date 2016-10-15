@@ -282,3 +282,7 @@ def given_the_main_window_1_play_checkers_window_equals_group1(step, status):
     formtarget = formmain.form_manage_checkers_games.form_play_checkers
     assert formtarget.labelStatus.text() == status, "status was " + str(formtarget.labelStatus.text()) + " expected " + str(status)
 
+@step(u'I clear directory \'([^\']*)\'')
+def i_clear_directory_group1(step, dirname):
+    utils.setup_app_dir(dirname)
+
