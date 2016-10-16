@@ -47,6 +47,7 @@ from FieldIntCounter import FieldIntCounter
 from checkers import CheckersGame
 import utils
 from checkers import CheckersApp
+from FieldList import FieldList
 
 
 class Covers(Document):
@@ -3003,13 +3004,68 @@ class HistoryGraphDepthTestCase(unittest.TestCase):
         self.assertTrue(test3.depth() > test.depth())
 
 
+class FieldListFunctionsTestCase(unittest.TestCase):
+    # Test each individual function in the FieldList and FieldListImpl classes
+    def runTest(self):
+        fl = FieldList(TestPropertyOwner1)
+        self.assertEqual(fl.theclass, TestPropertyOwner1)
 
+        parent = uuid.uuid4()
+        name = uuid.uuid4()
+        flImpl = fl.CreateInstance(parent, name)
+        self.assertEqual(flImpl.theclass, TestPropertyOwner1)
+        self.assertEqual(flImpl.parent, parent)
+        self.assertEqual(flImpl.name, name)
 
+        self.assertEqual(len(flImpl), 0)
+        with self.assertRaises(IndexError):
+            flImpl[0]
 
+        parent = TestPropertyOwner1(None)
+        name = "test"
+        flImpl = fl.CreateInstance(parent, name)
+        test1 = TestPropertyOwner1(None)
+        self.assertEqual(parent.depth(), 0)
+        flImpl.insert(0, test1)
+        self.assertEqual(parent.depth(), 1)
+        self.assertFalse(hasattr(flImpl, "_rendered_list"))
+        self.assertEqual(len(flImpl), 1)
+        self.assertEqual(flImpl[0].id, test1.id) 
 
-
-
-
+        self.assertEqual(len(flImpl._listnodes), 1) # A single addition should have been added for this
+        
+        test2 = TestPropertyOwner1(None)
+        flImpl.insert(1, test2)
+        self.assertEqual(parent.depth(), 2)
+        self.assertEqual(len(flImpl), 2)
+        self.assertEqual(flImpl[0].id, test1.id) 
+        self.assertEqual(flImpl[1].id, test2.id) 
+        
+        test3 = TestPropertyOwner1(None)
+        flImpl.insert(0, test3)
+        self.assertEqual(parent.depth(), 3)
+        self.assertEqual(len(flImpl), 3)
+        self.assertEqual(flImpl[0].id, test3.id) 
+        self.assertEqual(flImpl[1].id, test1.id) 
+        self.assertEqual(flImpl[2].id, test2.id) 
+        
+        flImpl.remove(1)
+        self.assertEqual(parent.depth(), 4)
+        self.assertEqual(len(flImpl), 2)
+        self.assertEqual(flImpl[0].id, test3.id) 
+        self.assertEqual(flImpl[1].id, test2.id) 
+        
+        #Test iteration
+        l = list()
+        for n in flImpl:
+            l.append(n)
+        self.assertEqual(flImpl[0].id, l[0].id) 
+        self.assertEqual(flImpl[1].id, l[1].id) 
+        
+        flImpl.Clean()
+        self.assertEqual(len(flImpl._listnodes), 0)
+        self.assertEqual(len(flImpl._tombstones), 0)
+        self.assertFalse(hasattr(flImpl, "_rendered_list"))
 
 
 
@@ -3077,6 +3133,7 @@ def suite():
     suite.addTest(AddMessageToMessageStoreTestCase())
 
     suite.addTest(HistoryGraphDepthTestCase())
+    suite.addTest(FieldListFunctionsTestCase())
 
     suite.addTest(CheckersBoardSquareColourTestCase())
     suite.addTest(CheckersBoardInitialValidityTestCase())
