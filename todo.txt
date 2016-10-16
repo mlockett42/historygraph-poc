@@ -7,9 +7,10 @@
 
 Currently Working on
 
-* Write checkers app
+* Add support for history depth as a timestamp for the list CFRDT
 
 Finished
+* Write checkers app
 * Add support for counter CFRDT
 * Rename FieldInt to FieldIntRegister since we are adding FieldIntCounter to stop confusion
 * Write simple encrypted email app

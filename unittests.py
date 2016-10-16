@@ -2943,6 +2943,64 @@ Frist post!!!!!!
                                   ['B','','B','','B','','B',''],
                                   ])
 
+class HistoryGraphDepthTestCase(unittest.TestCase):
+    def runTest(self):
+        test = Covers(None)
+        #Test there are no edges in the object just created
+        self.assertEqual(test.depth(), 0)
+
+        #Test just adding edge very simply
+        test.covers = 1
+        self.assertEqual(test.depth(), 1)
+
+        test.covers = 2
+
+        self.assertEqual(test.depth(), 2)
+
+        test2 = test.Clone()
+
+        self.assertEqual(test2.depth(), 2)
+
+        test2.covers = 3
+
+        self.assertEqual(test.depth(), 2)
+        self.assertEqual(test2.depth(), 3)
+
+        #Test merging back together simply
+        test3 = test.Merge(test2)
+
+        self.assertEqual(test.depth(), 2)
+        self.assertEqual(test2.depth(), 3)
+        self.assertEqual(test3.depth(), 3)
+
+        #Test with a conflicting merge
+        test1 = None
+        test2 = None
+        test3 = None
+
+        test = Covers(None)
+        self.assertEqual(test.depth(), 0)
+        test.covers = 1
+        self.assertEqual(test.depth(), 1)
+
+        test2 = test.Clone()
+        test2.covers = 3
+
+        self.assertEqual(test.depth(), 1)
+        self.assertEqual(test2.depth(), 2)
+
+        test.covers = 4
+        self.assertEqual(test.depth(), 2)
+        test.covers = 5
+        self.assertEqual(test.depth(), 3)
+        self.assertEqual(test2.depth(), 2)
+
+        #Test merging back together this time there is a conflict
+        test3 = test2.Merge(test)
+        self.assertEqual(test3.covers, 5)
+        self.assertTrue(test3.depth() > test2.depth())
+        self.assertTrue(test3.depth() > test.depth())
+
 
 
 
@@ -3017,6 +3075,8 @@ def suite():
     suite.addTest(FilterByDateTestCase())
     suite.addTest(AddMessageToMessageStoreTestCase())
 
+    suite.addTest(HistoryGraphDepthTestCase())
+
     suite.addTest(CheckersBoardSquareColourTestCase())
     suite.addTest(CheckersBoardInitialValidityTestCase())
     suite.addTest(CheckersBoardValidMovesTestCase())
@@ -3034,9 +3094,9 @@ def suite():
     suite.addTest(DemuxEdgeAuthenticationTestCase())
 
     #Next two test comment due to timing related non deterministric failures also they run slow
-    #suite.addTest(ReloadAppTestCase())
+    suite.addTest(ReloadAppTestCase())
 
-    #suite.addTest(ShareAndReloadCheckersGameTestCase())
+    suite.addTest(ShareAndReloadCheckersGameTestCase())
     suite.addTest(StopTestingMailServerDummyTest())
 
     suite.addTest(DemuxCanSaveAndLoadTestCase())
