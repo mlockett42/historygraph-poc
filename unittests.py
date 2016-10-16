@@ -2998,6 +2998,7 @@ class HistoryGraphDepthTestCase(unittest.TestCase):
         #Test merging back together this time there is a conflict
         test3 = test2.Merge(test)
         self.assertEqual(test3.covers, 5)
+        self.assertEqual(test3.depth(), 4)
         self.assertTrue(test3.depth() > test2.depth())
         self.assertTrue(test3.depth() > test.depth())
 
