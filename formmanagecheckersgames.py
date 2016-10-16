@@ -49,6 +49,11 @@ class FormManageCheckersGames(QDialog):
         games = dc2.GetByClass(CheckersGame)
         assert len(games) == 1
         game = games[0]
+        if game.player_w != self.demux.myemail:
+            self.checkersapp.Share(dc2, game.player_w)
+        if game.player_b != self.demux.myemail:
+            self.checkersapp.Share(dc2, game.player_b)
+
         #utils.log_output("output = " + str(game.GetCurrentPieces()))
         self.form_play_checkers = FormCheckers(self, self.demux, dc, game)
         self.form_play_checkers.show()

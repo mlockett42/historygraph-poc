@@ -2055,6 +2055,20 @@ class MergeCounterTestCase(unittest.TestCase):
         test2.testcounter.add(1)
         test3 = test.Merge(test2)
         self.assertEqual(test3.testcounter.get(), 1)
+
+
+class UncleanReplayCounterTestCase(unittest.TestCase):
+    def setUp(self):
+        self.dc = DocumentCollection.DocumentCollection()
+
+    def runTest(self):
+        #Test merge together two simple covers objects
+        test = CounterTestContainer(None)
+        test.testcounter.add(1)
+        self.assertEqual(test.testcounter.get(), 1)
+        history2 = test.history.Clone()
+        history2.Replay(test)
+        self.assertEqual(test.testcounter.get(), 1)
         
 
 class MergeCounterChangesMadeInJSONTestCase(unittest.TestCase):
@@ -2983,6 +2997,7 @@ def suite():
     suite.addTest(SimpleCounterTestCase())
     suite.addTest(MergeCounterTestCase())
     suite.addTest(MergeCounterChangesMadeInJSONTestCase())
+    suite.addTest(UncleanReplayCounterTestCase())
 
     suite.addTest(FastSettingChangeValueTestCase())
     suite.addTest(FastSettingAccessFunctionsTestCase())
@@ -3019,9 +3034,9 @@ def suite():
     suite.addTest(DemuxEdgeAuthenticationTestCase())
 
     #Next two test comment due to timing related non deterministric failures also they run slow
-    suite.addTest(ReloadAppTestCase())
+    #suite.addTest(ReloadAppTestCase())
 
-    suite.addTest(ShareAndReloadCheckersGameTestCase())
+    #suite.addTest(ShareAndReloadCheckersGameTestCase())
     suite.addTest(StopTestingMailServerDummyTest())
 
     suite.addTest(DemuxCanSaveAndLoadTestCase())

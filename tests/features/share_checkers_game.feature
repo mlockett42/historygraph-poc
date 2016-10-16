@@ -112,6 +112,40 @@ Feature: Open up 2 main windows and play a shared checkers games
           | B  |    | B  |    | B  |    | B  |    |
         Given the main window 2 play checkers window current player is 'Black'
 
+        Then click on square 2 5 in checkers window for main window 2
+        Given the main window 2 play checkers window equals 'Selected piece at (2, 5)'
+        Then click on square 1 4 in checkers window for main window 2
+        Given the main window 2 play checkers window equals 'Piece moved from (2, 5) to (1, 4)'
+        Given the main window 2 play checkers window board displayed matches
+          | 0  | 1  | 2  | 3  | 4  | 5  | 6  | 7  |
+          |    | W  |    | W  |    | W  |    | W  |
+          | W  |    | W  |    | W  |    | W  |    |
+          |    |    |    | W  |    | W  |    | W  |
+          |    |    | W  |    |    |    |    |    |
+          |    | B  |    |    |    |    |    |    |
+          | B  |    |    |    | B  |    | B  |    |
+          |    | B  |    | B  |    | B  |    | B  |
+          | B  |    | B  |    | B  |    | B  |    |
+        Given the main window 2 play checkers window current player is 'White'
+
+        When I choose Send/Receive from the File menu on main window 1
+        When I choose Checkers from the Apps menu on main window 2
+
+        Then there is 1 checkers game in main window 1 manage checkers games window and the checkers game name is 'Checkers1'
+        Given I select checkers game 1 in main window 1 manage checkers games window and press 'bnPlayGame'
+        Then the main window 1 play checkers window has the title 'Play Checkers: Checkers1'
+        Given the main window 1 play checkers window board displayed matches
+          | 0  | 1  | 2  | 3  | 4  | 5  | 6  | 7  |
+          |    | W  |    | W  |    | W  |    | W  |
+          | W  |    | W  |    | W  |    | W  |    |
+          |    |    |    | W  |    | W  |    | W  |
+          |    |    | W  |    |    |    |    |    |
+          |    | B  |    |    |    |    |    |    |
+          | B  |    |    |    | B  |    | B  |    |
+          |    | B  |    | B  |    | B  |    | B  |
+          | B  |    | B  |    | B  |    | B  |    |
+        Given the main window 1 play checkers window current player is 'White'
+
         #Reload from the database on disk
         Given I set up demux 2 with the following values
           | myemail                | popserver  | popport | popuser   | poppass   | smtpserver | smtpport | smtpuser  | smtppass  | appdir          |
@@ -129,9 +163,9 @@ Feature: Open up 2 main windows and play a shared checkers games
           | W  |    | W  |    | W  |    | W  |    |
           |    |    |    | W  |    | W  |    | W  |
           |    |    | W  |    |    |    |    |    |
-          |    |    |    |    |    |    |    |    |
-          | B  |    | B  |    | B  |    | B  |    |
+          |    | B  |    |    |    |    |    |    |
+          | B  |    |    |    | B  |    | B  |    |
           |    | B  |    | B  |    | B  |    | B  |
           | B  |    | B  |    | B  |    | B  |    |
-        Given the main window 2 play checkers window current player is 'Black'
+        Given the main window 2 play checkers window current player is 'White'
 

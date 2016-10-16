@@ -125,7 +125,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
         M.user(self.popuser)
         M.pass_(self.poppass)
         numMessages = len(M.list()[1])
-        #utils.log_output("CheckEmail numMessages = ",numMessages)
+        utils.log_output("CheckEmail numMessages = ",numMessages)
         public_key = None
         #print "numMessages = ",numMessages
         for i in range(numMessages):
@@ -222,6 +222,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                     if not self.is_verified(fromemail, l, sig):
                         return #Silently ignore unverified edges
                     dc = self.registeredapps[d["appname"]].GetDocumentCollectionByID(d["dcid"])
+                    utils.log_output("received edges = " + str(d["edges"]))
                     dc.LoadFromJSON(d["edges"])
                 elif d["class"] == "immutableobject": #immutableobject to create
                     if not self.is_verified(fromemail, l, sig):

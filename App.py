@@ -52,6 +52,7 @@ class App(object):
                 #utils.log_output("EdgesAdded l = ",l)
                 l = JSONEncoder().encode({"history":historyedges,"immutableobjects":immutableobjects})
                 for emailaddress in shares:
+                    utils.log_output("Update share " + emailaddress + " for dc = " + dc.id)
                     message = self.demux.GetEncodedMessage({"id":str(uuid.uuid4()),"class":"edges","email": emailaddress,
                         "appname":self.__class__.__name__,"dcid":dc.id,"edges":l})
                     self.demux.SendPlainEmail([emailaddress], "Livewire encoded message", message)

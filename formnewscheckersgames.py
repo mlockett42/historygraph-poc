@@ -31,6 +31,8 @@ class FormNewsCheckersGames(QDialog):
         checkersgame = CheckersGame(None)
         dc.AddDocumentObject(checkersgame)
         checkersgame.name = self.teGameName.toPlainText()
+        checkersgame.player_w = 'mlockett1@livewire.io'
+        checkersgame.player_b = 'mlockett2@livewire.io'
         checkersgame.CreateDefaultStartBoard()
         self.parent().checkersapp.SaveDC(dc, self.demux.appdir)
         

@@ -39,6 +39,7 @@ class FormCheckers(QDialog):
     def __init__(self, parent, demux, dc, game):
         super(FormCheckers, self).__init__(parent)
         self.game = game
+        self.dc = dc
         self.setWindowTitle("Play Checkers: " + game.name)
         self.showMaximized()
         self.gridlayout = QGridLayout()
@@ -119,8 +120,11 @@ class FormCheckers(QDialog):
             piece.MoveTo(x, y)
             status = "Piece moved from " + str(self.selected_piece) + " to " + str(location)
             if len(piece.GetValidCaptures()[0]) == 0:
+                utils.log_output("LabelClicked incrementing turn")
                 self.game.turn.add(1)
+            utils.log_output("LabelClicked updating shares")
             self.parent().checkersapp.UpdateShares()
+            self.parent().checkersapp.SaveDC(self.dc, "/run/shm/demux2")
             self.UpdateStatus(status)
             self.DisplayCurrentPlayer()
             self.LayoutBoard()
