@@ -1,8 +1,6 @@
 * Write Trello app
-* Add support for list CFRDT
 * Write Lean Canvas App
 * Look into the return value of GetTypeName in FieldIntRegister and FieldIntCounter
-* Rename FieldList to FieldCollection since it is not a list because it is not ordered
 * Add a test for viewing an email we have received also display it encryption status
 * Convert the unittest.py file to use pytest or similar break up into smaller files
 
@@ -11,6 +9,7 @@ Currently Working on
 * Add support for list CFRDT
 
 Finished
+* Rename FieldList to FieldCollection since it is not a list because it is not ordered
 * Add support for history depth as a timestamp for the list CFRDT
 * Write checkers app
 * Add support for counter CFRDT

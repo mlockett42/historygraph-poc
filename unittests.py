@@ -3068,6 +3068,45 @@ class FieldListFunctionsTestCase(unittest.TestCase):
         self.assertFalse(hasattr(flImpl, "_rendered_list"))
 
 
+class TestFieldListOwner2(DocumentObject):
+    cover = FieldIntRegister()
+    quantity = FieldIntRegister()
+
+class TestFieldListOwner1(Document):
+    covers = FieldIntRegister()
+    propertyowner2s = FieldList(TestFieldListOwner2)
+
+
+class FieldListMergeTestCase(unittest.TestCase):
+    # Test each individual function in the FieldList and FieldListImpl classes
+    def runTest(self):
+        dc = DocumentCollection.DocumentCollection()
+        dc.Register(TestFieldListOwner1)
+        dc.Register(TestFieldListOwner2)
+        test1 = TestFieldListOwner1(None)
+        l0 = TestFieldListOwner2(None)
+        l1 = TestFieldListOwner2(None)
+        test1.propertyowner2s.insert(0, l0)
+        test1.propertyowner2s.insert(1, l1)
+
+        test2 = test1.Clone()
+        dc.AddDocumentObject(test2)
+
+        l2 = TestFieldListOwner2(None)
+        test2.propertyowner2s.insert(2, l2)
+
+        test1.propertyowner2s.remove(1)
+
+        test3 = test2.Merge(test1)
+
+        self.assertEqual(len(test3.propertyowner2s), 2)
+        self.assertEqual(test3.propertyowner2s[0].id, l0.id)
+        self.assertEqual(test3.propertyowner2s[1].id, l2.id)
+        
+
+        
+
+
 
 class StartTestingMailServerDummyTest(unittest.TestCase):
     def setUp(self):
@@ -3134,6 +3173,8 @@ def suite():
 
     suite.addTest(HistoryGraphDepthTestCase())
     suite.addTest(FieldListFunctionsTestCase())
+
+    suite.addTest(FieldListMergeTestCase())
 
     suite.addTest(CheckersBoardSquareColourTestCase())
     suite.addTest(CheckersBoardInitialValidityTestCase())
