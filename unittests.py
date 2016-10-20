@@ -48,6 +48,7 @@ from checkers import CheckersGame
 import utils
 from checkers import CheckersApp
 from FieldList import FieldList
+from trello import TrelloBoard, TrelloList, TrelloItem
 
 
 class Covers(Document):
@@ -3103,9 +3104,62 @@ class FieldListMergeTestCase(unittest.TestCase):
         self.assertEqual(test3.propertyowner2s[0].id, l0.id)
         self.assertEqual(test3.propertyowner2s[1].id, l2.id)
         
+class TrelloBuildAndEditTestCase(unittest.TestCase):
+    def runTest(self):
+        tb = TrelloBoard(None)
+        tl1 = TrelloList(None)
+        tb.lists.insert(0, tl1)
+        tl1.name = "Trello List 1"
 
+        tl2 = TrelloList(None)
+        tb.lists.insert(1, tl2)
+        tl2.name = "Trello List 2"
+
+        ti = TrelloItem(None)
+        tl1.items.insert(0, ti)
+        ti.content = "Trello Item 1"
         
+        ti = TrelloItem(None)
+        tl1.items.insert(1, ti)
+        ti.content = "Trello Item 2"
 
+        ti = TrelloItem(None)
+        tl2.items.insert(0, ti)
+        ti.content = "Trello Item 3"
+
+        ti = TrelloItem(None)
+        tl2.items.insert(1, ti)
+        ti.content = "Trello Item 4"
+
+        self.assertEqual(len(tb.lists), 2)
+        self.assertEqual(len(tb.lists[0].items), 2)
+        self.assertEqual(len(tb.lists[1].items), 2)
+        self.assertEqual(tb.lists[0].name, 'Trello List 1')
+        self.assertEqual(tb.lists[1].name, 'Trello List 2')
+        self.assertEqual(tb.lists[0].items[0].content, 'Trello Item 1')
+        self.assertEqual(tb.lists[0].items[1].content, 'Trello Item 2')
+        self.assertEqual(tb.lists[1].items[0].content, 'Trello Item 3')
+        self.assertEqual(tb.lists[1].items[1].content, 'Trello Item 4')
+
+        history = tb.history.Clone()
+
+        dc = DocumentCollection.DocumentCollection()
+        dc.Register(TrelloBoard)
+        dc.Register(TrelloList)
+        dc.Register(TrelloItem)
+        tb2 = TrelloBoard(tb.id)
+        dc.AddDocumentObject(tb2)
+        history.Replay(tb2)
+
+        self.assertEqual(len(tb2.lists), 2)
+        self.assertEqual(len(tb2.lists[0].items), 2)
+        self.assertEqual(len(tb2.lists[1].items), 2)
+        self.assertEqual(tb2.lists[0].name, 'Trello List 1')
+        self.assertEqual(tb2.lists[1].name, 'Trello List 2')
+        self.assertEqual(tb2.lists[0].items[0].content, 'Trello Item 1')
+        self.assertEqual(tb2.lists[0].items[1].content, 'Trello Item 2')
+        self.assertEqual(tb2.lists[1].items[0].content, 'Trello Item 3')
+        self.assertEqual(tb2.lists[1].items[1].content, 'Trello Item 4')
 
 
 class StartTestingMailServerDummyTest(unittest.TestCase):
@@ -3181,6 +3235,8 @@ def suite():
     suite.addTest(CheckersBoardValidMovesTestCase())
     suite.addTest(CheckersBoardVictoryConditionTestCase())
 
+    suite.addTest(TrelloBuildAndEditTestCase())
+    
     suite.addTest(StartTestingMailServerDummyTest())
 
     suite.addTest(SendAndReceiveUnencryptedEmail())
