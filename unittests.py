@@ -49,7 +49,8 @@ import utils
 from checkers import CheckersApp
 from FieldList import FieldList
 from trello import TrelloBoard, TrelloList, TrelloItem, TrelloListLink, TrelloApp, TrelloShare
-
+from multichat import MultiChatItem
+from operator import itemgetter, attrgetter, methodcaller
 
 class Covers(Document):
     def __init__(self, id):
@@ -3685,6 +3686,27 @@ class TrelloStoreInDatabaseTestCase(unittest.TestCase):
         self.assertEqual(tl2.items[1].content, 'Trello Item 4')
 
 
+class MultiChatBasicTestCase(unittest.TestCase):
+    def runTest(self):
+        dc1 = DocumentCollection.DocumentCollection()
+        dc1.Register(MultiChatItem)
+
+        i = MultiChatItem(content='Chat Item 1', event_time=1000)
+        dc1.AddImmutableObject(i)
+
+        i = MultiChatItem(content='Chat Item 2', event_time=1001)
+        dc1.AddImmutableObject(i)
+
+        items = dc1.GetByClass(MultiChatItem)
+        self.assertEqual(len(items), 2)
+        content = set([item.content for item in items])
+        self.assertEqual(content, {'Chat Item 1', 'Chat Item 2'})
+
+        items = sorted(items,key=attrgetter('eventtime'))
+        content = [item.content for item in items]
+        self.assertEqual(content, ['Chat Item 1', 'Chat Item 2'])
+
+
 class StartTestingMailServerDummyTest(unittest.TestCase):
     def setUp(self):
         testingmailserver.StartTestingMailServer("livewire.io", {"mlockett":"","mlockett1":"","mlockett2":"","mlockett3":""})
@@ -3761,6 +3783,9 @@ def suite():
     suite.addTest(TrelloMergeTestCase())
     suite.addTest(TrelloSwapAndMergeTestCase())
     suite.addTest(TrelloStoreInDatabaseTestCase())
+
+    suite.addTest(MultiChatBasicTestCase())
+
 
     suite.addTest(StartTestingMailServerDummyTest())
 

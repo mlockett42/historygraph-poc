@@ -5,13 +5,15 @@
 * FieldList does not store the order in the SQL lite on disk database
 * Review all instances where testingmailserver.ResetMailDict() is called. This needed to be called inside share_trello_board feature and should not have been
 * Form new checkers has lots of hard coded stuff in it review and remove junk
+* Test chatter and retry messages and receiving multiple times
+* Mock all windows in the BDD tests
 
 Currently Working on
 
-* Write Trello app 
-
+* Write multi chat app
 
 Finished
+* Write Trello app 
 * Add unittest to verify when two documents of (possibly) different classes are added to the same dc they save and reload correctly (they don't appear to)
 * Add support for list CFRDT
 * Rename FieldList to FieldCollection since it is not a list because it is not ordered
