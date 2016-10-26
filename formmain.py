@@ -13,6 +13,8 @@ import testingmailserver
 from formcontacts import FormContacts
 from formmanagecheckersgames import FormManageCheckersGames
 from checkers import CheckersApp
+from formmanagetrello import FormManageTrello
+from trello import TrelloApp
 
 class FormMain(QMainWindow):
     def __init__(self, parent, demux):
@@ -94,6 +96,10 @@ class FormMain(QMainWindow):
         checkersAction.setStatusTip('Checkers App')
         checkersAction.triggered.connect(self.playcheckers)
 
+        trelloAction = QAction('&Trello', self)
+        trelloAction.setStatusTip('Trello App')
+        trelloAction.triggered.connect(self.trello)
+
         self.menubar = self.menuBar()
         fileMenu = self.menubar.addMenu('&File')
         fileMenu.addAction(newmessageAction)
@@ -103,12 +109,16 @@ class FormMain(QMainWindow):
 
         appsMenu = self.menubar.addMenu('&Apps')
         appsMenu.addAction(checkersAction)
+        appsMenu.addAction(trelloAction)
+
         
         optionsMenu = self.menubar.addMenu('&Options')
         optionsMenu.addAction(settingsAction)
 
         self.checkersapp = CheckersApp(self.demux)
+        self.trelloapp = TrelloApp(self.demux)
         self.demux.RegisterApp(self.checkersapp)
+        self.demux.RegisterApp(self.trelloapp)
         #if len(self.checkersapp.GetDocumentCollections()) == 0:
         #    self.checkersapp.CreateNewDocumentCollection(None)
 
@@ -167,4 +177,8 @@ class FormMain(QMainWindow):
     def viewcontacts(self):
         self.formcontacts = FormContacts(self, self.demux)
         self.formcontacts.show()
+
+    def trello(self):
+        self.form_trello = FormManageTrello(self, self.demux)
+        self.form_trello.show()
     

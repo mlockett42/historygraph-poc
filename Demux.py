@@ -125,7 +125,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
         M.user(self.popuser)
         M.pass_(self.poppass)
         numMessages = len(M.list()[1])
-        utils.log_output("CheckEmail numMessages = ",numMessages)
+        #utils.log_output('Demux.myemail = ', self.myemail, ' CheckEmail numMessages = ',numMessages)
         public_key = None
         #print "numMessages = ",numMessages
         for i in range(numMessages):
@@ -187,6 +187,8 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                 assert l2[0] == "XR1"# "Protocol version incorrect"
                 d = l2[1]
                 assert isinstance(d, dict) # "d must be a dict"
+                #utils.log_output('CheckEmail received message of class - ', d['class'], ' from ', fromemail)
+                #utils.log_output('Full email', lines)
                 if d["class"] == "identity": #An identity message identifies the other sender: Ie gives us their public key
                     assert len(d) == 4 #"d must contain 4 elements")
                     assert d["email"] == fromemail # "Source email must match the message")
@@ -196,8 +198,8 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                     verified = public_key.verify(hash, (sig, ))
                     assert verified # "Signature not verified"
                         
-                    l = [c for c in self.contactstore.GetContacts() if CleanedEmailAddress(c.emailaddress) == CleanedEmailAddress(fromemail)]
-                    if len(l) == 0:
+                    l3 = [c for c in self.contactstore.GetContacts() if CleanedEmailAddress(c.emailaddress) == CleanedEmailAddress(fromemail)]
+                    if len(l3) == 0:
                         contact = Contact()
                         contact.name = d["email"]
                         assert fromemail[0] != '<'
@@ -208,7 +210,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                         self.contactstore.AddContact(contact)
                         self.SendConfirmationEmail(contact)
                     else:
-                        contact = l[0]  
+                        contact = l3[0]  
                         if contact.publickey != '' and not self.is_verified(fromemail, l, sig):
                             return #Silently ignore unverified attempts to change keys
                         contact.publickey = d["key"]
@@ -222,7 +224,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                     if not self.is_verified(fromemail, l, sig):
                         return #Silently ignore unverified edges
                     dc = self.registeredapps[d["appname"]].GetDocumentCollectionByID(d["dcid"])
-                    utils.log_output("received edges = " + str(d["edges"]))
+                    #utils.log_output("received edges = " + str(d["edges"]))
                     dc.LoadFromJSON(d["edges"])
                 elif d["class"] == "immutableobject": #immutableobject to create
                     if not self.is_verified(fromemail, l, sig):
@@ -279,6 +281,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                     assert False
                 
                 if send_confirmation_email:
+                    #utils.log_output('sending confirmation from ', self.myemail, ' for message ', lines)
                     self.SendConfirmationEmail(contact)
         M.dele(1)
         M.quit()
@@ -286,7 +289,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
     def is_verified(self, fromemail, l, sig):
         contacts = [c for c in self.contactstore.GetContacts() if CleanedEmailAddress(c.emailaddress) == CleanedEmailAddress(fromemail)]
         if len(contacts) != 1:
-            assert False, "fromemail = " + str(fromemail)
+            assert False, "Demux for " + self.myemail + " fromemail = " + str(fromemail)
             return False
         contact = contacts[0]
         public_key = RSA.importKey(contact.publickey)
@@ -304,7 +307,10 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
         assert emailaddress != ''
         receivers = [emailaddress]
 
-        public_key = self.key.publickey().exportKey("PEM")        
+        public_key = self.key.publickey().exportKey("PEM")  
+
+        for r in receivers:
+            assert self.myemail != r
     
         message = self.GetEncodedMessage({"id":str(uuid.uuid4()),"class":"identity","email": sender,"key":public_key})
 

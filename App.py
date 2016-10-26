@@ -43,8 +43,10 @@ class App(object):
             self.SaveAndKeepUpToDate(dc, self.loaddir)
 
     def UpdateShares(self):
+        #utils.log_output("Update shares called")
         #Resend to all of our sharees
         for dc in self.dcdict.values():
+            #utils.log_output("Updating share for " + str(dc.id))
             shares = self.shares[dc.id]
             (historyedges, immutableobjects) = dc.getAllEdges()
             if len(shares) > 0:
@@ -52,9 +54,10 @@ class App(object):
                 #utils.log_output("EdgesAdded l = ",l)
                 l = JSONEncoder().encode({"history":historyedges,"immutableobjects":immutableobjects})
                 for emailaddress in shares:
-                    utils.log_output("Update share " + emailaddress + " for dc = " + dc.id)
+                    #utils.log_output("Update share " + emailaddress + " for dc = " + dc.id)
                     message = self.demux.GetEncodedMessage({"id":str(uuid.uuid4()),"class":"edges","email": emailaddress,
                         "appname":self.__class__.__name__,"dcid":dc.id,"edges":l})
+                    #utils.log_output("Sending shares email edge l = ", l)
                     self.demux.SendPlainEmail([emailaddress], "Livewire encoded message", message)
 
 
@@ -90,7 +93,7 @@ class App(object):
         #print "LoadDocumentCollectionFromDisk Looking for files in " + loaddir
         for filename in os.listdir(loaddir):
             #print "LoadDocumentCollectionFromDisk Found file " + filename
-            if filename.endswith(".history.db") or filename.startswith(self.__class__.__name__): 
+            if filename.endswith(".history.db") and filename.startswith(self.__class__.__name__): 
                 dcid = filename[len(self.__class__.__name__):-len(".history.db")]
                 dc = self.CreateNewDocumentCollection(dcid)
                 DocumentCollectionHelper.LoadDocumentCollection(dc, os.path.join(loaddir, filename), os.path.join(loaddir, filename.replace('.history.', '.content.')))
@@ -110,6 +113,9 @@ class App(object):
     def SaveAllDCs(self):
         loaddir = self.demux.appdir
         for dc in self.dcdict.values():
+            #utils.log_output("app.py SaveALlDCs saving dc.id=",dc.id)
+            #os.remove(os.path.join(loaddir, self.__class__.__name__ + dc.id + '.history.db'))
+            #os.remove(os.path.join(loaddir, self.__class__.__name__ + dc.id + '.content.db'))
             DocumentCollectionHelper.SaveDocumentCollection(dc, os.path.join(loaddir, self.__class__.__name__ + dc.id + '.history.db'),
                                                             os.path.join(loaddir, self.__class__.__name__ + dc.id + '.content.db'))
             

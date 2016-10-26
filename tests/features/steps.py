@@ -17,6 +17,7 @@ import mysmtplib as smtplib
 from formmanagecheckersgames import FormManageCheckersGames
 from formcheckers import ImgWhiteSquare, ImgBlackSquare, ImgWhiteOnBlack, ImgBlackOnBlack
 import os
+from formedittrelloboard import FormEditTrelloBoard
 
 
 @step(u'I open the settings page')
@@ -40,7 +41,7 @@ def I_enter_the_following_values(step):
     for (k, v) in control_values.iteritems():
         QtTest.QTest.keyClicks(getattr(world.formsettings,k), v, 0, 10)
 
-@step(u'I enter the following values into main window (\d+) (new message|new checkers game) window')
+@step(u'I enter the following values into main window (\d+) (new message|new checkers game|new trello board) window')
 def I_enter_the_following_values_into_main_window_new_message_window(step, window_index, sub_window_type):
     assert len(step.hashes) == 1
     control_values = step.hashes[0]
@@ -49,6 +50,8 @@ def I_enter_the_following_values_into_main_window_new_message_window(step, windo
         formtarget = formmain.formnewmessage
     elif sub_window_type == "new checkers game":
         formtarget = formmain.form_manage_checkers_games.form_new_checkers_game
+    elif sub_window_type == "new trello board":
+        formtarget = formmain.form_trello.form_new_trello_board
     assert formmain is not None, "Matching form not found"
     for (k, v) in control_values.iteritems():
         QtTest.QTest.keyClicks(getattr(formtarget,k), v, 0, 10)
@@ -63,7 +66,7 @@ def I_press_the_ok_button(step, buttonname):
         assert False
     QtTest.QTest.mouseClick(button, Qt.LeftButton)
 
-@step(u'I press the (\w+) button on main window (\d+) (new message|manage checkers games|new checkers game) window')
+@step(u'I press the (\w+) button on main window (\d+) (new message|manage checkers games|new checkers game|manage trello boards|new trello board) window')
 def I_press_the_ok_button_on_main_window_1_new_message_window(step, buttonname, window_index, which_window):
     formmain = getattr(world, 'formmain' + window_index)
     if which_window == "new message":
@@ -72,17 +75,24 @@ def I_press_the_ok_button_on_main_window_1_new_message_window(step, buttonname, 
         theform = formmain.form_manage_checkers_games
     elif which_window == "new checkers game":
         theform = formmain.form_manage_checkers_games.form_new_checkers_game
+    elif which_window == 'manage trello boards':
+        theform = formmain.form_trello
+    elif which_window == 'new trello board':
+        theform = formmain.form_trello.form_new_trello_board
     button = getattr(theform, buttonname, None)
     assert button is not None, "No matching button with that name, looking for " + buttonname
-    with patch.object(FormSettings, 'show') as mock_show1:
-        with patch.object(FormNewMessage, 'show') as mock_show2:
-            with patch.object(FormViewMessage, 'show') as mock_show3:
-                with patch.object(FormContacts, 'show') as mock_show4:
-                    mock_show1.return_value = None
-                    mock_show2.return_value = None
-                    mock_show3.return_value = None
-                    mock_show4.return_value = None
-                    QtTest.QTest.mouseClick(button, Qt.LeftButton)
+    #with patch.object(FormSettings, 'show') as mock_show1:
+    #    with patch.object(FormNewMessage, 'show') as mock_show2:
+    #        with patch.object(FormViewMessage, 'show') as mock_show3:
+    #            with patch.object(FormContacts, 'show') as mock_show4:
+    #                mock_show1.return_value = None
+    #                mock_show2.return_value = None
+    #                mock_show3.return_value = None
+    #                mock_show4.return_value = None
+    #                QtTest.QTest.mouseClick(button, Qt.LeftButton)
+    with patch.object(QDialog, 'show') as mock_show1:
+        mock_show1.return_value = None
+        QtTest.QTest.mouseClick(button, Qt.LeftButton)
 
 @step(u'Then I see following values')
 def Then_I_see_the_following_values(step):
@@ -189,21 +199,23 @@ def When_I_close_the_message_window_in_main_window(step, window_index):
     formmain = getattr(world, 'formmain' + window_index)
     formmain.formviewmessage.close()
 
-@step(u'there is 1 (contact|checkers game) in main window (\d+) (contact|manage checkers games) window and the (contacts|checkers game) name is \'([^\']*)\'')
+@step(u'there is 1 (contact|checkers game|trello board) in main window (\d+) (contact|manage checkers games|manage trello boards) window and the (contacts|checkers game|trello board) name is \'([^\']*)\'')
 def there_is_one_contact_in_main_window_contact_window(step, object_type, window_index, window_name, object_type2, object_name):
     formmain = getattr(world, 'formmain' + window_index)
     #assert object_type == object_type2
-    if object_type == "contact":
+    if object_type == 'contact':
         l = formmain.formcontacts.contacts
-    else:
+    elif object_type == 'checkers game':
         l = formmain.form_manage_checkers_games.games
+    elif object_type == 'trello board':
+        l = formmain.form_trello.boards
     assert l.rowCount() == 1, "1 " + object_type + " expected actually found " + str(l.rowCount())
     control_name = l.item(0,0).text()
     if control_name[0] == '<':
         control_name = control_name[1:]
     if control_name[-1] == '>':
         control_name = control_name[:-1]
-    assert control_name == object_name, "Contact name does not match " + str(control_name) + " vs " + str(object_name)
+    assert control_name == object_name, object_type + " name does not match " + str(control_name) + " vs " + str(object_name)
 
 @step(u'The contact \'([^\']*)\' in main window (\d+) has the same public key as main window (\d+) private key')
 def the_contact_group1_in_main_window_2_has_the_same_public_key_as_main_window_1_private_key(step, contact_name, window_index1, window_index2):
@@ -213,22 +225,32 @@ def the_contact_group1_in_main_window_2_has_the_same_public_key_as_main_window_1
     assert len(contacts) == 1
     assert contacts[0].publickey == formmain2.demux.key.publickey().exportKey("PEM"), contacts[0].publickey + " vs " + formmain2.demux.key.publickey().exportKey("PEM")
 
-@step(u'I select checkers game 1 in main window (\d+) manage checkers games window and press \'([^\']*)\'')
-def then_select_checkers_game_1_in_main_window_1_manage_checkers_games_window_and_press_group1(step, window_index, button_name):
+@step(u'I select (checkers game|trello board) 1 in main window (\d+) (manage checkers games|manage trello boards) window and press \'([^\']*)\'')
+def then_select_checkers_game_1_in_main_window_1_manage_checkers_games_window_and_press_group1(step, object_type, window_index, window_desc, button_name):
     formmain = getattr(world, 'formmain' + window_index, None)
-    formtarget = formmain.form_manage_checkers_games
+    if window_desc == 'manage checkers games':
+        formtarget = formmain.form_manage_checkers_games
+    elif window_desc == 'manage trello boards':
+        formtarget = formmain.form_trello
     assert formmain is not None, "Matching form not found"
     button = getattr(formtarget, button_name)
-    #QtTest.QTest.mouseClick(formtarget.games, Qt.LeftButton ,pos=QtCore.QPoint(1,1))
-    formtarget.games.setCurrentCell(0,0)
-    selecteditems = formtarget.games.selectedItems()
+
+    if window_desc == 'manage checkers games':
+        grid = formtarget.games
+    elif window_desc == 'manage trello boards':
+        grid = formtarget.boards
+    grid.setCurrentCell(0,0)
+    selecteditems = grid.selectedItems()
     assert len(selecteditems) == 1, "Unexpected selected items " + str(selecteditems)
     QtTest.QTest.mouseClick(button, Qt.LeftButton)
 
-@step(u'the main window (\d+) play checkers window has the title \'([^\']*)\'')
-def then_the_main_window_1_play_checkers_window_has_the_title_group1(step, window_index, title):
+@step(u'the main window (\d+) (play checkers|edit trello board) window has the title \'([^\']*)\'')
+def then_the_main_window_1_play_checkers_window_has_the_title_group1(step, window_index, window_type, title):
     formmain = getattr(world, 'formmain' + window_index, None)
-    formtarget = formmain.form_manage_checkers_games.form_play_checkers
+    if window_type == 'play checkers':
+        formtarget = formmain.form_manage_checkers_games.form_play_checkers
+    elif window_type == 'edit trello board':
+        formtarget = formmain.form_trello.form_edit_board
     assert formmain is not None, "Matching form not found"
     assert formtarget.windowTitle() == title, "Title does not match " + str(formtarget.windowTitle()) + " vs " + str(title)
 
@@ -255,6 +277,32 @@ def given_the_main_window_1_play_checkers_window_board_displayed_matches(step, w
                 assert isinstance(cellwidget, ImgBlackOnBlack), "piece == 'B', cellwidget = " + str(cellwidget) + "x = " + str(x) + " y = " + str(y)
             else:
                 assert False, "Unknown piece type '" + piece + "'"
+
+@step(u'Given the main window (\d+) trello board displayed matches')
+def given_the_main_window_1_trello_board_displayed_matches(step, window_index):
+    formmain = getattr(world, 'formmain' + window_index, None)
+    formtarget = formmain.form_trello.form_edit_board
+    gridtext = dict()
+    row = 0
+    for control_values in step.hashes:
+        assert len(control_values) == len(formtarget.board.lists), "len(control_values)=" + str(control_values) + ' len(formtarget.board.lists) = ' + str(len(formtarget.board.lists))
+        for column in range(len(control_values)):
+            content = control_values[str(column)]
+            if content != '':
+                gridtext[(row,column)]=content
+        row = row + 1
+    celllist = [(k, v) for (k, v) in formtarget.cells.iteritems() if not isinstance(v, FormEditTrelloBoard.AddListCell)]
+    #utils.log_output("formtarget.cells = ",formtarget.cells)
+    #utils.log_output("celllist = ",celllist)
+    cells = dict(celllist)
+    #utils.log_output("cells = ",cells)
+    #utils.log_output("gridtext = ",gridtext)
+    assert len(cells) == len(gridtext)
+    assert set(cells) == set(gridtext), "set(cells) = " + str(set(cells) ) + ", set(gridtext) = " + str(set(gridtext))
+    for (k, v) in cells.iteritems():
+        content = v.teContent.toPlainText()
+        assert gridtext[k] == content, "k = " + str(k) + "  gridtext[k] = " + str(gridtext[k]) + " content = " + str(content)
+
 
 @step(u'the main window (\d+) play checkers window current player is \'([^\']*)\'')
 def then_the_main_window_1_play_checkers_window_current_player_is_group1(step, window_index, player_colour):
@@ -287,4 +335,89 @@ def given_the_main_window_1_play_checkers_window_equals_group1(step, window_inde
 def i_clear_directory_group1(step, dirname):
     utils.setup_app_dir(dirname)
     assert len(os.listdir(dirname)) == 0
+
+@step(u'Then I press the \'([^\']*)\' button in main window (\d+) edit trello board window cell (\d+), (\d+)')
+def then_i_press_the_bnaddlist_button_in_main_window_1_edit_trello_board_window_cell_1_0(step, button_name, window_index, cell_row, cell_column):
+    #utils.log_output("steps.py pressing trello grid button window_index = ", window_index, " button_name = ", button_name)
+    formmain = getattr(world, 'formmain' + window_index, None)
+    formtarget = formmain.form_trello.form_edit_board
+    button = getattr(formtarget.cells[(int(cell_row), int(cell_column))], button_name)
+    QtTest.QTest.mouseClick(button, Qt.LeftButton)
+    
+@step(u'Then edit in the main window (\d+) trello board \'([^\']*)\' in cell (\d+), (\d+) and change to \'([^\']*)\'')
+def then_edit_in_the_main_window_1_trello_board_teeditname_in_cell_0_1_and_change_to_group1(step, window_index, edit_control_name, cell_row, cell_column, new_content):
+    formmain = getattr(world, 'formmain' + window_index, None)
+    formtarget = formmain.form_trello.form_edit_board
+    edit = getattr(formtarget.cells[(int(cell_row), int(cell_column))], edit_control_name)
+    for i in range(20):
+        QtTest.QTest.keyClick(edit, Qt.Key_Delete)
+    QtTest.QTest.keyClicks(edit, new_content, 0, 10)
+
+@step(u'Given the main window (\d+) trello board double option displayed match')
+def given_the_main_window_1_trello_board_double_option_displayed_match(step, window_index):
+    formmain = getattr(world, 'formmain' + window_index, None)
+    formtarget = formmain.form_trello.form_edit_board
+    gridtext = [dict()]
+    row = 0
+    grid_index = 0
+    for control_values in step.hashes:
+        assert len(control_values) == len(formtarget.board.lists), "len(control_values)=" + str(control_values) + ' len(formtarget.board.lists) = ' + str(len(formtarget.board.lists))
+        or_row = True
+        for column in range(len(control_values)):
+            content = control_values[str(column)]
+            if content != 'or':
+                or_row = False
+        if or_row == False:
+            for column in range(len(control_values)):
+                content = control_values[str(column)]
+                if content != '':
+                    gridtext[grid_index][(row,column)]=content
+            row = row + 1
+        else:
+            grid_index = grid_index + 1
+            row = 0
+            gridtext.append(dict())
+    matches = list()
+    errors = list()
+    for gt in gridtext:
+        this_matches = True
+        this_gt_errors = list()
+        errors.append(this_gt_errors)
+        celllist = [(k, v) for (k, v) in formtarget.cells.iteritems() if not isinstance(v, FormEditTrelloBoard.AddListCell)]
+        cells = dict(celllist)
+        if len(cells) != len(gt):
+            this_matches = False
+            this_gt_errors.append('len(cells) != len(gt) len(cells)=' + str(len(cells)) + ' len(gridtext) = ' + str(len(gt)))
+            #utils.log_output('steps.py cells=',cells,'gt=',gt)
+        elif set(cells) != set(gt):
+            this_matches = False
+            this_gt_errors.append('set(cells) != set(gt) set(cells)=' + str(set(cells)) + ' set(gridtext) = ' + set(len(gt)))
+        else:
+            for (k, v) in cells.iteritems():
+                content = v.teContent.toPlainText()
+                if gt[k] != content:
+                    this_matches = False
+                    this_gt_errors.append('gt[k] != content  gridtext[k] = ' + str(gt[k]) + ' content = ' + str(content))
+
+        if this_matches:
+            matches.append(gt)
+    assert len(matches) > 0,"errors = " + str(errors)
+
+
+@step(u'Given the main window 1 and main window 2 trello boards match')
+def given_the_main_window_1_and_main_window_2_trello_boards_match(step):
+    formmain1 = getattr(world, 'formmain1', None)
+    formtarget1 = formmain1.form_trello.form_edit_board
+    formmain2 = getattr(world, 'formmain2', None)
+    formtarget2 = formmain2.form_trello.form_edit_board
+
+    celllist1 = [(k, v) for (k, v) in formtarget1.cells.iteritems() if not isinstance(v, FormEditTrelloBoard.AddListCell)]
+    cells1 = dict(celllist1)
+    celllist2 = [(k, v) for (k, v) in formtarget2.cells.iteritems() if not isinstance(v, FormEditTrelloBoard.AddListCell)]
+    cells2 = dict(celllist1)
+    assert len(cells1) == len(cells2)
+    assert set(cells1) == set(cells2)
+    for k in cells1:
+        assert cells1[k].teContent.toPlainText() == cells2[k].teContent.toPlainText()
+
 

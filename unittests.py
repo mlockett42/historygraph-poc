@@ -48,7 +48,7 @@ from checkers import CheckersGame
 import utils
 from checkers import CheckersApp
 from FieldList import FieldList
-from trello import TrelloBoard, TrelloList, TrelloItem, TrelloListLink
+from trello import TrelloBoard, TrelloList, TrelloItem, TrelloListLink, TrelloApp, TrelloShare
 
 
 class Covers(Document):
@@ -870,7 +870,6 @@ class FreezeUpdateTestCase(unittest.TestCase):
         self.assertFalse(test.history.HasDanglingEdges())
         self.assertEqual(test.covers, 3)
         self.assertEqual(handler.covers, 3)
-
 
 class AddMessageToMessageStoreTestCase(unittest.TestCase):
     @patch.object(Demux, 'get_database_filename')
@@ -3199,13 +3198,30 @@ class TrelloMergeTestCase(unittest.TestCase):
         tb1.lists.insert(0, tll1)
         tll1.list_id = tl1.id
 
+        tl1_5 = TrelloList(None)
+        dc1.AddDocumentObject(tl1_5)
+        tl1_5.name = "Trello List 1.5"
+
+        tll1_5 = TrelloListLink(None)
+        tb1.lists.insert(1, tll1_5)
+        tll1_5.list_id = tl1_5.id
+
+        self.assertEqual(len(tb1.lists), 2)
+        self.assertEqual(tb1.lists[0].id, tll1.id)
+        self.assertEqual(tb1.lists[1].id, tll1_5.id)
+
         tl2 = TrelloList(None)
         dc1.AddDocumentObject(tl2)
         tl2.name = "Trello List 2"
 
         tll2 = TrelloListLink(None)
-        tb1.lists.insert(1, tll2)
+        tb1.lists.insert(2, tll2)
         tll2.list_id = tl2.id
+
+        self.assertEqual(len(tb1.lists), 3)
+        self.assertEqual(tb1.lists[0].id, tll1.id)
+        self.assertEqual(tb1.lists[1].id, tll1_5.id)
+        self.assertEqual(tb1.lists[2].id, tll2.id)
 
         ti = TrelloItem(None)
         tl1.items.insert(0, ti)
@@ -3238,31 +3254,440 @@ class TrelloMergeTestCase(unittest.TestCase):
         tl2_b.items.insert(1, ti)
         ti.content = "Trello Item 4"
 
-        list_id = tb1.lists[1].list_id
+        self.assertEqual(tb1.lists[0].list_id, tl1.id)
+        self.assertEqual(tb1.lists[1].list_id, tl1_5.id)
+        self.assertEqual(tb1.lists[2].list_id, tl2.id)
+        #list_id = tb1.lists[1].list_id
         tb1.lists.remove(1)
-        tll2 = TrelloListLink(None)
-        tb1.lists.insert(0, tll2)
-        tll2.list_id = list_id
+        self.assertEqual(len(tb1.lists), 2)
+        self.assertEqual(tb1.lists[0].list_id, tl1.id)
+        self.assertEqual(tb1.lists[1].list_id, tl2.id)
 
         tb3 = tb2.Merge(tb1)
+        tl2_c = tl2_b.Merge(tl2)
+        
+        self.assertEqual(len(tb3.lists._listnodes), 3)
+        self.assertEqual(len(tb3.lists._tombstones), 1)
 
         self.assertEqual(len(tb3.lists), 2)
-        tl = (dc1.GetObjectByID(TrelloList.__name__, tb3.lists[0].list_id), 
-              dc1.GetObjectByID(TrelloList.__name__, tb3.lists[1].list_id))
-        self.assertEqual(len(tl[0].items), 2)
-        self.assertEqual(len(tl[1].items), 2)
-        self.assertEqual(tl[0].name, 'Trello List 2')
-        self.assertEqual(tl[1].name, 'Trello List 1')
-        self.assertEqual(tl[0].items[0].content, 'Trello Item 3')
-        self.assertEqual(tl[0].items[1].content, 'Trello Item 4')
-        self.assertEqual(tl[1].items[0].content, 'Trello Item 1')
-        self.assertEqual(tl[1].items[1].content, 'Trello Item 2')
+        self.assertEqual(tb3.lists[0].list_id, tl1.id)
+        self.assertEqual(tb3.lists[1].list_id, tl2.id)
+        self.assertEqual(len(tl1.items), 2)
+        self.assertEqual(len(tl2_c.items), 2)
+        self.assertEqual(tl2_c.name, 'Trello List 2')
+        self.assertEqual(tl1.name, 'Trello List 1')
+        self.assertEqual(tl1.items[0].content, 'Trello Item 1')
+        self.assertEqual(tl1.items[1].content, 'Trello Item 2')
+        self.assertEqual(tl2_c.items[0].content, 'Trello Item 3')
+        self.assertEqual(tl2_c.items[1].content, 'Trello Item 4')
 
+
+
+class TrelloSwapAndMergeTestCase(unittest.TestCase):
+    def runTest(self):
+        dc1 = DocumentCollection.DocumentCollection()
+        dc1.Register(TrelloBoard)
+        dc1.Register(TrelloList)
+        dc1.Register(TrelloItem)
+        dc1.Register(TrelloListLink)
+
+        tb1 = TrelloBoard(None)
+        dc1.AddDocumentObject(tb1)
+        tl1 = TrelloList(None)
+        dc1.AddDocumentObject(tl1)
+        tl1.name = "Trello List 1"
+
+        tll1 = TrelloListLink(None)
+        tb1.lists.insert(0, tll1)
+        tll1.list_id = tl1.id
+
+        tl2 = TrelloList(None)
+        dc1.AddDocumentObject(tl2)
+        tl2.name = "Trello List 2"
+
+        tll2 = TrelloListLink(None)
+        tb1.lists.insert(1, tll2)
+        tll2.list_id = tl2.id
+
+        self.assertEqual(len(tb1.lists), 2)
+        self.assertEqual(tb1.lists[0].list_id, tl1.id)
+        self.assertEqual(tb1.lists[1].list_id, tl2.id)
+
+        ti = TrelloItem(None)
+        tl1.items.insert(0, ti)
+        ti.content = "Trello Item 1"
+        
+        ti = TrelloItem(None)
+        tl1.items.insert(1, ti)
+        ti.content = "Trello Item 2"
+
+        ti = TrelloItem(None)
+        tl2.items.insert(0, ti)
+        ti.content = "Trello Item 3"
+
+        history = tb1.history.Clone()
+        tb2 = TrelloBoard(tb1.id)
+        dc1.AddDocumentObject(tb2)
+        history.Replay(tb2)
+
+        history = tl1.history.Clone()
+        tl1_b = TrelloList(tl1.id)
+        dc1.AddDocumentObject(tl1_b)
+        history.Replay(tl1_b)
+
+        history = tl2.history.Clone()
+        tl2_b = TrelloList(tl2.id)
+        dc1.AddDocumentObject(tl2_b)
+        history.Replay(tl2_b)
+
+        ti = TrelloItem(None)
+        tl2_b.items.insert(1, ti)
+        ti.content = "Trello Item 4"
+
+        self.assertEqual(tb1.lists[0].list_id, tl1.id)
+        self.assertEqual(tb1.lists[1].list_id, tl2.id)
+        #list_id = tb1.lists[1].list_id
+        tb1.lists.remove(1)
+
+        tll2_b = TrelloListLink(None)
+        tb1.lists.insert(0, tll2_b)
+        tll2_b.list_id = tl2.id
+
+        tb3 = tb2.Merge(tb1)
+        tl2_c = tl2_b.Merge(tl2)
+        
+        self.assertEqual(len(tb3.lists._listnodes), 3)
+        self.assertEqual(len(tb3.lists._tombstones), 1)
+
+        self.assertEqual(len(tb3.lists), 2)
+        self.assertEqual(tb3.lists[1].list_id, tl1.id)
+        self.assertEqual(tb3.lists[0].list_id, tl2.id)
+        self.assertEqual(len(tl1.items), 2)
+        self.assertEqual(len(tl2_c.items), 2)
+        self.assertEqual(tl2_c.name, 'Trello List 2')
+        self.assertEqual(tl1.name, 'Trello List 1')
+        self.assertEqual(tl1.items[0].content, 'Trello Item 1')
+        self.assertEqual(tl1.items[1].content, 'Trello Item 2')
+        self.assertEqual(tl2_c.items[0].content, 'Trello Item 3')
+        self.assertEqual(tl2_c.items[1].content, 'Trello Item 4')
+
+
+class TrelloThreeWayShareTestCase(unittest.TestCase):
+    def verify_contact_matches_sender_demux(self, contacts, demux_index):
+        demux = [self.demux[i] for i in range(3) if i != demux_index]
+        self.assertEqual(len(list(contacts)), 2)
+        for contact in contacts:
+            self.assertTrue(contact.islivewire)
+            self.assertTrue(contact.publickey == demux[0].key.publickey().exportKey("PEM") 
+                            or contact.publickey == demux[1].key.publickey().exportKey("PEM"))
+
+    def setUp(self):
+        testingmailserver.ResetMailDict()
+        utils.setup_app_dir("/run/shm/demux0")
+        utils.setup_app_dir("/run/shm/demux1")
+        utils.setup_app_dir("/run/shm/demux2")
+        utils.removepath('/tmp/output.txt')
+        self.demux = [None, None, None]
+        self.demux[0] = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/run/shm/demux0")
+        self.demux[1] = Demux(myemail='mlockett2@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett2',smtppass='',
+                       popuser='mlockett2',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/run/shm/demux1")
+        self.demux[2] = Demux(myemail='mlockett3@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett3',smtppass='',
+                       popuser='mlockett3',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/run/shm/demux2")
+        message = """
+Frist post!!!!!!
+
+"""
+
+        self.demux[0].SendPlainEmail(receivers = ['mlockett2@livewire.io'], subject = "SMTP e-mail test", message=message)
+        self.demux[0].SendPlainEmail(receivers = ['mlockett3@livewire.io'], subject = "SMTP e-mail test", message=message)
+        self.demux[1].SendPlainEmail(receivers = ['mlockett3@livewire.io'], subject = "SMTP e-mail test", message=message)
+
+        messages = self.demux[0].messagestore.GetMessages()
+        self.assertEqual(len(list(messages)), 0)
+        messages = self.demux[1].messagestore.GetMessages()
+        self.assertEqual(len(list(messages)), 0)
+        messages = self.demux[2].messagestore.GetMessages()
+        self.assertEqual(len(list(messages)), 0)
+
+        time.sleep(0.01) #Give background thread a chance to run
+        
+        self.demux[0].CheckEmail()
+        self.demux[1].CheckEmail()
+        self.demux[2].CheckEmail()
+
+        messages = self.demux[1].messagestore.GetMessages()
+        self.assertEqual(len(list(messages)), 1)
+        message = messages[0]
+        self.assertTrue(message.senderislivewireenabled, "Sender must be livewire enabled")
+
+        messages = self.demux[2].messagestore.GetMessages()
+        self.assertEqual(len(list(messages)), 2)
+        self.assertTrue(messages[0].senderislivewireenabled, "Sender must be livewire enabled")
+        self.assertTrue(messages[1].senderislivewireenabled, "Sender must be livewire enabled")
+
+        #mlockett2 now knows that mlockett1 is livewire enabled The demux should have already sent to mlockett1 our public key
+        
+        time.sleep(0.01) #Give background thread a chance to run
+        
+        messages = self.demux[0].messagestore.GetMessages()
+        self.assertEqual(len(list(messages)), 0)
+
+        self.demux[0].CheckEmail() # Each demux should get a reply from the others and have their identity
+        self.demux[1].CheckEmail() 
+        self.demux[2].CheckEmail() 
+
+        time.sleep(0.01) #Give background thread a chance to run
+
+        self.demux[0].CheckEmail() # Each demux should get a reply from the others and have their identity
+        self.demux[1].CheckEmail() 
+        self.demux[2].CheckEmail() 
+
+        self.verify_contact_matches_sender_demux(self.demux[0].contactstore.GetContacts(), 0)
+        self.verify_contact_matches_sender_demux(self.demux[1].contactstore.GetContacts(), 1)
+        self.verify_contact_matches_sender_demux(self.demux[2].contactstore.GetContacts(), 2)
+
+
+    def runTest(self):
+        app = list()
+        for i in range(3):
+            app.append(TrelloApp(self.demux[i]))
+
+        for i in range(3):
+            self.demux[i].RegisterApp(app[i])
+
+        dc = dict()
+        dc[0] = app[0].CreateNewDocumentCollection(None)
+        app[0].SaveAndKeepUpToDate(dc[0], "/run/shm/demux0")
+        app[0].Share(dc[0], 'mlockett1@livewire.io')
+        app[0].Share(dc[0], 'mlockett2@livewire.io')
+        app[0].Share(dc[0], 'mlockett3@livewire.io')
+
+        trelloboard = dict()
+        trelloboard[0] = TrelloBoard(None)
+        dc[0].AddDocumentObject(trelloboard[0])
+
+        trelloboard[0].name = 'Trello1'
+
+        ts = TrelloShare(None)
+        trelloboard[0].shares.add(ts)
+        ts.email = 'mlockett1@livewire.io'
+
+        ts = TrelloShare(None)
+        trelloboard[0].shares.add(ts)
+        ts.email = 'mlockett2@livewire.io'
+
+        ts = TrelloShare(None)
+        trelloboard[0].shares.add(ts)
+        ts.email = 'mlockett3@livewire.io'
+
+        trelloboard[0].CreateDefaultStartBoard()
+
+        # Test the default is as we expect
+        self.assertEqual(trelloboard[0].name, 'Trello1')
+        tll = trelloboard[0].lists[0]
+        tl = dc[0].objects[TrelloList.__name__][tll.list_id]
+        self.assertEqual(tl.name, 'List 1')
+        self.assertEqual(len(tl.items), 0)
+
+        app[0].SaveDC(dc[0], "/run/shm/demux0")
+        app[0].UpdateShares()
+
+        time.sleep(0.01) #Give the email a chance to send
+        self.demux[1].CheckEmail()
+        self.demux[2].CheckEmail()
+
+        dc[1] = app[1].GetDocumentCollectionByID(dc[0].id)
+        dc[2] = app[2].GetDocumentCollectionByID(dc[0].id)
+
+        trelloboard[1] = dc[1].GetObjectByID(TrelloBoard.__name__, trelloboard[0].id)
+        trelloboard[2] = dc[2].GetObjectByID(TrelloBoard.__name__, trelloboard[0].id)
+
+        share_emails = set([share.email for share in trelloboard[0].shares])
+        for i in range(1, 3):
+            #Verify all the boards are shared to the same list
+            self.assertEqual(set([share.email for share in trelloboard[i].shares]), share_emails)
+            app[i].SaveAndKeepUpToDate(dc[i], '/run/shm/demux' + str(i))
+            for share in trelloboard[i].shares:
+                if self.demux[i].myemail != share.email:
+                    #print "Share from " + self.demux[i].myemail + " to " + share.email
+                    app[i].Share(dc[i], share.email)
+
+            self.assertEqual(len(dc[i].objects[TrelloBoard.__name__]), 1)
+
+            # Test the default is as we expect
+            self.assertEqual(trelloboard[i].name, 'Trello1')
+            tll = trelloboard[i].lists[0]
+            tl = dc[i].objects[TrelloList.__name__][tll.list_id]
+            self.assertEqual(tl.name, 'List 1')
+            self.assertEqual(len(tl.items), 0)
+
+        # Get user 2 to add an item to the existing list
+        tll = trelloboard[1].lists[0]
+        tl = dc[1].objects[TrelloList.__name__][tll.list_id]
+        ti = TrelloItem(None)
+        tl.items.insert(0, ti)
+        ti.content = 'User 2 Item 1'
+
+        # Test it was updated as we expect
+        self.assertEqual(trelloboard[1].name, 'Trello1')
+        self.assertEqual(len(trelloboard[1].lists), 1)
+        tll = trelloboard[1].lists[0]
+        tl = dc[1].objects[TrelloList.__name__][tll.list_id]
+        self.assertEqual(tl.name, 'List 1')
+        self.assertEqual(len(tl.items), 1)
+        self.assertEqual(tl.items[0].content, 'User 2 Item 1')
+
+        # Get user 3 to add a new list
+        
+        tl2 = TrelloList(None)
+        dc[2].AddDocumentObject(tl2)
+        tl2.name = 'User 2 Special List'
+
+        tll = TrelloListLink(None)
+        trelloboard[2].lists.insert(1, tll)
+        tll.list_id = tl2.id
+
+        # Test it was updated as we expect
+        self.assertEqual(trelloboard[2].name, 'Trello1')
+        self.assertEqual(len(trelloboard[2].lists), 2)
+        tll = trelloboard[2].lists[0]
+        tl = dc[2].objects[TrelloList.__name__][tll.list_id]
+        self.assertEqual(tl.name, 'List 1')
+        self.assertEqual(len(tl.items), 0)
+
+        tll = trelloboard[2].lists[1]
+        tl = dc[2].objects[TrelloList.__name__][tll.list_id]
+        self.assertEqual(tl.name, 'User 2 Special List')
+        self.assertEqual(len(tl.items), 0)
+
+        # Brutally clear junk out of the email spool
+        testingmailserver.ResetMailDict()
+        app[1].UpdateShares()
+        app[2].UpdateShares()
+
+        time.sleep(0.01) #Give the email a chance to send
+        for i in range(3):
+            self.demux[i].CheckEmail()
+
+        # Verify all users boards contain all of the updates
+        for i in range(3):
+            # Test it was updated as we expect
+            self.assertEqual(trelloboard[i].name, 'Trello1')
+            self.assertEqual(len(trelloboard[i].lists), 2)
+            tll = trelloboard[i].lists[0]
+            tl = dc[i].objects[TrelloList.__name__][tll.list_id]
+            self.assertEqual(tl.name, 'List 1')
+            self.assertEqual(len(tl.items), 1)
+            self.assertEqual(tl.items[0].content, 'User 2 Item 1')
+
+            tll = trelloboard[i].lists[1]
+            tl = dc[i].objects[TrelloList.__name__][tll.list_id]
+            self.assertEqual(tl.name, 'User 2 Special List')
+            self.assertEqual(len(tl.items), 0)
+
+
+
+class TrelloStoreInDatabaseTestCase(unittest.TestCase):
+
+    def runTest(self):
+        dc1 = DocumentCollection.DocumentCollection()
+        dc1.Register(TrelloBoard)
+        dc1.Register(TrelloList)
+        dc1.Register(TrelloItem)
+        dc1.Register(TrelloListLink)
+
+        tb1 = TrelloBoard(None)
+        dc1.AddDocumentObject(tb1)
+        tl1 = TrelloList(None)
+        dc1.AddDocumentObject(tl1)
+        tl1.name = "Trello List 1"
+
+        tll1 = TrelloListLink(None)
+        tb1.lists.insert(0, tll1)
+        tll1.list_id = tl1.id
+
+
+        tl2 = TrelloList(None)
+        dc1.AddDocumentObject(tl2)
+        tl2.name = "Trello List 2"
+
+        tll2 = TrelloListLink(None)
+        tb1.lists.insert(1, tll2)
+        tll2.list_id = tl2.id
+
+        ti = TrelloItem(None)
+        tl1.items.insert(0, ti)
+        dc1.AddDocumentObject(ti)
+        ti.content = "Trello Item 1"
+        
+        ti = TrelloItem(None)
+        tl1.items.insert(1, ti)
+        dc1.AddDocumentObject(ti)
+        ti.content = "Trello Item 2"
+
+        ti = TrelloItem(None)
+        tl2.items.insert(0, ti)
+        dc1.AddDocumentObject(ti)
+        ti.content = "Trello Item 3"
+
+        ti = TrelloItem(None)
+        tl2.items.insert(1, ti)
+        dc1.AddDocumentObject(ti)
+        ti.content = "Trello Item 4"
+
+        self.assertEqual(len(dc1.GetByClass(TrelloBoard)), 1)
+        self.assertEqual(len(dc1.GetByClass(TrelloList)), 2)
+
+        utils.removepath('/dev/shm/test.history.db')
+        utils.removepath('/dev/shm/test.content.db')
+        DocumentCollectionHelper.SaveDocumentCollection(dc1, '/dev/shm/test.history.db', '/dev/shm/test.content.db')
+
+        matches = DocumentCollectionHelper.GetSQLObjects(dc1, '/dev/shm/test.content.db', "SELECT id FROM TrelloBoard")
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(matches[0].__class__, TrelloBoard)
+        self.assertEqual(matches[0].id, tb1.id)
+
+        matches = DocumentCollectionHelper.GetSQLObjects(dc1, '/dev/shm/test.content.db', "SELECT id FROM TrelloList")
+        self.assertEqual(len(matches), 2)
+        for match in matches:
+            self.assertEqual(match.__class__, TrelloList)
+        self.assertEqual({tl1.id, tl2.id}, set([match.id for match in matches]))
+
+        matches = DocumentCollectionHelper.GetSQLObjects(dc1, '/dev/shm/test.content.db', "SELECT id FROM TrelloItem")
+        self.assertEqual(len(matches), 4)
+        for match in matches:
+            self.assertEqual(match.__class__, TrelloItem)
+        self.assertEqual(set([match.content for match in matches]), set([match.content for match in matches]))
+
+        dc1 = DocumentCollection.DocumentCollection()
+        dc1.Register(TrelloBoard)
+        dc1.Register(TrelloList)
+        dc1.Register(TrelloItem)
+        dc1.Register(TrelloListLink)
+
+        #DocumentCollection.documentcollection = DocumentCollection.DocumentCollection()
+        DocumentCollectionHelper.LoadDocumentCollection(dc1, '/dev/shm/test.history.db', '/dev/shm/test.content.db')
+        test1s = dc1.GetByClass(TrelloBoard)
+        self.assertEqual(len(test1s), 1)
+        test1 = test1s[0]
+        self.assertEqual(test1.id, tb1.id)
+        self.assertEqual(len(test1.lists), 2)
+        tll1 = test1.lists[0]
+        tl1 = dc1.objects[TrelloList.__name__][tll1.list_id]
+        tll2 = test1.lists[1]
+        tl2 = dc1.objects[TrelloList.__name__][tll2.list_id]
+        self.assertEqual(tl1.name, 'Trello List 1')
+        self.assertEqual(tl2.name, 'Trello List 2')
+        self.assertEqual(tl1.items[0].content, 'Trello Item 1')
+        self.assertEqual(tl1.items[1].content, 'Trello Item 2')
+        self.assertEqual(tl2.items[0].content, 'Trello Item 3')
+        self.assertEqual(tl2.items[1].content, 'Trello Item 4')
 
 
 class StartTestingMailServerDummyTest(unittest.TestCase):
     def setUp(self):
-        testingmailserver.StartTestingMailServer("livewire.io", {"mlockett":"","mlockett1":"","mlockett2":""})
+        testingmailserver.StartTestingMailServer("livewire.io", {"mlockett":"","mlockett1":"","mlockett2":"","mlockett3":""})
 
     def runTest(self):
         pass        
@@ -3299,7 +3724,6 @@ def suite():
     suite.addTest(StoreImmutableObjectsInDatabaseTestCase())
     suite.addTest(SimpleCoversUpdateTestCase())
     suite.addTest(FreezeUpdateTestCase())
-
     suite.addTest(SimpleCounterTestCase())
     suite.addTest(MergeCounterTestCase())
     suite.addTest(MergeCounterChangesMadeInJSONTestCase())
@@ -3335,6 +3759,8 @@ def suite():
 
     suite.addTest(TrelloBuildAndEditTestCase())
     suite.addTest(TrelloMergeTestCase())
+    suite.addTest(TrelloSwapAndMergeTestCase())
+    suite.addTest(TrelloStoreInDatabaseTestCase())
 
     suite.addTest(StartTestingMailServerDummyTest())
 
@@ -3351,6 +3777,9 @@ def suite():
     suite.addTest(ReloadAppTestCase())
 
     suite.addTest(ShareAndReloadCheckersGameTestCase())
+
+    suite.addTest(TrelloThreeWayShareTestCase())
+
     suite.addTest(StopTestingMailServerDummyTest())
 
     suite.addTest(DemuxCanSaveAndLoadTestCase())

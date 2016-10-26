@@ -120,9 +120,9 @@ class FormCheckers(QDialog):
             piece.MoveTo(x, y)
             status = "Piece moved from " + str(self.selected_piece) + " to " + str(location)
             if len(piece.GetValidCaptures()[0]) == 0:
-                utils.log_output("LabelClicked incrementing turn")
+                #utils.log_output("LabelClicked incrementing turn")
                 self.game.turn.add(1)
-            utils.log_output("LabelClicked updating shares")
+            #utils.log_output("LabelClicked updating shares")
             self.parent().checkersapp.UpdateShares()
             self.parent().checkersapp.SaveDC(self.dc, "/run/shm/demux2")
             self.UpdateStatus(status)
