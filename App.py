@@ -35,6 +35,9 @@ class App(object):
     def GetDocumentCollectionByID(self, id):
         return self.dcdict[id]
 
+    def HasDocumentCollection(self, id):
+        return id in self.dcdict
+
     def GetDocumentCollections(self):
         return [v for (k,v) in self.dcdict.iteritems()]
 

@@ -49,7 +49,7 @@ import utils
 from checkers import CheckersApp
 from FieldList import FieldList
 from trello import TrelloBoard, TrelloList, TrelloItem, TrelloListLink, TrelloApp, TrelloShare
-from multichat import MultiChatItem
+from multichat import MultiChatItem, MultiChatApp, MultiChatShare
 from operator import itemgetter, attrgetter, methodcaller
 
 class Covers(Document):
@@ -3706,6 +3706,126 @@ class MultiChatBasicTestCase(unittest.TestCase):
         content = [item.content for item in items]
         self.assertEqual(content, ['Chat Item 1', 'Chat Item 2'])
 
+class MultiChatViaEncryptedEmailTestCase(unittest.TestCase):
+    def setUp(self):
+        testingmailserver.ResetMailDict()
+        utils.setup_app_dir("/run/shm/demux1")
+        utils.setup_app_dir("/run/shm/demux2")
+        utils.setup_app_dir("/run/shm/testdbs")
+        self.demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/run/shm/demux1")
+        self.demux2 = Demux(myemail='mlockett2@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett2',smtppass='',
+                       popuser='mlockett2',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/run/shm/demux2")
+        message = """
+Frist post!!!!!!
+
+"""
+
+        self.demux1.SendPlainEmail(receivers = ['mlockett2@livewire.io'], subject = "SMTP e-mail test", message=message)
+
+        messages = self.demux1.messagestore.GetMessages()
+        self.assertEqual(len(list(messages)), 0)
+
+        time.sleep(0.01) #Give background thread a chance to run
+        
+        self.demux2.CheckEmail()
+
+        messages = self.demux2.messagestore.GetMessages()
+        self.assertEqual(len(list(messages)), 1)
+        message = messages[0]
+        self.assertTrue(message.senderislivewireenabled) # Sender is not livewire enabled
+
+        #mlockett2 now knows that mlockett1 is livewire enabled The demux should have already sent to mlockett1 our public key
+        
+        time.sleep(0.01) #Give background thread a chance to run
+        
+        messages = self.demux1.messagestore.GetMessages()
+
+        self.assertEqual(len(list(messages)), 0)
+
+        self.demux1.CheckEmail() #Demux 1 should receive a message from demux2 and recognise it is livewire enabled and get the public key
+
+        contacts = self.demux1.contactstore.GetContacts()
+
+        self.assertEqual(len(list(contacts)), 1)
+        self.assertTrue(contacts[0].islivewire)
+        self.assertEqual(contacts[0].publickey, self.demux2.key.publickey().exportKey("PEM"))
+
+        time.sleep(0.01) #Give background thread a chance to run
+
+        self.demux2.CheckEmail() #Demux 2 should receive a message from demux1 with it's public key
+
+
+        #Each demux should now have the 
+
+        contacts = self.demux2.contactstore.GetContacts()
+
+        self.assertEqual(len(list(contacts)), 1)
+        self.assertEqual(contacts[0].publickey, self.demux1.key.publickey().exportKey("PEM") )
+        self.assertTrue(contacts[0].islivewire)
+
+    def runTest(self):
+        app1 = MultiChatApp(self.demux1)
+        app2 = MultiChatApp(self.demux2)
+
+        self.demux1.RegisterApp(app1)
+        self.demux2.RegisterApp(app2)
+
+        dc1 = app1.CreateNewDocumentCollection(None)
+        app1.SaveAndKeepUpToDate(dc1, "/run/shm/demux1")
+        app1.Share(dc1, 'mlockett2@livewire.io')
+
+        i = MultiChatItem(content = 'Chat Item 1', eventtime = 1000)
+        dc1.AddImmutableObject(i)
+
+        items1 = dc1.GetByClass(MultiChatItem)
+        #print "items1=",[i.content for i in items1]
+        self.assertEqual(len(items1), 1)
+
+        app1.SaveDC(dc1, "/run/shm/demux1")
+        app1.UpdateShares()
+
+        time.sleep(0.01) #Give the email a chance to send
+        self.demux2.CheckEmail()
+
+        dc2 = app2.GetDocumentCollectionByID(dc1.id)
+
+        i = MultiChatItem(content = 'Chat Item 2', eventtime = 1001)
+        dc2.AddImmutableObject(i)
+
+        items1 = dc2.GetByClass(MultiChatItem)
+        #print "items1=",[i.content for i in items1]
+        self.assertEqual(len(items1), 2)
+
+        app2.Share(dc2, 'mlockett1@livewire.io')
+        app2.SaveDC(dc2, "/run/shm/demux2")
+        app2.UpdateShares()
+
+        i = MultiChatItem(content = 'Chat Item 3', eventtime = 1002)
+        dc1.AddImmutableObject(i)
+        items1 = dc2.GetByClass(MultiChatItem)
+        #print "items2=",[i.content for i in items1]
+        #print "dc2.getAllEdges()=",dc2.getAllEdges()
+        self.assertEqual(len(items1), 2)
+
+
+        app1.SaveDC(dc1, "/run/shm/demux1")
+        app1.UpdateShares()
+
+        time.sleep(0.01) #Give the email a chance to send
+        self.demux1.CheckEmail()
+        #self.demux2.CheckEmail()
+
+        #dc1 = app1.GetDocumentCollectionByID(dc1.id)
+        #print "dc1.objects[MultiChatItem.__name__]=",dc1.objects[MultiChatItem.__name__]
+        items1 = dc1.GetByClass(MultiChatItem)
+        #print "items1=",[(i.content, i.eventtime) for i in items1]
+        self.assertEqual(len(items1), 3)
+        items1 = sorted(items1,key=attrgetter('eventtime'))
+        content = [item.content for item in items1]
+        self.assertEqual(content, ['Chat Item 1', 'Chat Item 2', 'Chat Item 3'])
+
+
 
 class StartTestingMailServerDummyTest(unittest.TestCase):
     def setUp(self):
@@ -3786,7 +3906,6 @@ def suite():
 
     suite.addTest(MultiChatBasicTestCase())
 
-
     suite.addTest(StartTestingMailServerDummyTest())
 
     suite.addTest(SendAndReceiveUnencryptedEmail())
@@ -3805,9 +3924,11 @@ def suite():
 
     suite.addTest(TrelloThreeWayShareTestCase())
 
+    suite.addTest(MultiChatViaEncryptedEmailTestCase())
+
     suite.addTest(StopTestingMailServerDummyTest())
 
-    suite.addTest(DemuxCanSaveAndLoadTestCase())
+    #suite.addTest(DemuxCanSaveAndLoadTestCase())
 
     return suite
 

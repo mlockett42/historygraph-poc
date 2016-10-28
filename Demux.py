@@ -218,13 +218,18 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                 elif d["class"] == "createdocumentcollection": #An identity message identifies the other sender: Ie gives us their public key
                     if not self.is_verified(fromemail, l, sig):
                         return #Silently ignore unverified messages
-                    dc = self.registeredapps[d["appname"]].CreateNewDocumentCollection(d["dcid"])
+                    app = self.registeredapps[d["appname"]]
+                    if app.HasDocumentCollection(d["dcid"]):
+                        dc = app.GetDocumentCollectionByID(d["dcid"])
+                    else:
+                        dc = app.CreateNewDocumentCollection(d["dcid"])
                     dc.LoadFromJSON(d["dcjson"])
                 elif d["class"] == "edges": #Some edges we should apply
                     if not self.is_verified(fromemail, l, sig):
                         return #Silently ignore unverified edges
                     dc = self.registeredapps[d["appname"]].GetDocumentCollectionByID(d["dcid"])
                     #utils.log_output("received edges = " + str(d["edges"]))
+                    #print "Calling LoadfromJSON from Demux = ",self.myemail
                     dc.LoadFromJSON(d["edges"])
                 elif d["class"] == "immutableobject": #immutableobject to create
                     if not self.is_verified(fromemail, l, sig):
