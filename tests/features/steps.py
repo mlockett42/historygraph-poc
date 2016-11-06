@@ -18,6 +18,7 @@ from formmanagecheckersgames import FormManageCheckersGames
 from formcheckers import ImgWhiteSquare, ImgBlackSquare, ImgWhiteOnBlack, ImgBlackOnBlack
 import os
 from formedittrelloboard import FormEditTrelloBoard
+from formeditmultichat import FormEditMultiChat
 
 
 @step(u'I open the settings page')
@@ -41,7 +42,7 @@ def I_enter_the_following_values(step):
     for (k, v) in control_values.iteritems():
         QtTest.QTest.keyClicks(getattr(world.formsettings,k), v, 0, 10)
 
-@step(u'I enter the following values into main window (\d+) (new message|new checkers game|new trello board) window')
+@step(u'I enter the following values into main window (\d+) (new message|new checkers game|new trello board|new multichat) window')
 def I_enter_the_following_values_into_main_window_new_message_window(step, window_index, sub_window_type):
     assert len(step.hashes) == 1
     control_values = step.hashes[0]
@@ -52,6 +53,8 @@ def I_enter_the_following_values_into_main_window_new_message_window(step, windo
         formtarget = formmain.form_manage_checkers_games.form_new_checkers_game
     elif sub_window_type == "new trello board":
         formtarget = formmain.form_trello.form_new_trello_board
+    elif sub_window_type == "new multichat":
+        formtarget = formmain.form_multichat.form_new_multi_chat
     assert formmain is not None, "Matching form not found"
     for (k, v) in control_values.iteritems():
         QtTest.QTest.keyClicks(getattr(formtarget,k), v, 0, 10)
@@ -66,7 +69,7 @@ def I_press_the_ok_button(step, buttonname):
         assert False
     QtTest.QTest.mouseClick(button, Qt.LeftButton)
 
-@step(u'I press the (\w+) button on main window (\d+) (new message|manage checkers games|new checkers game|manage trello boards|new trello board) window')
+@step(u'I press the (\w+) button on main window (\d+) (new message|manage checkers games|new checkers game|manage trello boards|new trello board|manage multichats|new multichat|edit multichat) window')
 def I_press_the_ok_button_on_main_window_1_new_message_window(step, buttonname, window_index, which_window):
     formmain = getattr(world, 'formmain' + window_index)
     if which_window == "new message":
@@ -79,6 +82,12 @@ def I_press_the_ok_button_on_main_window_1_new_message_window(step, buttonname, 
         theform = formmain.form_trello
     elif which_window == 'new trello board':
         theform = formmain.form_trello.form_new_trello_board
+    elif which_window == 'manage multichats':
+        theform = formmain.form_multichat
+    elif which_window == 'new multichat':
+        theform = formmain.form_multichat.form_new_multi_chat
+    elif which_window == 'edit multichat':
+        theform = formmain.form_multichat.form_edit_multi_chat
     button = getattr(theform, buttonname, None)
     assert button is not None, "No matching button with that name, looking for " + buttonname
     #with patch.object(FormSettings, 'show') as mock_show1:
@@ -199,7 +208,7 @@ def When_I_close_the_message_window_in_main_window(step, window_index):
     formmain = getattr(world, 'formmain' + window_index)
     formmain.formviewmessage.close()
 
-@step(u'there is 1 (contact|checkers game|trello board) in main window (\d+) (contact|manage checkers games|manage trello boards) window and the (contacts|checkers game|trello board) name is \'([^\']*)\'')
+@step(u'there is 1 (contact|checkers game|trello board|multichat) in main window (\d+) (contact|manage checkers games|manage trello boards|manage multichats) window and the (contacts|checkers game|trello board|multichat) name is \'([^\']*)\'')
 def there_is_one_contact_in_main_window_contact_window(step, object_type, window_index, window_name, object_type2, object_name):
     formmain = getattr(world, 'formmain' + window_index)
     #assert object_type == object_type2
@@ -209,6 +218,8 @@ def there_is_one_contact_in_main_window_contact_window(step, object_type, window
         l = formmain.form_manage_checkers_games.games
     elif object_type == 'trello board':
         l = formmain.form_trello.boards
+    elif object_type == 'multichat':
+        l = formmain.form_multichat.multichats
     assert l.rowCount() == 1, "1 " + object_type + " expected actually found " + str(l.rowCount())
     control_name = l.item(0,0).text()
     if control_name[0] == '<':
@@ -225,13 +236,15 @@ def the_contact_group1_in_main_window_2_has_the_same_public_key_as_main_window_1
     assert len(contacts) == 1
     assert contacts[0].publickey == formmain2.demux.key.publickey().exportKey("PEM"), contacts[0].publickey + " vs " + formmain2.demux.key.publickey().exportKey("PEM")
 
-@step(u'I select (checkers game|trello board) 1 in main window (\d+) (manage checkers games|manage trello boards) window and press \'([^\']*)\'')
+@step(u'I select (checkers game|trello board|multichat) 1 in main window (\d+) (manage checkers games|manage trello boards|manage multichats) window and press \'([^\']*)\'')
 def then_select_checkers_game_1_in_main_window_1_manage_checkers_games_window_and_press_group1(step, object_type, window_index, window_desc, button_name):
     formmain = getattr(world, 'formmain' + window_index, None)
     if window_desc == 'manage checkers games':
         formtarget = formmain.form_manage_checkers_games
     elif window_desc == 'manage trello boards':
         formtarget = formmain.form_trello
+    elif window_desc == 'manage multichats':
+        formtarget = formmain.form_multichat
     assert formmain is not None, "Matching form not found"
     button = getattr(formtarget, button_name)
 
@@ -239,18 +252,22 @@ def then_select_checkers_game_1_in_main_window_1_manage_checkers_games_window_an
         grid = formtarget.games
     elif window_desc == 'manage trello boards':
         grid = formtarget.boards
+    elif window_desc == 'manage multichats':
+        grid = formtarget.multichats
     grid.setCurrentCell(0,0)
     selecteditems = grid.selectedItems()
     assert len(selecteditems) == 1, "Unexpected selected items " + str(selecteditems)
     QtTest.QTest.mouseClick(button, Qt.LeftButton)
 
-@step(u'the main window (\d+) (play checkers|edit trello board) window has the title \'([^\']*)\'')
+@step(u'the main window (\d+) (play checkers|edit trello board|edit multichat) window has the title \'([^\']*)\'')
 def then_the_main_window_1_play_checkers_window_has_the_title_group1(step, window_index, window_type, title):
     formmain = getattr(world, 'formmain' + window_index, None)
     if window_type == 'play checkers':
         formtarget = formmain.form_manage_checkers_games.form_play_checkers
     elif window_type == 'edit trello board':
         formtarget = formmain.form_trello.form_edit_board
+    elif window_type == 'edit multichat':
+        formtarget = formmain.form_multichat.form_edit_multi_chat
     assert formmain is not None, "Matching form not found"
     assert formtarget.windowTitle() == title, "Title does not match " + str(formtarget.windowTitle()) + " vs " + str(title)
 
@@ -420,4 +437,44 @@ def given_the_main_window_1_and_main_window_2_trello_boards_match(step):
     for k in cells1:
         assert cells1[k].teContent.toPlainText() == cells2[k].teContent.toPlainText()
 
+@step(u'Given the main window (\d+) edit multichat displayed matches')
+def given_the_main_window_1_edit_multichat_displayed_matches(step, window_index):
+    formmain = getattr(world, 'formmain' + window_index, None)
+    formtarget = formmain.form_multichat.form_edit_multi_chat
+    gridtext = dict()
+    row = 0
+    for control_values in step.hashes:
+        assert len(control_values) == 1, "len(control_values)=" + str(control_values) + ' '
+        for column in range(len(control_values)):
+            content = control_values[str(column)]
+            if content != '':
+                gridtext[(row,column)]=content
+        row = row + 1
+    celllist = [(k, v) for (k, v) in formtarget.cells.iteritems() if not isinstance(v, FormEditTrelloBoard.AddListCell)]
+    #utils.log_output("formtarget.cells = ",formtarget.cells)
+    #utils.log_output("celllist = ",celllist)
+    cells = dict(celllist)
+    #utils.log_output("cells = ",cells)
+    #utils.log_output("gridtext = ",gridtext)
+    assert len(cells) == len(gridtext), "cells = " + str(cells) + ", gridtext = " + str(gridtext)
+    assert set(cells) == set(gridtext), "set(cells) = " + str(set(cells) ) + ", set(gridtext) = " + str(set(gridtext))
+    cell_content = dict([(k, v.lContent.text()) for (k, v) in cells.iteritems()])
+    #utils.log_output("cell_content = ",cell_content)
+    #utils.log_output("gridtext = ",gridtext)
+    for (k, v) in cell_content.iteritems():
+        content = v
+        assert gridtext[k] == content, "k = " + str(k) + "  gridtext[k] = " + str(gridtext[k]) + " content = " + str(content)
+
+
+@step(u'Then I add the following comment on the main window (\d+) edit multichat window \'([^\']*)\'')
+def then_i_add_the_following_comment_on_the_main_window_1_edit_multichat_window_group1(step, window_index, newmessage):
+    formmain = getattr(world, 'formmain' + window_index, None)
+    formtarget = formmain.form_multichat.form_edit_multi_chat
+    with patch.object(FormEditMultiChat, 'prompt_user_for_message') as mock_user_message:
+        mock_user_message.return_value = newmessage
+        QtTest.QTest.mouseClick(formtarget.bnNewMessage, Qt.LeftButton)
+
+@step(u'Then I wait for 2 seconds')
+def then_i_wait_for_2_seconds(step):
+    time.sleep(2)
 

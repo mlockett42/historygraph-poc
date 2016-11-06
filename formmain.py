@@ -15,6 +15,8 @@ from formmanagecheckersgames import FormManageCheckersGames
 from checkers import CheckersApp
 from formmanagetrello import FormManageTrello
 from trello import TrelloApp
+from formmanagemultichat import FormManageMultiChat
+from multichat import MultiChatApp
 
 class FormMain(QMainWindow):
     def __init__(self, parent, demux):
@@ -100,6 +102,10 @@ class FormMain(QMainWindow):
         trelloAction.setStatusTip('Trello App')
         trelloAction.triggered.connect(self.trello)
 
+        multichatAction = QAction('&MultiChat', self)
+        multichatAction.setStatusTip('MultiChat App')
+        multichatAction.triggered.connect(self.multichat)
+
         self.menubar = self.menuBar()
         fileMenu = self.menubar.addMenu('&File')
         fileMenu.addAction(newmessageAction)
@@ -110,6 +116,7 @@ class FormMain(QMainWindow):
         appsMenu = self.menubar.addMenu('&Apps')
         appsMenu.addAction(checkersAction)
         appsMenu.addAction(trelloAction)
+        appsMenu.addAction(multichatAction)
 
         
         optionsMenu = self.menubar.addMenu('&Options')
@@ -117,8 +124,10 @@ class FormMain(QMainWindow):
 
         self.checkersapp = CheckersApp(self.demux)
         self.trelloapp = TrelloApp(self.demux)
+        self.multichatapp = MultiChatApp(self.demux)
         self.demux.RegisterApp(self.checkersapp)
         self.demux.RegisterApp(self.trelloapp)
+        self.demux.RegisterApp(self.multichatapp)
         #if len(self.checkersapp.GetDocumentCollections()) == 0:
         #    self.checkersapp.CreateNewDocumentCollection(None)
 
@@ -182,3 +191,7 @@ class FormMain(QMainWindow):
         self.form_trello = FormManageTrello(self, self.demux)
         self.form_trello.show()
     
+    def multichat(self):
+        self.form_multichat = FormManageMultiChat(self, self.demux)
+        self.form_multichat.show()
+

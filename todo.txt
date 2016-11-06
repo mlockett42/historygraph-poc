@@ -7,6 +7,7 @@
 * Form new checkers has lots of hard coded stuff in it review and remove junk
 * Test chatter and retry messages and receiving multiple times
 * Mock all windows in the BDD tests
+* All edges need to include a user or session creating them in the data structure. Because otherwise two identical FieldIntCounter edges can be added to give an invalid total
 
 Currently Working on
 

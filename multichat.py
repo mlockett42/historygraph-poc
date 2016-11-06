@@ -8,6 +8,8 @@ from FieldList import FieldList
 from FieldCollection import FieldCollection
 from App import App
 from ImmutableObject import ImmutableObject
+from DocumentObject import DocumentObject
+from Document import Document
 
 class MultiChatItem(ImmutableObject):
     content = FieldText()
@@ -15,6 +17,13 @@ class MultiChatItem(ImmutableObject):
 
 class MultiChatShare(ImmutableObject):
     email = FieldText()
+
+class MultiChatShare(DocumentObject):
+    email = FieldText()
+
+class MultiChatChat(Document):
+    name = FieldText()
+    shares = FieldCollection(MultiChatShare)
 
 class MultiChatApp(App):
     def MessageReceived(s):
@@ -24,5 +33,6 @@ class MultiChatApp(App):
         dc = super(MultiChatApp, self).CreateNewDocumentCollection(dcid)
         dc.Register(MultiChatItem)
         dc.Register(MultiChatShare)
+        dc.Register(MultiChatChat)
         return dc
 
