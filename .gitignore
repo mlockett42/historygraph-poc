@@ -26,3 +26,12 @@ _$*
 *.ln
 core
 # CVS default ignores end
+
+*.pyc
+*.db
+pip-selfcheck.json
+bin/
+include/
+lib/
+local/
+
