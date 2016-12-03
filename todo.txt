@@ -11,9 +11,10 @@
 
 Currently Working on
 
-* Write multi chat app
+* Move todo list to github issues
 
 Finished
+* Write multi chat app
 * Write Trello app 
 * Add unittest to verify when two documents of (possibly) different classes are added to the same dc they save and reload correctly (they don't appear to)
 * Add support for list CFRDT
