@@ -1,6 +1,4 @@
-PYTHONPATH="${PYTHONPATH}:./doop"
-export PYTHONPATH
 rm *.pyc
-rm doop/*.pyc
+rm historygraph/*.pyc
 python -B unittests.py
 

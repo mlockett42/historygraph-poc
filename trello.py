@@ -1,11 +1,11 @@
 # The history graph based data model for the trello app
-from Document import Document
-from DocumentObject import DocumentObject
-from FieldText import FieldText
-from FieldIntRegister import FieldIntRegister
-from FieldIntCounter import FieldIntCounter
-from FieldList import FieldList
-from FieldCollection import FieldCollection
+from historygraph import Document
+from historygraph import DocumentObject
+from historygraph import FieldText
+from historygraph import FieldIntRegister
+from historygraph import FieldIntCounter
+from historygraph import FieldList
+from historygraph import FieldCollection
 from App import App
 
 class TrelloItem(DocumentObject):

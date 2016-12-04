@@ -1,12 +1,12 @@
 #The history graph based model of a checkers game
 #Licence Apache 2.0
 import sys
-from Document import Document
-from DocumentObject import DocumentObject
-from FieldText import FieldText
-from FieldIntRegister import FieldIntRegister
-from FieldIntCounter import FieldIntCounter
-from FieldCollection import FieldCollection
+from historygraph import Document
+from historygraph import DocumentObject
+from historygraph import FieldText
+from historygraph import FieldIntRegister
+from historygraph import FieldIntCounter
+from historygraph import FieldCollection
 from App import App
 import utils
 

@@ -1,14 +1,13 @@
 import sys
-sys.path.insert(0, '/home/mark/code/livewirepy/doop')
 
 import unittest
-from Document import Document
-from FieldIntRegister import FieldIntRegister
-from DocumentObject import DocumentObject
-from FieldCollection import FieldCollection
+from historygraph import Document
+from historygraph import FieldIntRegister
+from historygraph import DocumentObject
+from historygraph import FieldCollection
+from historygraph import DocumentCollection
 import uuid
-from FieldText import FieldText
-import DocumentCollection
+from historygraph import FieldText
 from messagefilterdatetime import MessageFilterDateTime
 from messagefiltersubject import MessageFilterSubject
 from messagefilterbody import MessageFilterBody
@@ -36,18 +35,18 @@ from json import JSONEncoder, JSONDecoder
 from Crypto.Hash import SHA256
 import DocumentCollectionHelper
 import hashlib
-from HistoryEdgeNull import HistoryEdgeNull
+from historygraph import HistoryEdgeNull
 import timeit
-from ImmutableObject import ImmutableObject
+from historygraph import ImmutableObject
 from App import App
 from Demux import Demux
 from mock import patch, Mock, MagicMock
 import os
-from FieldIntCounter import FieldIntCounter
+from historygraph import FieldIntCounter
 from checkers import CheckersGame
 import utils
 from checkers import CheckersApp
-from FieldList import FieldList
+from historygraph import FieldList
 from trello import TrelloBoard, TrelloList, TrelloItem, TrelloListLink, TrelloApp, TrelloShare
 from multichat import MultiChatItem, MultiChatApp, MultiChatShare
 from operator import itemgetter, attrgetter, methodcaller
@@ -59,7 +58,7 @@ class Covers(Document):
 
 class SimpleCoversTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(TestPropertyOwner1)
         self.dc.Register(TestPropertyOwner2)
 
@@ -93,7 +92,7 @@ class SimpleCoversTestCase(unittest.TestCase):
     
 class MergeHistoryCoverTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
 
     def runTest(self):
         #Test merge together two simple covers objects
@@ -119,7 +118,7 @@ class TestPropertyOwner1(Document):
 
 class MergeHistorySendEdgeCoverTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(Covers)
 
     def runTest(self):
@@ -194,7 +193,7 @@ class MergeHistorySendEdgeCoverTestCase(unittest.TestCase):
 
 class ListItemChangeHistoryTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
 
     def runTest(self):
         #Test that various types of changes create was changed events
@@ -214,7 +213,7 @@ class ListItemChangeHistoryTestCase(unittest.TestCase):
 
 class SimpleItemTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(TestPropertyOwner1)
         self.dc.Register(TestPropertyOwner2)
 
@@ -235,7 +234,7 @@ class SimpleItemTestCase(unittest.TestCase):
         testitem.cover = 1
         test1.propertyowner2s.remove(testitem.id)
 
-        dc2 = DocumentCollection.DocumentCollection()
+        dc2 = DocumentCollection()
         dc2.Register(TestPropertyOwner1)
         dc2.Register(TestPropertyOwner2)
         test2 = TestPropertyOwner1(test1.id)
@@ -258,7 +257,7 @@ class SimpleItemTestCase(unittest.TestCase):
 
 class AdvancedItemTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(TestPropertyOwner1)
         self.dc.Register(TestPropertyOwner2)
 
@@ -356,7 +355,7 @@ class Comments(Document):
 
 class MergeHistoryCommentTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(TestPropertyOwner1)
         self.dc.Register(TestPropertyOwner2)
 
@@ -383,7 +382,7 @@ class MergeHistoryCommentTestCase(unittest.TestCase):
 
 class StoreObjectsInDatabaseTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(TestPropertyOwner1)
         self.dc.Register(TestPropertyOwner2)
 
@@ -419,11 +418,11 @@ class StoreObjectsInDatabaseTestCase(unittest.TestCase):
         matches = DocumentCollectionHelper.GetSQLObjects(self.dc, 'test.content.db', "SELECT id FROM TestPropertyOwner1 WHERE covers > 5")
         self.assertEqual(len(matches), 0)
 
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(TestPropertyOwner1)
         self.dc.Register(TestPropertyOwner2)
 
-        #DocumentCollection.documentcollection = DocumentCollection.DocumentCollection()
+        #DocumentCollection = DocumentCollection()
         DocumentCollectionHelper.LoadDocumentCollection(self.dc, 'test.history.db', 'test.content.db')
         test1s = self.dc.GetByClass(TestPropertyOwner1)
         self.assertEqual(len(test1s), 1)
@@ -445,7 +444,7 @@ class StoreObjectsInDatabaseTestCase(unittest.TestCase):
     
 class StoreObjectsInJSONTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(TestPropertyOwner1)
         self.dc.Register(TestPropertyOwner2)
 
@@ -473,7 +472,7 @@ class StoreObjectsInJSONTestCase(unittest.TestCase):
         self.assertEqual(len(test1s), 1)
 
         jsontext = self.dc.asJSON()
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(TestPropertyOwner1)
         self.dc.Register(TestPropertyOwner2)
         self.dc.LoadFromJSON(jsontext)
@@ -489,7 +488,7 @@ class StoreObjectsInJSONTestCase(unittest.TestCase):
     
 class MergeChangesMadeInJSONTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(TestPropertyOwner1)
         self.dc.Register(TestPropertyOwner2)
 
@@ -513,7 +512,7 @@ class MergeChangesMadeInJSONTestCase(unittest.TestCase):
         test1.covers = 4
 
         #Simulate the other user (who received the email with the edges) getting the document and loading it into memory
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(TestPropertyOwner1)
         self.dc.Register(TestPropertyOwner2)
         self.dc.LoadFromJSON(jsontext)
@@ -532,7 +531,7 @@ class MergeChangesMadeInJSONTestCase(unittest.TestCase):
         jsontext = self.dc.asJSON()
         
         #Simulate the first user received the second users changes
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(TestPropertyOwner1)
         self.dc.Register(TestPropertyOwner2)
         self.dc.LoadFromJSON(jsontext)
@@ -557,7 +556,7 @@ class MergeAdvancedChangesMadeInJSONTestCase(unittest.TestCase):
     #Similar to merge changes test but testing things such as out of order reception of edges
     #Orphaned edges and partially orphaned merge edges
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(TestPropertyOwner1)
         self.dc.Register(TestPropertyOwner2)
 
@@ -579,7 +578,7 @@ class MergeAdvancedChangesMadeInJSONTestCase(unittest.TestCase):
         jsontext = self.dc.asJSON()
 
         #Simulate the other user (who received the email with the edges) getting the document and loading it into memory
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(TestPropertyOwner1)
         self.dc.Register(TestPropertyOwner2)
         self.dc.LoadFromJSON(jsontext)
@@ -659,7 +658,7 @@ class MergeAdvancedChangesMadeInJSONTestCase(unittest.TestCase):
 
 class FreezeTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(Covers)
 
     def runTest(self):
@@ -682,7 +681,7 @@ class FreezeTestCase(unittest.TestCase):
 
 class FreezeThreeWayMergeTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(Covers)
 
     def runTest(self):
@@ -709,7 +708,7 @@ class FreezeThreeWayMergeTestCase(unittest.TestCase):
 
 class LargeMergeTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(Covers)
 
     def runTest(self):
@@ -741,7 +740,7 @@ class MessageTest(ImmutableObject):
 
 class ImmutableClassTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(Covers)
 
     def runTest(self):
@@ -757,7 +756,7 @@ class ImmutableClassTestCase(unittest.TestCase):
 
 class StoreImmutableObjectsInJSONTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(MessageTest)
 
     def runTest(self):
@@ -772,7 +771,7 @@ class StoreImmutableObjectsInJSONTestCase(unittest.TestCase):
 
         jsontext = self.dc.asJSON()
 
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(MessageTest)
         self.dc.LoadFromJSON(jsontext)
         test1s = self.dc.GetByClass(MessageTest)
@@ -782,7 +781,7 @@ class StoreImmutableObjectsInJSONTestCase(unittest.TestCase):
 
 class StoreImmutableObjectsInDatabaseTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(MessageTest)
 
     def runTest(self):
@@ -801,7 +800,7 @@ class StoreImmutableObjectsInDatabaseTestCase(unittest.TestCase):
         matches = DocumentCollectionHelper.GetSQLObjects(self.dc, 'test.content.db', "SELECT id FROM MessageTest WHERE messagetime < 5")
         self.assertEqual(len(matches), 0)
 
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(MessageTest)
 
         DocumentCollectionHelper.LoadDocumentCollection(self.dc, 'test.history.db', 'test.content.db')
@@ -825,7 +824,7 @@ class TestUpdateHandler(object):
     
 class SimpleCoversUpdateTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(TestPropertyOwner1)
         self.dc.Register(TestPropertyOwner2)
 
@@ -845,7 +844,7 @@ class SimpleCoversUpdateTestCase(unittest.TestCase):
     
 class FreezeUpdateTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(Covers)
 
     def runTest(self):
@@ -2045,7 +2044,7 @@ class SimpleCounterTestCase(unittest.TestCase):
 
 class MergeCounterTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
 
     def runTest(self):
         #Test merge together two simple covers objects
@@ -2061,7 +2060,7 @@ class MergeCounterTestCase(unittest.TestCase):
 
 class UncleanReplayCounterTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
 
     def runTest(self):
         #Test merge together two simple covers objects
@@ -2075,7 +2074,7 @@ class UncleanReplayCounterTestCase(unittest.TestCase):
 
 class MergeCounterChangesMadeInJSONTestCase(unittest.TestCase):
     def setUp(self):
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(CounterTestContainer)
 
     def runTest(self):
@@ -2098,7 +2097,7 @@ class MergeCounterChangesMadeInJSONTestCase(unittest.TestCase):
         self.assertEqual(test1.testcounter.get(), 0)
 
         #Simulate the other user (who received the email with the edges) getting the document and loading it into memory
-        self.dc = DocumentCollection.DocumentCollection()
+        self.dc = DocumentCollection()
         self.dc.Register(CounterTestContainer)
         self.dc.LoadFromJSON(jsontext)
         self.assertEqual(jsontext, self.dc.asJSON())
@@ -3081,7 +3080,7 @@ class TestFieldListOwner1(Document):
 class FieldListMergeTestCase(unittest.TestCase):
     # Test each individual function in the FieldList and FieldListImpl classes
     def runTest(self):
-        dc = DocumentCollection.DocumentCollection()
+        dc = DocumentCollection()
         dc.Register(TestFieldListOwner1)
         dc.Register(TestFieldListOwner2)
         test1 = TestFieldListOwner1(None)
@@ -3106,7 +3105,7 @@ class FieldListMergeTestCase(unittest.TestCase):
         
 class TrelloBuildAndEditTestCase(unittest.TestCase):
     def runTest(self):
-        dc1 = DocumentCollection.DocumentCollection()
+        dc1 = DocumentCollection()
         dc1.Register(TrelloBoard)
         dc1.Register(TrelloList)
         dc1.Register(TrelloItem)
@@ -3160,7 +3159,7 @@ class TrelloBuildAndEditTestCase(unittest.TestCase):
 
         history = tb.history.Clone()
 
-        dc = DocumentCollection.DocumentCollection()
+        dc = DocumentCollection()
         dc.Register(TrelloBoard)
         dc.Register(TrelloList)
         dc.Register(TrelloListLink)
@@ -3183,7 +3182,7 @@ class TrelloBuildAndEditTestCase(unittest.TestCase):
 
 class TrelloMergeTestCase(unittest.TestCase):
     def runTest(self):
-        dc1 = DocumentCollection.DocumentCollection()
+        dc1 = DocumentCollection()
         dc1.Register(TrelloBoard)
         dc1.Register(TrelloList)
         dc1.Register(TrelloItem)
@@ -3286,7 +3285,7 @@ class TrelloMergeTestCase(unittest.TestCase):
 
 class TrelloSwapAndMergeTestCase(unittest.TestCase):
     def runTest(self):
-        dc1 = DocumentCollection.DocumentCollection()
+        dc1 = DocumentCollection()
         dc1.Register(TrelloBoard)
         dc1.Register(TrelloList)
         dc1.Register(TrelloItem)
@@ -3592,7 +3591,7 @@ Frist post!!!!!!
 class TrelloStoreInDatabaseTestCase(unittest.TestCase):
 
     def runTest(self):
-        dc1 = DocumentCollection.DocumentCollection()
+        dc1 = DocumentCollection()
         dc1.Register(TrelloBoard)
         dc1.Register(TrelloList)
         dc1.Register(TrelloItem)
@@ -3661,13 +3660,13 @@ class TrelloStoreInDatabaseTestCase(unittest.TestCase):
             self.assertEqual(match.__class__, TrelloItem)
         self.assertEqual(set([match.content for match in matches]), set([match.content for match in matches]))
 
-        dc1 = DocumentCollection.DocumentCollection()
+        dc1 = DocumentCollection()
         dc1.Register(TrelloBoard)
         dc1.Register(TrelloList)
         dc1.Register(TrelloItem)
         dc1.Register(TrelloListLink)
 
-        #DocumentCollection.documentcollection = DocumentCollection.DocumentCollection()
+        #DocumentCollection = DocumentCollection()
         DocumentCollectionHelper.LoadDocumentCollection(dc1, '/dev/shm/test.history.db', '/dev/shm/test.content.db')
         test1s = dc1.GetByClass(TrelloBoard)
         self.assertEqual(len(test1s), 1)
@@ -3688,7 +3687,7 @@ class TrelloStoreInDatabaseTestCase(unittest.TestCase):
 
 class MultiChatBasicTestCase(unittest.TestCase):
     def runTest(self):
-        dc1 = DocumentCollection.DocumentCollection()
+        dc1 = DocumentCollection()
         dc1.Register(MultiChatItem)
 
         i = MultiChatItem(content='Chat Item 1', event_time=1000)

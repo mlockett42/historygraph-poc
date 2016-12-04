@@ -1,15 +1,15 @@
 # The history graph based data model for a multi-user chat app
-from Document import Document
-from DocumentObject import DocumentObject
-from FieldText import FieldText
-from FieldIntRegister import FieldIntRegister
-from FieldIntCounter import FieldIntCounter
-from FieldList import FieldList
-from FieldCollection import FieldCollection
+from historygraph import Document
+from historygraph import DocumentObject
+from historygraph import FieldText
+from historygraph import FieldIntRegister
+from historygraph import FieldIntCounter
+from historygraph import FieldList
+from historygraph import FieldCollection
 from App import App
-from ImmutableObject import ImmutableObject
-from DocumentObject import DocumentObject
-from Document import Document
+from historygraph import ImmutableObject
+from historygraph import DocumentObject
+from historygraph import Document
 
 class MultiChatItem(ImmutableObject):
     content = FieldText()

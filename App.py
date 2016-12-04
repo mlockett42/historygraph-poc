@@ -1,4 +1,4 @@
-import DocumentCollection
+from historygraph import DocumentCollection
 from collections import defaultdict
 import uuid
 from json import JSONEncoder, JSONDecoder
@@ -16,7 +16,7 @@ class App(object):
         self.saveddcs = set()
 
     def CreateNewDocumentCollection(self, dcid):
-        dc = DocumentCollection.DocumentCollection()
+        dc = DocumentCollection()
         if dcid is not None:
             dc.id = dcid
         self.dcdict[dc.id] = dc

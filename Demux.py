@@ -7,7 +7,7 @@ from Crypto import Random
 from json import JSONEncoder, JSONDecoder
 from Crypto.Hash import SHA256
 import base64
-from ImmutableObject import ImmutableObject
+from historygraph import ImmutableObject
 import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
