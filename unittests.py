@@ -48,6 +48,8 @@ from historygraph import FieldList
 from trello import TrelloBoard, TrelloList, TrelloItem, TrelloListLink, TrelloApp, TrelloShare
 from multichat import MultiChatItem, MultiChatApp, MultiChatShare
 from operator import itemgetter, attrgetter, methodcaller
+import sqlite3
+
 
 class Covers(Document):
     def __init__(self, id):
@@ -3129,7 +3131,6 @@ class FieldListMergeTestCase(unittest.TestCase):
         l1 = TestFieldListOwner2(None)
         test1.propertyowner2s.insert(0, l0)
         test1.propertyowner2s.insert(1, l1)
-
         test2 = test1.Clone()
         dc.AddDocumentObject(test2)
 
@@ -3143,6 +3144,37 @@ class FieldListMergeTestCase(unittest.TestCase):
         self.assertEqual(len(test3.propertyowner2s), 2)
         self.assertEqual(test3.propertyowner2s[0].id, l0.id)
         self.assertEqual(test3.propertyowner2s[1].id, l2.id)
+        
+class FieldListStoreInDatabaseTestCase(unittest.TestCase):
+    # Test each individual function in the FieldList and FieldListImpl classes
+    def runTest(self):
+        dc = DocumentCollection()
+        dc.Register(TestFieldListOwner1)
+        dc.Register(TestFieldListOwner2)
+        test1 = TestFieldListOwner1(None)
+        dc.AddDocumentObject(test1)
+        l0 = TestFieldListOwner2(None)
+        l1 = TestFieldListOwner2(None)
+        test1.propertyowner2s.insert(0, l0)
+        test1.propertyowner2s.insert(1, l1)
+        l0.cover = 2
+        l1.cover = 1
+
+        utils.removepath('/dev/shm/test.history.db')
+        utils.removepath('/dev/shm/test.content.db')
+        DocumentCollectionHelper.SaveDocumentCollection(dc, '/dev/shm/test.history.db', '/dev/shm/test.content.db')
+
+        database = sqlite3.connect('/dev/shm/test.content.db')
+        cur = database.cursor()    
+        cur.execute('SELECT cover FROM testfieldlistowner2 ORDER BY TestFieldListOwner1order')
+
+        rows = cur.fetchall()
+
+        assert len(rows) == 2
+
+        # Check the rows are returned in the correct order
+        assert rows[0][0] == 2
+        assert rows[1][0] == 1
         
 class TrelloBuildAndEditTestCase(unittest.TestCase):
     def runTest(self):
@@ -3939,6 +3971,7 @@ def suite():
     suite.addTest(FieldListFunctionsTestCase())
 
     suite.addTest(FieldListMergeTestCase())
+    suite.addTest(FieldListStoreInDatabaseTestCase())
 
     suite.addTest(CheckersBoardSquareColourTestCase())
     suite.addTest(CheckersBoardInitialValidityTestCase())

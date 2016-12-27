@@ -73,7 +73,7 @@ def SaveDocumentCollection(dc, filenameedges, filenamedata):
         variables = [a for a in dir(theclass) if not a.startswith('__') and not callable(getattr(theclass,a))]
         for a in variables:
             if isinstance(getattr(theclass, a), FieldCollection) or isinstance(getattr(theclass, a), FieldList):
-                foreignkeydict[getattr(theclass, a).theclass.__name__].append((classname, a))
+                foreignkeydict[getattr(theclass, a).theclass.__name__].append((classname, a, isinstance(getattr(theclass, a), FieldList)))
     columndict = defaultdict(list)
     for classname in dc.classes:
         theclass = dc.classes[classname]
@@ -82,8 +82,10 @@ def SaveDocumentCollection(dc, filenameedges, filenamedata):
             if isinstance(getattr(theclass, a), FieldCollection) == False and isinstance(getattr(theclass, a), FieldList) == False:
                 columndict[classname].append((a, "int" if isinstance(getattr(theclass, a), FieldIntRegister) else "text"))
     for k in foreignkeydict:
-        for (classname, a) in foreignkeydict[k]:
+        for (classname, a, isfieldlist) in foreignkeydict[k]:
             columndict[k].append((classname + "id", "text"))
+            if isfieldlist:
+                columndict[k].append((classname + "order", "int"))
     for classname in columndict:
         columnlist = columndict[classname]
         sql = "CREATE TABLE " + classname + " (id text "
@@ -99,25 +101,28 @@ def SaveDocumentCollection(dc, filenameedges, filenamedata):
         objlist = [obj for (objid, obj) in dc.objects[documentid].iteritems() if (isinstance(obj, Document) or isinstance(obj, ImmutableObject))]
         for obj in objlist:
             if isinstance(obj, ImmutableObject):
-                SaveDocumentObject(database, obj, None, foreignkeydict, columndict)
+                SaveDocumentObject(database, obj, None, foreignkeydict, columndict, None)
             else:
-                SaveDocumentObject(database, obj, obj.GetDocument(), foreignkeydict, columndict)
+                SaveDocumentObject(database, obj, obj.GetDocument(), foreignkeydict, columndict, None)
 
     database.commit()
     database.close()
 
-def SaveDocumentObject(database, documentobject, parentobject, foreignkeydict, columndict):
+def SaveDocumentObject(database, documentobject, parentobject, foreignkeydict, columndict, order):
     variables = [a for a in dir(documentobject.__class__) if not a.startswith('__') and not callable(getattr(documentobject.__class__,a))]
     for a in variables:
         if isinstance(getattr(documentobject.__class__, a), FieldCollection) or isinstance(getattr(documentobject.__class__, a), FieldList):
+            order2 = 0
             for childobj in getattr(documentobject, a):
-                SaveDocumentObject(database, childobj, documentobject, foreignkeydict, columndict)
+                SaveDocumentObject(database, childobj, documentobject, foreignkeydict, columndict, order2)
+                order2 += 1
     foreignkeyclassname = ""
+    isfieldlist = False
     if documentobject.__class__.__name__ in foreignkeydict:
         if len(foreignkeydict[documentobject.__class__.__name__]) == 0:
             pass #No foreign keys to worry about
         elif len(foreignkeydict[documentobject.__class__.__name__]) == 1:
-            (foreignkeyclassname, a) = foreignkeydict[documentobject.__class__.__name__][0]
+            (foreignkeyclassname, a, isfieldlist) = foreignkeydict[documentobject.__class__.__name__][0]
         else:
             assert False #Only one foreign key allowed
     sql = "INSERT INTO " + documentobject.__class__.__name__ + " VALUES (?"
@@ -127,6 +132,8 @@ def SaveDocumentObject(database, documentobject, parentobject, foreignkeydict, c
         
         if foreignkeyclassname != "" and foreignkeyclassname + "id" == columnname:
             values.append(parentobject.id)
+        elif foreignkeyclassname != "" and foreignkeyclassname + "order" == columnname and isfieldlist:
+            values.append(order)
         elif type(getattr(documentobject, columnname)) == FieldIntCounter.FieldIntCounterImpl:
             values.append(getattr(documentobject, columnname).value)
         else:
