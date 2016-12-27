@@ -1,4 +1,4 @@
-Feature: Open up 2 main windows send a message between them and check they are on each others contact lists and livewire contacts
+Feature: Open up 2 main windows send a message between them and check they are on each others contact lists and history graph contacts
     Window 1 must send a message to window 2 the message needs to be received
     afterwards there should be an exchange of livewire messages
 

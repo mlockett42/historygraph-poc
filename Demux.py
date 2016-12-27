@@ -21,7 +21,7 @@ import utils
 
 #A demux is a class that deals with receiving data from the email and routing it to the correct place
 class Demux(object):
-    database_file_name = 'livewire.db'
+    database_file_name = 'historygraph.db'
 
     def __init__(self, fromfile, **kwargs):
         self.database_file_name = fromfile
@@ -85,7 +85,7 @@ class Demux(object):
             app.LoadDocumentCollectionFromDisk(self.appdir)
 
     def SendPlainEmail(self, receivers, subject, message):
-        if subject == "Livewire encoded message":
+        if subject == "HistoryGraph encoded message":
             pass
             #print "message = ",message
             #assert False
@@ -102,7 +102,7 @@ Content-Type: text/plain
 """ + message + """
 
 ================
-Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemail + """)
+HistoryGraph enabled emailer http://wwww.historygraph.io (""" + self.myemail + """)
 ================
         """
         smtpObj.sendmail(self.myemail, receivers, prcoessedmessage)         
@@ -135,7 +135,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
             headers = list()
             body = list()
             inheader = True
-            #print "Starting message"
+            #print "Starting message lines =",lines
             for line in lines:
                 #print "line=",line
                 if line == "":
@@ -150,7 +150,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
             isencodedmessage = False
             for line in headers:
                 if line[:8] == "Subject:":
-                    isencodedmessage = line == "Subject: Livewire encoded message"
+                    isencodedmessage = line == "Subject: HistoryGraph encoded message"
                 if line[:6] == "From: ":
                     k = line.find("<")
                     if k > 0:
@@ -162,18 +162,18 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                         fromemail = line[6:]
             
             if isencodedmessage:
-                inlivewirearea = False
-                wasinlivewirearea = False
-                wasinendlivewirearea = False
+                inencodedarea = False
+                wasinencodedarea = False
+                wasinendencodedarea = False
                 message = []
                 for line in body:
-                    if line == self.begin_livewire:
-                        inlivewirearea = True
-                        wasinlivewirearea = True
-                    elif line == self.end_livewire:
-                        inlivewirearea = False
-                        wasinendlivewirearea = True
-                    elif inlivewirearea:
+                    if line == self.begin_enc:
+                        inencodedarea = True
+                        wasinencodedarea = True
+                    elif line == self.end_enc:
+                        inencodedarea = False
+                        wasinendencodedarea = True
+                    elif inencodedarea:
                         message.append(line)
 
                 message = "".join(message)
@@ -206,7 +206,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                         assert fromemail[-1] != '>'
                         contact.emailaddress = fromemail
                         contact.publickey = d["key"]
-                        contact.islivewire = True
+                        contact.ishistorygraph = True
                         self.contactstore.AddContact(contact)
                         self.SendConfirmationEmail(contact)
                     else:
@@ -214,7 +214,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                         if not (contact.publickey != '' and not self.is_verified(fromemail, l, sig)):
                             #Silently ignore unverified attempts to change keys
                             contact.publickey = d["key"]
-                            contact.islivewire = True
+                            contact.ishistorygraph = True
                             self.contactstore.AddContact(contact)
                 elif d["class"] == "createdocumentcollection": #An identity message identifies the other sender: Ie gives us their public key
                     if self.is_verified(fromemail, l, sig):
@@ -253,7 +253,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                     message2.body = d["message"]
                     message2.subject = d["subject"]
                     message2.fromaddress = d["sender"]
-                    message2.senderislivewireenabled = True
+                    message2.senderishistorygraphenabled = True
                     message2.messageisencrypted = True
                     message2.datetime = datetime.datetime.now()
                     self.messagestore.AddMessage(message2, None)
@@ -265,7 +265,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                 message2 = Message.fromrawbody(rawmessage)
                 assert message2.fromaddress != ""
                 self.messagestore.AddMessage(message2, None)
-                self.ProcessBodyLivewireMessages(message2)
+                self.ProcessBodyHistoryGraphMessages(message2)
                 l = [c for c in self.contactstore.GetContacts() if c.emailaddress == message2.fromaddress]
 
                 send_confirmation_email = False
@@ -275,13 +275,13 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                     assert message2.fromaddress[0] != '<'
                     assert message2.fromaddress[-1] != '>'
                     contact.emailaddress = message2.fromaddress
-                    contact.islivewire = message2.senderislivewireenabled
+                    contact.ishistorygraph = message2.senderishistorygraphenabled
                     self.contactstore.AddContact(contact)
-                    send_confirmation_email = contact.islivewire
+                    send_confirmation_email = contact.ishistorygraph
                 elif len(l) == 1:
-                    if message2.senderislivewireenabled == True:
+                    if message2.senderishistorygraphenabled == True:
                         contact = l[0]
-                        contact.islivewire = True
+                        contact.ishistorygraph = True
                         self.contactstore.AddContact(contact)
                         send_confirmation_email = True
                 else:
@@ -300,7 +300,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
             return False
         contacts = [c for c in self.contactstore.GetContacts() if CleanedEmailAddress(c.emailaddress) == CleanedEmailAddress(fromemail)]
         if len(contacts) != 1:
-            print "is_verified contacts = ",contacts
+            #print "is_verified contacts = ",contacts
             assert False, "Demux for " + self.myemail + " fromemail = " + str(fromemail)
             return False
         contact = contacts[0]
@@ -308,8 +308,8 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
         hash = SHA256.new(l).digest()
         return public_key.verify(hash, (sig, ))
 
-    begin_livewire = "-----BEGIN-LIVEWIRE-ENCODED-MESSAGE--------"
-    end_livewire   = "-----END-LIVEWIRE-ENCODED-MESSAGE----------"
+    begin_enc = "-----BEGIN-HISTORYGRAPH-ENCODED-MESSAGE--------"
+    end_enc   = "-----END-HISTORYGRAPH-ENCODED-MESSAGE----------"
 
     def SendConfirmationEmail(self, contact):
         sender = self.myemail
@@ -326,7 +326,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
     
         message = self.GetEncodedMessage({"id":str(uuid.uuid4()),"class":"identity","email": sender,"key":public_key})
 
-        self.SendPlainEmail(receivers, "Livewire encoded message", message)
+        self.SendPlainEmail(receivers, "HistoryGraph encoded message", message)
 
     def SendEncryptedEmail(self, contact, subject, message):
         sender = self.myemail
@@ -342,10 +342,10 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
 
         message = self.GetEncodedMessage(d)
 
-        self.SendPlainEmail(receivers, "Livewire encoded message", message)
+        self.SendPlainEmail(receivers, "HistoryGraph encoded message", message)
 
     def GetEncodedMessage(self, d):
-        message = "\n\n" + self.begin_livewire + "\n"
+        message = "\n\n" + self.begin_enc + "\n"
 
         l = ["XR1", d]
         l = JSONEncoder().encode(l)
@@ -357,7 +357,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
         n = 30
         lines = [line[i:i+n] for i in range(0, len(line), n)]
         message += '\n'.join(lines) + "\n"
-        message += self.end_livewire + "\n\n"
+        message += self.end_enc + "\n\n"
         #print "SendConformEmail message = ",message
 
         #message += "=================================================\n"
@@ -365,28 +365,32 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
         #message += "=================================================\n"
 
         return message
-    def ProcessBodyLivewireMessages(self, message):
-        #print "ProcessBodyLivewireMessages called"
+    def ProcessBodyHistoryGraphMessages(self, message):
+        #print "ProcessBodyHistoryGraphMessages called"
         body = message.body
+        #print 'ProcessBodyHistoryGraphMessages body = ' + body
 
-        k = body.find(self.begin_livewire)
+        k = body.find(self.begin_enc)
         #print "body = ",body
         if k < 0:
             return
-        #print "ProcessBodyLivewireMessages 1"
-        body = body[k + len(self.begin_livewire)]
+        #print "ProcessBodyHistoryGraphMessages 1"
+        body = body[k + len(self.begin_enc):]
+        #print 'ProcessBodyHistoryGraphMessages after removing begin_enc body = ' + body
 
-        k = body.find(self.end_livewire)
-        assert k >= 0
+        k = body.find(self.end_enc)
+        assert k >= 0, 'end_enc not found body is ' + body + ', self.end_enc = ' + self.end_enc
 
         body = body[:k]
 
         json = base64.b64decode(body)
 
-        #print "ProcessBodyLivewireMessages json",json
+        #print "ProcessBodyHistoryGraphMessages json",json
 
 
-        l2 = JSONEncoder().decode(json)
+        l2 = JSONDecoder().decode(json)
+
+        #print 'ProcessBodyHistoryGraphMessages l2=',l2
 
         assert l2[0] == "XR1"
 

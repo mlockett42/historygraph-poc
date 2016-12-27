@@ -63,7 +63,7 @@ class FormNewMessage(QDialog):
         #If the email matches a contact with encryption send encrypted otherwise don't
         contacts = self.demux.contactstore.GetContacts()
         for contact in contacts:
-            if contact.islivewire and CleanedEmailAddress(self.tetoaddress.toPlainText()) == CleanedEmailAddress(contact.emailaddress):
+            if contact.ishistorygraph and CleanedEmailAddress(self.tetoaddress.toPlainText()) == CleanedEmailAddress(contact.emailaddress):
                 self.demux.SendEncryptedEmail(contact, subject = self.tesubject.toPlainText(), message=self.teBody.toPlainText())
                 #self.demux.SendPlainEmail(receivers = [self.tetoaddress.toPlainText()], subject = self.tesubject.toPlainText(), message=self.teBody.toPlainText())
                 return

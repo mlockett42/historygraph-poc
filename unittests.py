@@ -1456,7 +1456,7 @@ class SendAndReceiveEncryptedEmail(unittest.TestCase):
         numMessages = len(M.list()[1])
         self.assertEquals(numMessages, 0, "Messages not deleted")
 
-class EstablishLivewireEncryptedLink(unittest.TestCase):
+class EstablishHistoryGraphEncryptedLink(unittest.TestCase):
     @patch.object(Demux, 'get_database_filename')
     def setUp(self, mock_get_database_filename):
         self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
@@ -1478,7 +1478,7 @@ Subject: SMTP e-mail test
 Frist post!!!!!!
 
 ======================================================================================
-Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett1@historygraph.io)
+HistoryGraph enabled emailer http://wwww.historygraph.io (mlockett1@historygraph.io)
 ======================================================================================
         """
 
@@ -1497,11 +1497,11 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett1@history
             message2 = Message.fromrawbody(message2)
             self.demux.messagestore.AddMessage(message2, None)
 
-            self.assertTrue(message2.senderislivewireenabled, "Sender not livewire enabled")
-            self.assertTrue(self.demux.contactstore.GetContacts().first().islivewire, "Contact not set up to be livewire")
+            self.assertTrue(message2.senderishistorygraphenabled, "Sender not history graph enabled")
+            self.assertTrue(self.demux.contactstore.GetContacts().first().ishistorygraph, "Contact not set up to be history graph")
 
 
-        #mlockett2 now knows that mlockett1 is livewire enabled so we need to tell it our private key
+        #mlockett2 now knows that mlockett1 is history graph enabled so we need to tell it our private key
         sender = 'mlockett2@historygraph.io'
         receivers = ['mlockett1@historygraph.io']
 
@@ -1510,17 +1510,17 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett1@history
 
         public_key = key.publickey().exportKey("PEM")        
     
-        begin_livewire = "-----BEGIN-LIVEWIRE-ENCODED-MESSAGE---------------------------------------------------"
-        end_livewire   = "-----END-LIVEWIRE-ENCODED-MESSAGE-----------------------------------------------------"
+        begin_enc = "-----BEGIN-HISTORYGRAPH-ENCODED-MESSAGE--------"
+        end_enc   = "-----END-HISTORYGRAPH-ENCODED-MESSAGE----------"
 
         message = """From: Mark Lockett2 <mlockett2@historygraph.io>
 To: Mark Lockett1 <mlockett1@historygraph.io>
 Date: """ + datetime.datetime.now().strftime("%c") + """
 Content-Type: text/plain
-Subject: Livewire encoded message
+Subject: HistoryGraph encoded message
 
 """
-        message += begin_livewire + "\n"
+        message += begin_enc + "\n"
 
         messageid = str(uuid.uuid4())
         d = {"id":messageid,"class":"identity","email": sender,"key":public_key}
@@ -1534,11 +1534,11 @@ Subject: Livewire encoded message
         n = 30
         lines = [line[i:i+n] for i in range(0, len(line), n)]
         message += '\n'.join(lines) + "\n"
-        message += end_livewire + "\n"
+        message += end_enc + "\n"
 
         message += """
 ======================================================================================
-Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@historygraph.io)
+HistoryGraph enabled emailer http://wwww.historygraph.io (mlockett2@historygraph.io)
 ======================================================================================
 """
 
@@ -1570,7 +1570,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@history
             isencodedmessage = False
             for line in headers:
                 if line[:8] == "Subject:":
-                    isencodedmessage = line == "Subject: Livewire encoded message"
+                    isencodedmessage = line == "Subject: HistoryGraph encoded message"
                 if line[:6] == "From: ":
                     k = line.find("<")
                     self.assertTrue(k > 0, "< not found")
@@ -1579,23 +1579,23 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@history
                     self.assertTrue(k > 0, "> not found")
                     fromemail = fromemail[:k]
             
-            inlivewirearea = False
-            wasinlivewirearea = False
-            wasinendlivewirearea = False
+            inencodedarea = False
+            wasinencodedarea = False
+            wasinendencodedarea = False
             message = []
             for line in body:
-                if line == begin_livewire:
-                    inlivewirearea = True
-                    wasinlivewirearea = True
-                elif line == end_livewire:
-                    inlivewirearea = False
-                    wasinendlivewirearea = True
-                elif inlivewirearea:
+                if line == begin_enc:
+                    inencodedarea = True
+                    wasinencodedarea = True
+                elif line == end_enc:
+                    inencodedarea = False
+                    wasinendencodedarea = True
+                elif inencodedarea:
                     message.append(line)
 
-            self.assertTrue(isencodedmessage, "Sender not livewire enabled")
-            self.assertTrue(wasinlivewirearea, "Livewire begin marker not detected")
-            self.assertTrue(wasinendlivewirearea, "Livewire end marker not detected")
+            self.assertTrue(isencodedmessage, "Sender not history graph enabled")
+            self.assertTrue(wasinencodedarea, "Encoding begin marker not detected")
+            self.assertTrue(wasinendencodedarea, "Encoding end marker not detected")
             self.assertTrue(fromemail == "mlockett2@historygraph.io", "Incorrect sender")
 
             message = "".join(message)
@@ -1658,7 +1658,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@history
 
         self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty messages = ' + str(testingmailserver.mailDict))
 
-class EstablishLivewireEncryptedLinkUsingDemux(unittest.TestCase):
+class EstablishHistoryGraphEncryptedLinkUsingDemux(unittest.TestCase):
     def setUp(self):
         #testingmailserver.ResetMailDict()
         self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
@@ -1687,21 +1687,21 @@ Frist post!!!!!!
         messages = demux2.messagestore.GetMessages()
         self.assertEqual(len(list(messages)), 1)
         message = messages[0]
-        self.assertTrue(message.senderislivewireenabled) # Sender is not livewire enabled
+        self.assertTrue(message.senderishistorygraphenabled) # Sender is not history graph enabled
 
-        #mlockett2 now knows that mlockett1 is livewire enabled The demux should have already sent to mlockett1 our public key
+        #mlockett2 now knows that mlockett1 is history graph enabled The demux should have already sent to mlockett1 our public key
         
         time.sleep(0.01) #Give background thread a chance to run
         
         messages = demux1.messagestore.GetMessages()
         self.assertEqual(len(list(messages)), 0)
 
-        demux1.CheckEmail() #Demux 1 should receive a message from demux2 and recognise it is livewire enabled and get the public key
+        demux1.CheckEmail() #Demux 1 should receive a message from demux2 and recognise it is history graph enabled and get the public key
 
         contacts = demux1.contactstore.GetContacts()
 
         self.assertEqual(len(list(contacts)), 1)
-        self.assertTrue(contacts[0].islivewire)
+        self.assertTrue(contacts[0].ishistorygraph)
         self.assertEqual(contacts[0].publickey, demux2.key.publickey().exportKey("PEM"))
 
         time.sleep(0.01) #Give background thread a chance to run
@@ -1714,7 +1714,7 @@ Frist post!!!!!!
 
         self.assertEqual(len(list(contacts)), 1)
         self.assertEqual(contacts[0].publickey, demux1.key.publickey().exportKey("PEM") )
-        self.assertTrue(contacts[0].islivewire)
+        self.assertTrue(contacts[0].ishistorygraph)
 
         #Send an encrypted email 
         message = """
@@ -1733,12 +1733,12 @@ Second post!!!!!!
         message = messages[1]
         self.assertEqual(message.subject, "Encrypted SMTP e-mail test")
         self.assertTrue(message.body.find("Second post!!!!!!") > 0, "Second post!!!!!!")
-        self.assertTrue(message.senderislivewireenabled) # Sender is not livewire enabled
+        self.assertTrue(message.senderishistorygraphenabled) # Sender is not history graph enabled
         self.assertTrue(message.messageisencrypted) # This message was encrypted
         self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
 
 
-class EstablishLivewireEncryptedLinkUsingDemuxExistingContact(unittest.TestCase):
+class EstablishHistoryGraphEncryptedLinkUsingDemuxExistingContact(unittest.TestCase):
     def setUp(self):
         #testingmailserver.ResetMailDict()
         self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
@@ -1759,7 +1759,7 @@ class EstablishLivewireEncryptedLinkUsingDemuxExistingContact(unittest.TestCase)
         contacts = demux2.contactstore.GetContacts()
 
         self.assertEqual(len(list(contacts)), 1)
-        self.assertFalse(contacts[0].islivewire)
+        self.assertFalse(contacts[0].ishistorygraph)
 
         message = """
 
@@ -1778,9 +1778,9 @@ Frist post!!!!!!
         messages = demux2.messagestore.GetMessages()
         self.assertEqual(len(list(messages)), 1)
         message = messages[0]
-        self.assertTrue(message.senderislivewireenabled) # Sender is not livewire enabled
+        self.assertTrue(message.senderishistorygraphenabled) # Sender is not history graph enabled
 
-        #mlockett2 now knows that mlockett1 is livewire enabled The demux should have already sent to mlockett1 our public key
+        #mlockett2 now knows that mlockett1 is history graph enabled The demux should have already sent to mlockett1 our public key
         
         time.sleep(0.01) #Give background thread a chance to run
         
@@ -1788,12 +1788,12 @@ Frist post!!!!!!
         self.assertEqual(len(list(messages)), 0)
 
 
-        demux1.CheckEmail() #Demux 1 should receive a message from demux2 and recognise it is livewire enabled and get the public key
+        demux1.CheckEmail() #Demux 1 should receive a message from demux2 and recognise it is history graph enabled and get the public key
 
         contacts = demux1.contactstore.GetContacts()
 
         self.assertEqual(len(list(contacts)), 1)
-        self.assertTrue(contacts[0].islivewire)
+        self.assertTrue(contacts[0].ishistorygraph)
         self.assertEqual(contacts[0].publickey, demux2.key.publickey().exportKey("PEM"))
 
         time.sleep(0.01) #Give background thread a chance to run
@@ -1808,7 +1808,7 @@ Frist post!!!!!!
 
         self.assertEqual(len(list(contacts)), 1)
         self.assertEqual(contacts[0].publickey, demux1.key.publickey().exportKey("PEM") )
-        self.assertTrue(contacts[0].islivewire)
+        self.assertTrue(contacts[0].ishistorygraph)
         self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
 
 
@@ -1847,21 +1847,21 @@ Frist post!!!!!!
         messages = self.demux2.messagestore.GetMessages()
         self.assertEqual(len(list(messages)), 1)
         message = messages[0]
-        self.assertTrue(message.senderislivewireenabled) # Sender is not livewire enabled
+        self.assertTrue(message.senderishistorygraphenabled) # Sender is not history graph enabled
 
-        #mlockett2 now knows that mlockett1 is livewire enabled The demux should have already sent to mlockett1 our public key
+        #mlockett2 now knows that mlockett1 is history graph enabled The demux should have already sent to mlockett1 our public key
         
         time.sleep(0.01) #Give background thread a chance to run
         
         messages = self.demux1.messagestore.GetMessages()
         self.assertEqual(len(list(messages)), 0)
 
-        self.demux1.CheckEmail() #Demux 1 should receive a message from demux2 and recognise it is livewire enabled and get the public key
+        self.demux1.CheckEmail() #Demux 1 should receive a message from demux2 and recognise it is history graph enabled and get the public key
 
         contacts = self.demux1.contactstore.GetContacts()
 
         self.assertEqual(len(list(contacts)), 1)
-        self.assertTrue(contacts[0].islivewire)
+        self.assertTrue(contacts[0].ishistorygraph)
         self.assertEqual(contacts[0].publickey, self.demux2.key.publickey().exportKey("PEM"))
 
         time.sleep(0.01) #Give background thread a chance to run
@@ -1874,7 +1874,7 @@ Frist post!!!!!!
 
         self.assertEqual(len(list(contacts)), 1)
         self.assertEqual(contacts[0].publickey, self.demux1.key.publickey().exportKey("PEM") )
-        self.assertTrue(contacts[0].islivewire)
+        self.assertTrue(contacts[0].ishistorygraph)
         self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
 
     def runTest(self):
@@ -2750,9 +2750,9 @@ Frist post!!!!!!
         messages = self.demux2.messagestore.GetMessages()
         self.assertEqual(len(list(messages)), 1)
         message = messages[0]
-        self.assertTrue(message.senderislivewireenabled) # Sender is not livewire enabled
+        self.assertTrue(message.senderishistorygraphenabled) # Sender is not history graph enabled
 
-        #mlockett2 now knows that mlockett1 is livewire enabled The demux should have already sent to mlockett1 our public key
+        #mlockett2 now knows that mlockett1 is history graph enabled The demux should have already sent to mlockett1 our public key
         
         time.sleep(0.01) #Give background thread a chance to run
         
@@ -2760,12 +2760,12 @@ Frist post!!!!!!
 
         self.assertEqual(len(list(messages)), 0)
 
-        self.demux1.CheckEmail() #Demux 1 should receive a message from demux2 and recognise it is livewire enabled and get the public key
+        self.demux1.CheckEmail() #Demux 1 should receive a message from demux2 and recognise it is history graph enabled and get the public key
 
         contacts = self.demux1.contactstore.GetContacts()
 
         self.assertEqual(len(list(contacts)), 1)
-        self.assertTrue(contacts[0].islivewire)
+        self.assertTrue(contacts[0].ishistorygraph)
         self.assertEqual(contacts[0].publickey, self.demux2.key.publickey().exportKey("PEM"))
 
         time.sleep(0.01) #Give background thread a chance to run
@@ -2778,7 +2778,7 @@ Frist post!!!!!!
 
         self.assertEqual(len(list(contacts)), 1)
         self.assertEqual(contacts[0].publickey, self.demux1.key.publickey().exportKey("PEM") )
-        self.assertTrue(contacts[0].islivewire)
+        self.assertTrue(contacts[0].ishistorygraph)
 
     def runTest(self):
         app1 = CheckersApp(self.demux1)
@@ -3420,7 +3420,7 @@ class TrelloThreeWayShareTestCase(unittest.TestCase):
         demux = [self.demux[i] for i in range(3) if i != demux_index]
         self.assertEqual(len(list(contacts)), 2)
         for contact in contacts:
-            self.assertTrue(contact.islivewire)
+            self.assertTrue(contact.ishistorygraph)
             self.assertTrue(contact.publickey == demux[0].key.publickey().exportKey("PEM") 
                             or contact.publickey == demux[1].key.publickey().exportKey("PEM"))
 
@@ -3463,14 +3463,14 @@ Frist post!!!!!!
         messages = self.demux[1].messagestore.GetMessages()
         self.assertEqual(len(list(messages)), 1)
         message = messages[0]
-        self.assertTrue(message.senderislivewireenabled, "Sender must be livewire enabled")
+        self.assertTrue(message.senderishistorygraphenabled, "Sender must be history graph enabled")
 
         messages = self.demux[2].messagestore.GetMessages()
         self.assertEqual(len(list(messages)), 2)
-        self.assertTrue(messages[0].senderislivewireenabled, "Sender must be livewire enabled")
-        self.assertTrue(messages[1].senderislivewireenabled, "Sender must be livewire enabled")
+        self.assertTrue(messages[0].senderishistorygraphenabled, "Sender must be history graph enabled")
+        self.assertTrue(messages[1].senderishistorygraphenabled, "Sender must be history graph enabled")
 
-        #mlockett2 now knows that mlockett1 is livewire enabled The demux should have already sent to mlockett1 our public key
+        #mlockett2 now knows that mlockett1 is history graph enabled The demux should have already sent to mlockett1 our public key
         
         time.sleep(0.01) #Give background thread a chance to run
         
@@ -3780,9 +3780,9 @@ Frist post!!!!!!
         messages = self.demux2.messagestore.GetMessages()
         self.assertEqual(len(list(messages)), 1)
         message = messages[0]
-        self.assertTrue(message.senderislivewireenabled) # Sender is not livewire enabled
+        self.assertTrue(message.senderishistorygraphenabled) # Sender is not history graph enabled
 
-        #mlockett2 now knows that mlockett1 is livewire enabled The demux should have already sent to mlockett1 our public key
+        #mlockett2 now knows that mlockett1 is history graph enabled The demux should have already sent to mlockett1 our public key
         
         time.sleep(0.01) #Give background thread a chance to run
         
@@ -3790,12 +3790,12 @@ Frist post!!!!!!
 
         self.assertEqual(len(list(messages)), 0)
 
-        self.demux1.CheckEmail() #Demux 1 should receive a message from demux2 and recognise it is livewire enabled and get the public key
+        self.demux1.CheckEmail() #Demux 1 should receive a message from demux2 and recognise it is history graph enabled and get the public key
 
         contacts = self.demux1.contactstore.GetContacts()
 
         self.assertEqual(len(list(contacts)), 1)
-        self.assertTrue(contacts[0].islivewire)
+        self.assertTrue(contacts[0].ishistorygraph)
         self.assertEqual(contacts[0].publickey, self.demux2.key.publickey().exportKey("PEM"))
 
         time.sleep(0.01) #Give background thread a chance to run
@@ -3809,7 +3809,7 @@ Frist post!!!!!!
 
         self.assertEqual(len(list(contacts)), 1)
         self.assertEqual(contacts[0].publickey, self.demux1.key.publickey().exportKey("PEM") )
-        self.assertTrue(contacts[0].islivewire)
+        self.assertTrue(contacts[0].ishistorygraph)
 
     def runTest(self):
         app1 = MultiChatApp(self.demux1)
@@ -3954,14 +3954,16 @@ def suite():
 
     suite.addTest(MultiChatBasicTestCase())
 
+    suite.addTest(DemuxCanSaveAndLoadTestCase())
+
     suite.addTest(StartTestingMailServerDummyTest())
 
     suite.addTest(SendAndReceiveUnencryptedEmail())
     suite.addTest(SendAndReceiveEncryptedEmail())
 
-    suite.addTest(EstablishLivewireEncryptedLink())
-    suite.addTest(EstablishLivewireEncryptedLinkUsingDemux())
-    suite.addTest(EstablishLivewireEncryptedLinkUsingDemuxExistingContact())
+    suite.addTest(EstablishHistoryGraphEncryptedLink())
+    suite.addTest(EstablishHistoryGraphEncryptedLinkUsingDemux())
+    suite.addTest(EstablishHistoryGraphEncryptedLinkUsingDemuxExistingContact())
 
     suite.addTest(DemuxTestCase())
     suite.addTest(DemuxEdgeAuthenticationTestCase())
@@ -3976,8 +3978,6 @@ def suite():
     suite.addTest(MultiChatViaEncryptedEmailTestCase())
 
     suite.addTest(StopTestingMailServerDummyTest())
-
-    suite.addTest(DemuxCanSaveAndLoadTestCase())
 
     return suite
 

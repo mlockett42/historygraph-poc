@@ -7,7 +7,7 @@ import os
 import utils
 
 class App(object):
-    #A livewire app. A thing that shall send and receive edges
+    #A history graph app. A thing that shall send and receive edges
 
     def __init__(self, demux):
         self.dcdict = dict()
@@ -30,7 +30,7 @@ class App(object):
             "appname":self.__class__.__name__,"dcid":dc1.id,"dcjson":dc1.asJSON()})
 
         #print "Share message = ",message
-        self.demux.SendPlainEmail([emailaddress], "Livewire encoded message", message)
+        self.demux.SendPlainEmail([emailaddress], "HistoryGraph encoded message", message)
 
     def GetDocumentCollectionByID(self, id):
         return self.dcdict[id]
@@ -61,7 +61,7 @@ class App(object):
                     message = self.demux.GetEncodedMessage({"id":str(uuid.uuid4()),"class":"edges","email": emailaddress,
                         "appname":self.__class__.__name__,"dcid":dc.id,"edges":l})
                     #utils.log_output("Sending shares email edge l = ", l)
-                    self.demux.SendPlainEmail([emailaddress], "Livewire encoded message", message)
+                    self.demux.SendPlainEmail([emailaddress], "HistoryGraph encoded message", message)
 
 
     def EdgesAdded(self, dc, edges):
@@ -86,7 +86,7 @@ class App(object):
             for emailaddress in shares:
                 message = self.demux.GetEncodedMessage({"id":str(uuid.uuid4()),"class":"immutableobject","email": emailaddress,
                     "appname":self.__class__.__name__,"dcid":dc.id,"immutableobject":d})
-                self.demux.SendPlainEmail([emailaddress], "Livewire encoded message", message)
+                self.demux.SendPlainEmail([emailaddress], "HistoryGraph encoded message", message)
         if dc.id in self.saveddcs:
             self.SaveAndKeepUpToDate(dc, self.loaddir)
         

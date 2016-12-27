@@ -30,7 +30,7 @@ class Message(Base):
     subject = Column(String)
     fromaddress = Column(String)
     datetime = Column(DateTime)
-    senderislivewireenabled = Column(Boolean)
+    senderishistorygraphenabled = Column(Boolean)
     messageisencrypted = Column(Boolean)
 
     addresses = relationship("Address", order_by="Address.id", backref="messages")
@@ -47,7 +47,7 @@ class Message(Base):
         self.body = ""
         self.subject = ""
         self.datetime = datetime.datetime.now()
-        self.senderislivewireenabled = False
+        self.senderishistorygraphenabled = False
 
     @staticmethod
     def fromrawbody(rawbody):
@@ -82,14 +82,14 @@ class Message(Base):
                         foundfirstsigline = True
                 elif foundfirstsigline == True and foundsecondsigline == False \
                     and foundthirdsigline == False:
-                    if re.match("^Livewire enabled emailer http://wwww.livewirecommunicator.org \([a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\)$", line):
+                    if re.match("^HistoryGraph enabled emailer http://wwww.historygraph.io \([a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\)$", line):
                         foundsecondsigline = True
                     else:
                         foundfirstsigline = False
                 elif foundfirstsigline == True and foundsecondsigline == True \
                     and foundthirdsigline == False:
                     if re.match("^=+$", line) is not None:
-                        ret.senderislivewireenabled = True
+                        ret.senderishistorygraphenabled = True
                     foundfirstsigline = False
                     foundsecondsigline = False
         return ret
@@ -115,7 +115,7 @@ class Contact(Base):
     id = Column(String, primary_key=True)
     name = Column(String)
     emailaddress = Column(String)
-    islivewire = Column(Boolean)
+    ishistorygraph = Column(Boolean)
     publickey = Column(String)
 
 
@@ -123,7 +123,7 @@ class Contact(Base):
         self.id = str(uuid.uuid1())
         self.name = ""
         self.emailaddress = ""
-        self.islivewire = False
+        self.ishistorygraph = False
         self.publickey = ""
 
 def CleanedEmailAddress(emailaddress):
@@ -168,7 +168,7 @@ class MessageStore:
     def GetMessagesByFilter(self, filter):
         return sorted(filter.applyFilter(self.demux.session), key=lambda message: message.datetime)
 
-    def AddMessage(self, message, makelivewirehandler):
+    def AddMessage(self, message, makehistorygraphhandler):
         self.demux.session.add(message)
         self.demux.session.commit()
 
@@ -178,17 +178,17 @@ class MessageStore:
             contact = Contact()
             contact.name = message.fromaddress
             contact.emailaddress = message.fromaddress
-            contact.islivewire = message.senderislivewireenabled
+            contact.ishistorygraph = message.senderishistorygraphenabled
             self.demux.contactstore.AddContact(contact)
-            if makelivewirehandler:
-                makelivewirehandler(contact)
+            if makehistorygraphhandler:
+                makehistorygraphhandler(contact)
         elif l.count() == 1:
-            if message.senderislivewireenabled == True:
+            if message.senderishistorygraphenabled == True:
                 contact = l.first()
-                contact.islivewire = True
+                contact.ishistorygraph = True
                 self.demux.contactstore.AddContact(contact)
-                if makelivewirehandler:
-                    makelivewirehandler(contact)
+                if makehistorygraphhandler:
+                    makehistorygraphhandler(contact)
         else:
             assert False
 

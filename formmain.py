@@ -1,4 +1,4 @@
-#This is the main screen for livewire communicator
+#This is the main screen for History Graph communicator
 import sys
 from PySide.QtCore import *
 from PySide.QtGui import *
@@ -22,7 +22,7 @@ class FormMain(QMainWindow):
     def __init__(self, parent, demux):
         super(FormMain, self).__init__(parent)
         self.demux = demux
-        self.setWindowTitle("Livewire Communicator")
+        self.setWindowTitle("HistoryGraph Communicator")
         
         hbox = QHBoxLayout()
         hbox.addStretch(0)
