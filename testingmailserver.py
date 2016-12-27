@@ -153,6 +153,7 @@ class WallMailbox(object):
         #Not quite correct these deletion should only be carried out when quitting
         global deletedmessages
         deletedmessages.append((self.id,i))
+        #print 'Add message ' + str(i) + ' to delete queue id = ' + self.id
     
     def undeleteMessage(self):
         pass
@@ -160,9 +161,15 @@ class WallMailbox(object):
     def sync(self):
         global mailDict
         global deletedmessages
+        messages_to_delete = list()
         for (id, i) in deletedmessages:
             if i < len(mailDict[id]):
-                del mailDict[id][i]
+                messages_to_delete.append(mailDict[id][i])
+                #print 'Prepare delete message ' + str(i) + ' from delete queue id = ' + self.id
+
+        for message_to_delete in messages_to_delete:
+            #print 'Deleting message'
+            mailDict[id].remove(message_to_delete)
 
 class WallCredentialsChecker(object):
     
@@ -287,6 +294,7 @@ def StopTestingMailServer():
     reactor.callFromThread(reactor.stop)
 
 def ResetMailDict():
+    assert False
     global mailDict
     mailDict = defaultdict(list)
     global deletedmessages

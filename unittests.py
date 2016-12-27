@@ -1459,6 +1459,7 @@ class SendAndReceiveEncryptedEmail(unittest.TestCase):
 class EstablishLivewireEncryptedLink(unittest.TestCase):
     @patch.object(Demux, 'get_database_filename')
     def setUp(self, mock_get_database_filename):
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
         mock_get_database_filename.return_value = ':memory:'
         self.demux = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
                        popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
@@ -1632,14 +1633,35 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (mlockett2@livewir
         M.quit()
 
         M = poplib.POP3_SSL('localhost', 10026)
-        M.user("mlockett")
+        M.user("mlockett1")
         M.pass_("")
         numMessages = len(M.list()[1])
         self.assertEquals(numMessages, 0, "Messages not deleted")
 
+        # Delete the auto generated reply
+        M = poplib.POP3_SSL('localhost', 10026)
+        M.user("mlockett2")
+        M.pass_("")
+        numMessages = len(M.list()[1])
+        self.assertEquals(numMessages, 1, "Messages not available")
+
+        M.dele(1)
+        numMessages = len(M.list()[1])
+        self.assertEquals(numMessages, 1, "Messages should not be deleted yet")
+        M.quit()
+
+        M = poplib.POP3_SSL('localhost', 10026)
+        M.user("mlockett2")
+        M.pass_("")
+        numMessages = len(M.list()[1])
+        self.assertEquals(numMessages, 0, "Messages not deleted")
+
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty messages = ' + str(testingmailserver.mailDict))
+
 class EstablishLivewireEncryptedLinkUsingDemux(unittest.TestCase):
     def setUp(self):
-        testingmailserver.ResetMailDict()
+        #testingmailserver.ResetMailDict()
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
 
     @patch.object(Demux, 'get_database_filename')
     def runTest(self, mock_get_database_filename):
@@ -1713,11 +1735,13 @@ Second post!!!!!!
         self.assertTrue(message.body.find("Second post!!!!!!") > 0, "Second post!!!!!!")
         self.assertTrue(message.senderislivewireenabled) # Sender is not livewire enabled
         self.assertTrue(message.messageisencrypted) # This message was encrypted
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
 
 
 class EstablishLivewireEncryptedLinkUsingDemuxExistingContact(unittest.TestCase):
     def setUp(self):
-        testingmailserver.ResetMailDict()
+        #testingmailserver.ResetMailDict()
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
 
     @patch.object(Demux, 'get_database_filename')
     def runTest(self, mock_get_database_filename):
@@ -1785,6 +1809,7 @@ Frist post!!!!!!
         self.assertEqual(len(list(contacts)), 1)
         self.assertEqual(contacts[0].publickey, demux1.key.publickey().exportKey("PEM") )
         self.assertTrue(contacts[0].islivewire)
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
 
 
 class CoversApp(App):
@@ -1799,7 +1824,8 @@ class CoversApp(App):
         
 class DemuxTestCase(unittest.TestCase):
     def setUp(self):
-        testingmailserver.ResetMailDict()
+        #testingmailserver.ResetMailDict()
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
         self.demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
                        popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
         self.demux2 = Demux(myemail='mlockett2@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett2',smtppass='',
@@ -1849,6 +1875,7 @@ Frist post!!!!!!
         self.assertEqual(len(list(contacts)), 1)
         self.assertEqual(contacts[0].publickey, self.demux1.key.publickey().exportKey("PEM") )
         self.assertTrue(contacts[0].islivewire)
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
 
     def runTest(self):
 
@@ -1865,11 +1892,13 @@ Frist post!!!!!!
         test_b = TestPropertyOwner1(None)
         test_b.covers = 10
         dc1.AddDocumentObject(test_b)
-        testingmailserver.ResetMailDict() #Remove this line emails not being correctly deleted over pop
+        #testingmailserver.ResetMailDict() #Remove this line emails not being correctly deleted over pop
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
         app1.Share(dc1, 'mlockett2@livewire.io')
 
         time.sleep(0.01) #Give the email a chance to send
         self.demux2.CheckEmail()
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
 
         dc2 = app2.GetDocumentCollectionByID(dc1.id)
 
@@ -1882,16 +1911,20 @@ Frist post!!!!!!
         self.assertEqual(test_b.id, test_b2.id)
         self.assertEqual(test_b.covers, test_b2.covers)
 
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
         test_a.covers = 2 #This should share the update automatically
 
         t = int(round(time.time() * 1000))
         m = MessageTest(messagetime=t, text="Hello")
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
         dc1.AddImmutableObject(m)
+        #self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty has ' + str(testingmailserver.GetTotalEmailCount()) + ' items')
         test1id = m.GetHash()
         app1.UpdateShares()
 
         time.sleep(0.01) #Give the email a chance to send
         self.demux2.CheckEmail()
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty has ' + str(testingmailserver.GetTotalEmailCount()) + ' items')
         
         self.assertEqual(len(dc2.objects[TestPropertyOwner1.__name__]), 2)
         test_a2 = dc2.GetObjectByID(TestPropertyOwner1.__name__, test_a.id)
@@ -1929,6 +1962,7 @@ Frist post!!!!!!
 
         time.sleep(0.01) #Give the email a chance to send
         self.demux2.CheckEmail()
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
         self.assertEqual(len(dc2.objects[MessageTest.__name__]), 3)
         m1_b = dc2.GetObjectByID(MessageTest.__name__, m1.GetHash())
         m3_b = dc2.GetObjectByID(MessageTest.__name__, m3.GetHash())
@@ -1941,18 +1975,22 @@ Frist post!!!!!!
         time.sleep(0.01) #Give the email a chance to send. Demux 2 should have sent a request for m2 to demux1 
         dc1.AddImmutableObject(m2)
         self.demux1.CheckEmail()
+        #self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
 
         app1.UpdateShares()
         
         time.sleep(0.01) #Give the email a chance to send. Demux 1 should have sent m2 to demux2 
         self.demux2.CheckEmail()
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
         self.assertEqual(len(dc2.objects[MessageTest.__name__]), 4)
         m2_b = dc2.GetObjectByID(MessageTest.__name__, m2.GetHash())
         self.assertEqual(m2_b.messagetime, m2.messagetime)
         self.assertEqual(m2_b.text, m2.text)
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
 
 class DemuxEdgeAuthenticationTestCase(DemuxTestCase):
     def runTest(self):
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
         #demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
         #               popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
         #demux2 = Demux(myemail='mlockett2@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett2',smtppass='',
@@ -1968,7 +2006,7 @@ class DemuxEdgeAuthenticationTestCase(DemuxTestCase):
         test_a = TestPropertyOwner1(None)
         test_a.covers = 1
         dc1.AddDocumentObject(test_a)
-        testingmailserver.ResetMailDict() #Remove this line emails not being correctly deleted over pop
+        #testingmailserver.ResetMailDict() #Remove this line emails not being correctly deleted over pop
         app1.Share(dc1, 'mlockett2@livewire.io')
 
         time.sleep(0.01) #Give the email a chance to send
@@ -1997,6 +2035,7 @@ class DemuxEdgeAuthenticationTestCase(DemuxTestCase):
 
         self.assertEqual(test_a.id, test_a2.id)
         self.assertEqual(test_a2.covers, 1) #The change to 2 above should have been rejected
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
 
 
 class DemuxCanSaveAndLoadTestCase(unittest.TestCase):
@@ -2637,7 +2676,8 @@ class CheckersBoardVictoryConditionTestCase(unittest.TestCase):
 
 class ReloadAppTestCase(unittest.TestCase):
     def setUp(self):
-        testingmailserver.ResetMailDict()
+        #testingmailserver.ResetMailDict()
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
         utils.setup_app_dir("/run/shm/demux1")
         self.demux1 = Demux(myemail='mlockett1@livewire.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
                        popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/run/shm/demux1")
@@ -2679,11 +2719,13 @@ class ReloadAppTestCase(unittest.TestCase):
         self.assertEqual(test_a.covers, test_a2.covers)
         self.assertEqual(test_b.id, test_b2.id)
         self.assertEqual(test_b.covers, test_b2.covers)
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
 
 
 class ShareAndReloadCheckersGameTestCase(unittest.TestCase):
     def setUp(self):
-        testingmailserver.ResetMailDict()
+        #testingmailserver.ResetMailDict()
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
         utils.setup_app_dir("/run/shm/demux1")
         utils.setup_app_dir("/run/shm/demux2")
         utils.setup_app_dir("/run/shm/testdbs")
@@ -2847,7 +2889,7 @@ Frist post!!!!!!
                                   ])
 
         self.assertEqual(checkersgame.GetTurnColour(), "B")
-        testingmailserver.ResetMailDict()
+        #testingmailserver.ResetMailDict()
         app1.UpdateShares()
 
         time.sleep(0.01) #Give the email a chance to send
@@ -2878,7 +2920,7 @@ Frist post!!!!!!
                                   ['','B','','B','','B','','B'],
                                   ['B','','B','','B','','B',''],
                                   ])
-        testingmailserver.ResetMailDict()
+        #testingmailserver.ResetMailDict()
 
         app2.UpdateShares()
 
@@ -2943,6 +2985,7 @@ Frist post!!!!!!
                                   ['','B','','B','','B','','B'],
                                   ['B','','B','','B','','B',''],
                                   ])
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
 
 class HistoryGraphDepthTestCase(unittest.TestCase):
     def runTest(self):
@@ -3382,7 +3425,8 @@ class TrelloThreeWayShareTestCase(unittest.TestCase):
                             or contact.publickey == demux[1].key.publickey().exportKey("PEM"))
 
     def setUp(self):
-        testingmailserver.ResetMailDict()
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
+        #testingmailserver.ResetMailDict()
         utils.setup_app_dir("/run/shm/demux0")
         utils.setup_app_dir("/run/shm/demux1")
         utils.setup_app_dir("/run/shm/demux2")
@@ -3446,6 +3490,7 @@ Frist post!!!!!!
         self.verify_contact_matches_sender_demux(self.demux[0].contactstore.GetContacts(), 0)
         self.verify_contact_matches_sender_demux(self.demux[1].contactstore.GetContacts(), 1)
         self.verify_contact_matches_sender_demux(self.demux[2].contactstore.GetContacts(), 2)
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
 
 
     def runTest(self):
@@ -3562,12 +3607,13 @@ Frist post!!!!!!
         self.assertEqual(len(tl.items), 0)
 
         # Brutally clear junk out of the email spool
-        testingmailserver.ResetMailDict()
+        #testingmailserver.ResetMailDict()
         app[1].UpdateShares()
         app[2].UpdateShares()
 
         time.sleep(0.01) #Give the email a chance to send
         for i in range(3):
+            #print 'TrelloThreeWayShareTestCase Checking demux ' + str(i)
             self.demux[i].CheckEmail()
 
         # Verify all users boards contain all of the updates
@@ -3585,6 +3631,7 @@ Frist post!!!!!!
             tl = dc[i].objects[TrelloList.__name__][tll.list_id]
             self.assertEqual(tl.name, 'User 2 Special List')
             self.assertEqual(len(tl.items), 0)
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
 
 
 
@@ -3707,7 +3754,8 @@ class MultiChatBasicTestCase(unittest.TestCase):
 
 class MultiChatViaEncryptedEmailTestCase(unittest.TestCase):
     def setUp(self):
-        testingmailserver.ResetMailDict()
+        #testingmailserver.ResetMailDict()
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
         utils.setup_app_dir("/run/shm/demux1")
         utils.setup_app_dir("/run/shm/demux2")
         utils.setup_app_dir("/run/shm/testdbs")
@@ -3813,7 +3861,7 @@ Frist post!!!!!!
 
         time.sleep(0.01) #Give the email a chance to send
         self.demux1.CheckEmail()
-        #self.demux2.CheckEmail()
+        self.demux2.CheckEmail()
 
         #dc1 = app1.GetDocumentCollectionByID(dc1.id)
         #print "dc1.objects[MultiChatItem.__name__]=",dc1.objects[MultiChatItem.__name__]
@@ -3823,6 +3871,7 @@ Frist post!!!!!!
         items1 = sorted(items1,key=attrgetter('eventtime'))
         content = [item.content for item in items1]
         self.assertEqual(content, ['Chat Item 1', 'Chat Item 2', 'Chat Item 3'])
+        self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
 
 
 
@@ -3909,6 +3958,7 @@ def suite():
 
     suite.addTest(SendAndReceiveUnencryptedEmail())
     suite.addTest(SendAndReceiveEncryptedEmail())
+
     suite.addTest(EstablishLivewireEncryptedLink())
     suite.addTest(EstablishLivewireEncryptedLinkUsingDemux())
     suite.addTest(EstablishLivewireEncryptedLinkUsingDemuxExistingContact())
@@ -3927,7 +3977,7 @@ def suite():
 
     suite.addTest(StopTestingMailServerDummyTest())
 
-    #suite.addTest(DemuxCanSaveAndLoadTestCase())
+    suite.addTest(DemuxCanSaveAndLoadTestCase())
 
     return suite
 

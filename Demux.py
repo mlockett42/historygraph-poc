@@ -211,42 +211,42 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                         self.SendConfirmationEmail(contact)
                     else:
                         contact = l3[0]  
-                        if contact.publickey != '' and not self.is_verified(fromemail, l, sig):
-                            return #Silently ignore unverified attempts to change keys
-                        contact.publickey = d["key"]
-                        contact.islivewire = True
+                        if not (contact.publickey != '' and not self.is_verified(fromemail, l, sig)):
+                            #Silently ignore unverified attempts to change keys
+                            contact.publickey = d["key"]
+                            contact.islivewire = True
                 elif d["class"] == "createdocumentcollection": #An identity message identifies the other sender: Ie gives us their public key
-                    if not self.is_verified(fromemail, l, sig):
-                        return #Silently ignore unverified messages
-                    app = self.registeredapps[d["appname"]]
-                    if app.HasDocumentCollection(d["dcid"]):
-                        dc = app.GetDocumentCollectionByID(d["dcid"])
-                    else:
-                        dc = app.CreateNewDocumentCollection(d["dcid"])
-                    dc.LoadFromJSON(d["dcjson"])
+                    if self.is_verified(fromemail, l, sig):
+                        #Silently ignore unverified messages
+                        app = self.registeredapps[d["appname"]]
+                        if app.HasDocumentCollection(d["dcid"]):
+                            dc = app.GetDocumentCollectionByID(d["dcid"])
+                        else:
+                            dc = app.CreateNewDocumentCollection(d["dcid"])
+                        dc.LoadFromJSON(d["dcjson"])
                 elif d["class"] == "edges": #Some edges we should apply
-                    if not self.is_verified(fromemail, l, sig):
-                        return #Silently ignore unverified edges
-                    dc = self.registeredapps[d["appname"]].GetDocumentCollectionByID(d["dcid"])
-                    #utils.log_output("received edges = " + str(d["edges"]))
-                    #print "Calling LoadfromJSON from Demux = ",self.myemail
-                    dc.LoadFromJSON(d["edges"])
+                    if self.is_verified(fromemail, l, sig):
+                        #Silently ignore unverified edges
+                        dc = self.registeredapps[d["appname"]].GetDocumentCollectionByID(d["dcid"])
+                        #utils.log_output("received edges = " + str(d["edges"]))
+                        #print "Calling LoadfromJSON from Demux = ",self.myemail
+                        dc.LoadFromJSON(d["edges"])
                 elif d["class"] == "immutableobject": #immutableobject to create
                     if not self.is_verified(fromemail, l, sig):
-                        return #Silently ignore unverified messages
-                    dc = self.registeredapps[d["appname"]].GetDocumentCollectionByID(d["dcid"])
-                    d2 = d["immutableobject"]
-                    classname = d2["classname"]
-                    theclass = dc.classes[classname]
-                    assert issubclass(theclass, ImmutableObject)
+                        #Silently ignore unverified messages
+                        dc = self.registeredapps[d["appname"]].GetDocumentCollectionByID(d["dcid"])
+                        d2 = d["immutableobject"]
+                        classname = d2["classname"]
+                        theclass = dc.classes[classname]
+                        assert issubclass(theclass, ImmutableObject)
                 
-                    thehash = d2["hash"]
-                    del d2["classname"]
-                    del d2["hash"]
+                        thehash = d2["hash"]
+                        del d2["classname"]
+                        del d2["hash"]
 
-                    io = theclass(**d2)
-                    if io.GetHash() not in dc.objects[classname]:
-                        dc.objects[classname][io.GetHash()] = io
+                        io = theclass(**d2)
+                        if io.GetHash() not in dc.objects[classname]:
+                            dc.objects[classname][io.GetHash()] = io
                 elif d["class"] == "encryptedemail": #Some edges we should apply
                     message2 = Message()
                     message2.body = d["message"]
@@ -288,10 +288,14 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                 if send_confirmation_email:
                     #utils.log_output('sending confirmation from ', self.myemail, ' for message ', lines)
                     self.SendConfirmationEmail(contact)
-        M.dele(1)
+        for i in range(numMessages):
+            M.dele(i + 1)
         M.quit()
 
     def is_verified(self, fromemail, l, sig):
+        if self.myemail == fromemail:
+            #print 'Messages from ourselves are never verified'
+            return False
         contacts = [c for c in self.contactstore.GetContacts() if CleanedEmailAddress(c.emailaddress) == CleanedEmailAddress(fromemail)]
         if len(contacts) != 1:
             assert False, "Demux for " + self.myemail + " fromemail = " + str(fromemail)
