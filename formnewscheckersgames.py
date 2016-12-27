@@ -27,12 +27,12 @@ class FormNewsCheckersGames(QDialog):
     def OK(self):
         dc = self.parent().checkersapp.CreateNewDocumentCollection(None)
         self.parent().checkersapp.SaveDC(dc, "/run/shm/demux1")
-        self.parent().checkersapp.Share(dc, 'mlockett2@livewire.io')
+        self.parent().checkersapp.Share(dc, self.teEmailAddress.toPlainText())
         checkersgame = CheckersGame(None)
         dc.AddDocumentObject(checkersgame)
         checkersgame.name = self.teGameName.toPlainText()
-        checkersgame.player_w = 'mlockett1@livewire.io'
-        checkersgame.player_b = 'mlockett2@livewire.io'
+        checkersgame.player_w = self.demux.myemail
+        checkersgame.player_b = self.teEmailAddress.toPlainText()
         checkersgame.CreateDefaultStartBoard()
         self.parent().checkersapp.SaveDC(dc, self.demux.appdir)
         

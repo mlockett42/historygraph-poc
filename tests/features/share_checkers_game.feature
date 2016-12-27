@@ -10,17 +10,17 @@ Feature: Open up 2 main windows and play a shared checkers games
         When I clear directory '/run/shm/demux1'
         When I clear directory '/run/shm/demux2'
         Given I set up demux 1 with the following values
-          | myemail                | popserver  | popport | popuser   | poppass   | smtpserver | smtpport | smtpuser  | smtppass  | appdir          |
-          | mlockett1@livewire.io  | localhost  | 10026   | mlockett1 |           | localhost  | 10025    | mlockett1 |           | /run/shm/demux1 |
+          | myemail                    | popserver  | popport | popuser   | poppass   | smtpserver | smtpport | smtpuser  | smtppass  | appdir          |
+          | mlockett1@historygraph.io  | localhost  | 10026   | mlockett1 |           | localhost  | 10025    | mlockett1 |           | /run/shm/demux1 |
         Given I set up demux 2 with the following values
-          | myemail                | popserver  | popport | popuser   | poppass   | smtpserver | smtpport | smtpuser  | smtppass  | appdir          |
-          | mlockett2@livewire.io  | localhost  | 10026   | mlockett2 |           | localhost  | 10025    | mlockett2 |           | /run/shm/demux2 |
+          | myemail                    | popserver  | popport | popuser   | poppass   | smtpserver | smtpport | smtpuser  | smtppass  | appdir          |
+          | mlockett2@historygraph.io  | localhost  | 10026   | mlockett2 |           | localhost  | 10025    | mlockett2 |           | /run/shm/demux2 |
         When I open main window 1
         When I open main window 2
         When I choose New Message from the File menu on main window 1
         Given I enter the following values into main window 1 new message window
           |  tesubject  |  teBody    | tetoaddress
-          | Hello world | Frist post | mlockett2@livewire.io
+          | Hello world | Frist post | mlockett2@historygraph.io
         When I press the bnOK button on main window 1 new message window
         When I wait for the email server to run
         Then the email server has exactly 1 waiting message
@@ -32,22 +32,22 @@ Feature: Open up 2 main windows and play a shared checkers games
         Then the body of the message in main window 2 view message window is 'Frist post'
         When I close the message window in main window 2
         When I choose Contacts from the File menu on main window 2
-        Then there is 1 contact in main window 2 contact window and the contacts name is 'mlockett1@livewire.io'
+        Then there is 1 contact in main window 2 contact window and the contacts name is 'mlockett1@historygraph.io'
         
         When I wait for the email server to run
         When I choose Send/Receive from the File menu on main window 1
         When I choose Contacts from the File menu on main window 1
-        Then there is 1 contact in main window 1 contact window and the contacts name is 'mlockett2@livewire.io'
-        The contact 'mlockett2@livewire.io' in main window 1 has the same public key as main window 2 private key
+        Then there is 1 contact in main window 1 contact window and the contacts name is 'mlockett2@historygraph.io'
+        The contact 'mlockett2@historygraph.io' in main window 1 has the same public key as main window 2 private key
         When I choose Send/Receive from the File menu on main window 2
-        The contact 'mlockett1@livewire.io' in main window 2 has the same public key as main window 1 private key
+        The contact 'mlockett1@historygraph.io' in main window 2 has the same public key as main window 1 private key
         
         When I reset the email server dict
         When I choose Checkers from the Apps menu on main window 1
         When I press the bnNewGame button on main window 1 manage checkers games window
         Given I enter the following values into main window 1 new checkers game window
-          | teEmailAddress       | teGameName |
-          | mlockett2@timeca.io  | Checkers1  |
+          | teEmailAddress             | teGameName |
+          | mlockett2@historygraph.io  | Checkers1  |
         When I press the bnOK button on main window 1 new checkers game window
         Then there is 1 checkers game in main window 1 manage checkers games window and the checkers game name is 'Checkers1'
         Given I select checkers game 1 in main window 1 manage checkers games window and press 'bnPlayGame'
@@ -148,8 +148,8 @@ Feature: Open up 2 main windows and play a shared checkers games
 
         #Reload from the database on disk
         Given I set up demux 2 with the following values
-          | myemail                | popserver  | popport | popuser   | poppass   | smtpserver | smtpport | smtpuser  | smtppass  | appdir          |
-          | mlockett2@livewire.io  | localhost  | 10026   | mlockett2 |           | localhost  | 10025    | mlockett2 |           | /run/shm/demux2 |
+          | myemail                    | popserver  | popport | popuser   | poppass   | smtpserver | smtpport | smtpuser  | smtppass  | appdir          |
+          | mlockett2@historygraph.io  | localhost  | 10026   | mlockett2 |           | localhost  | 10025    | mlockett2 |           | /run/shm/demux2 |
         When I open main window 2
         When I choose Checkers from the Apps menu on main window 2
 

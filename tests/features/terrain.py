@@ -25,7 +25,7 @@ if hasattr(world, 'app') == False:
     utils.removepath('/tmp/output.txt')
     utils.removepath('/tmp/testdump1.db')
     utils.removepath('/tmp/testdump2.db')
-    testingmailserver.StartTestingMailServer("livewire.io", {"mlockett":"","mlockett1":"","mlockett2":""})
+    testingmailserver.StartTestingMailServer("historygraph.io", {"mlockett":"","mlockett1":"","mlockett2":""})
     world.mail_server_tests = 1 # The number of tests which use the mail server when this becomes zero we can safely stop it
     smtplib.testingmode = True
     poplib.testingmode = True
