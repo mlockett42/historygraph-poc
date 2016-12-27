@@ -42,7 +42,7 @@ To run the unittests (TDD) run ./unittests
 To run the BDD functional tests 
 from the livewirepy directory
 source bin/activate
-export PYTHONPATH=$PWD:$PWD/doop
+export PYTHONPATH=$PWD
 cd tests
 lettuce
 
