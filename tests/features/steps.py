@@ -478,3 +478,27 @@ def then_i_add_the_following_comment_on_the_main_window_1_edit_multichat_window_
 def then_i_wait_for_2_seconds(step):
     time.sleep(2)
 
+@step(u'Then demux (\d+) has the following values')
+def then_demux_1_has_the_following_values(step, demux_index):
+    assert demux_index == '1' or demux_index == '2'
+    assert len(step.hashes) == 1
+    demux = getattr(world, 'demux' + demux_index)
+    control_values = step.hashes[0]
+    for (k, v) in control_values.iteritems():
+        assert str(getattr(demux, k)) == v, 'Mismatch for k = ' + k
+
+@step(u'Then demux (\d+) has the following types')
+def then_demux_1_has_the_following_types(step, demux_index):
+    assert demux_index == '1' or demux_index == '2'
+    assert len(step.hashes) == 1
+    demux = getattr(world, 'demux' + demux_index)
+    control_values = step.hashes[0]
+    for (k, v) in control_values.iteritems():
+        if v == 'string':
+            assert isinstance(getattr(demux, k), basestring), 'Incorrect type for ' + k + ' should be string'
+        elif v == 'integer':
+            assert isinstance(getattr(demux, k), int), 'Incorrect type for ' + k + ' should be int'
+        else:
+            assert False, 'Unknown type for ' + k
+
+

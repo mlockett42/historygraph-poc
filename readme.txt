@@ -47,3 +47,10 @@ cd tests
 lettuce
 
 
+Running the Application
+-----------------------
+source bin/activate
+python main.py
+
+
+
