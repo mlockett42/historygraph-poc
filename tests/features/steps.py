@@ -160,6 +160,7 @@ def I_choose_Settings_from_the_Options_menu(step, menu_item_name, menu_name, win
 
 @step(u'I reset the email server dict')
 def I_reset_the_email_server_dict(step):
+    pass
     testingmailserver.ResetMailDict()
 
 @step(u'I wait for the email server to run')

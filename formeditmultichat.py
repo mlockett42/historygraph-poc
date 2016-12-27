@@ -65,6 +65,7 @@ class FormEditMultiChat(QDialog):
         if text != "":
             i = MultiChatItem(content=text, eventtime=time.time())
             self.dc.AddImmutableObject(i)
+            self.multichatapp.UpdateShares()
             self.RefreshGrid()
 
     def RefreshGrid(self):

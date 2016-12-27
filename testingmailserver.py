@@ -294,7 +294,6 @@ def StopTestingMailServer():
     reactor.callFromThread(reactor.stop)
 
 def ResetMailDict():
-    assert False
     global mailDict
     mailDict = defaultdict(list)
     global deletedmessages

@@ -215,6 +215,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                             #Silently ignore unverified attempts to change keys
                             contact.publickey = d["key"]
                             contact.islivewire = True
+                            self.contactstore.AddContact(contact)
                 elif d["class"] == "createdocumentcollection": #An identity message identifies the other sender: Ie gives us their public key
                     if self.is_verified(fromemail, l, sig):
                         #Silently ignore unverified messages
@@ -275,12 +276,13 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
                     assert message2.fromaddress[-1] != '>'
                     contact.emailaddress = message2.fromaddress
                     contact.islivewire = message2.senderislivewireenabled
-                    self.contactstore.append(contact)
+                    self.contactstore.AddContact(contact)
                     send_confirmation_email = contact.islivewire
                 elif len(l) == 1:
                     if message2.senderislivewireenabled == True:
                         contact = l[0]
                         contact.islivewire = True
+                        self.contactstore.AddContact(contact)
                         send_confirmation_email = True
                 else:
                     assert False
@@ -298,6 +300,7 @@ Livewire enabled emailer http://wwww.livewirecommunicator.org (""" + self.myemai
             return False
         contacts = [c for c in self.contactstore.GetContacts() if CleanedEmailAddress(c.emailaddress) == CleanedEmailAddress(fromemail)]
         if len(contacts) != 1:
+            print "is_verified contacts = ",contacts
             assert False, "Demux for " + self.myemail + " fromemail = " + str(fromemail)
             return False
         contact = contacts[0]
