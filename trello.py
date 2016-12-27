@@ -11,19 +11,19 @@ from App import App
 class TrelloItem(DocumentObject):
     content = FieldText()
 
-class TrelloList(Document):
+class TrelloList(DocumentObject):
     name = FieldText()
     items = FieldList(TrelloItem)
 
-class TrelloListLink(DocumentObject):
-    list_id = FieldText()
+#class TrelloListLink(DocumentObject):
+#    list_id = FieldText()
 
 class TrelloShare(DocumentObject):
     email = FieldText()
 
 class TrelloBoard(Document):
     name = FieldText()
-    lists = FieldList(TrelloListLink)
+    lists = FieldList(TrelloList)
     shares = FieldCollection(TrelloShare)
 
     def CreateDefaultStartBoard(self):
@@ -31,9 +31,7 @@ class TrelloBoard(Document):
         tl = TrelloList(None)
         self.dc.AddDocumentObject(tl)
         tl.name = 'List 1'
-        tll = TrelloListLink(None)
-        self.lists.insert(0, tll)
-        tll.list_id = tl.id
+        self.lists.insert(0, tl)
         
         
 
@@ -45,7 +43,7 @@ class TrelloApp(App):
         dc = super(TrelloApp, self).CreateNewDocumentCollection(dcid)
         dc.Register(TrelloItem)
         dc.Register(TrelloList)
-        dc.Register(TrelloListLink)
+        #dc.Register(TrelloListLink)
         dc.Register(TrelloBoard)
         dc.Register(TrelloShare)
         return dc
