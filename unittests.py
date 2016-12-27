@@ -19,8 +19,6 @@ from messagefiltertoaddress import MessageFilterByToAddress
 from messagefilterccaddress import MessageFilterByCCAddress
 from messagefilterbccaddress import MessageFilterByBCCAddress
 from messagefiltertag import MessageFilterByTag
-import mockpoplib
-import mocksmtplib
 from email.mime.text import MIMEText
 from contactfilteremailaddress import ContactFilterEmailAddress
 from messagestore import *
