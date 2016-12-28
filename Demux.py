@@ -204,7 +204,7 @@ HistoryGraph enabled emailer http://wwww.historygraph.io (""" + self.myemail + "
                         contact.name = d["email"]
                         assert fromemail[0] != '<'
                         assert fromemail[-1] != '>'
-                        contact.emailaddress = fromemail
+                        contact.emailaddress = CleanedEmailAddress(fromemail)
                         contact.publickey = d["key"]
                         contact.ishistorygraph = True
                         self.contactstore.AddContact(contact)
@@ -276,7 +276,7 @@ HistoryGraph enabled emailer http://wwww.historygraph.io (""" + self.myemail + "
                     contact.name = message2.fromaddress
                     assert message2.fromaddress[0] != '<'
                     assert message2.fromaddress[-1] != '>'
-                    contact.emailaddress = message2.fromaddress
+                    contact.emailaddress = CleanedEmailAddress(message2.fromaddress)
                     contact.ishistorygraph = message2.senderishistorygraphenabled
                     self.contactstore.AddContact(contact)
                     send_confirmation_email = contact.ishistorygraph
