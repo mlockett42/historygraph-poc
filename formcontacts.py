@@ -25,6 +25,8 @@ class FormContacts(QDialog):
 
         self.bnClose.clicked.connect(self.close)
 
+        self.setLayout(vbox)
+
         for contact in self.demux.contactstore.GetContacts():
             self.contacts.setRowCount(self.contacts.rowCount() + 1)
             row = self.contacts.rowCount() - 1
