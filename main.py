@@ -9,7 +9,7 @@ from Demux import Demux
 # Create the Qt Application
 app = QApplication(sys.argv)
 # Create and show the form
-form = FormMain(parent = None, demux=Demux(fromfile = 'livewire.db'))
+form = FormMain(parent = None, demux=Demux(fromfile = 'historygraph.db'))
 form.show()
 
 # Run the main Qt loop
