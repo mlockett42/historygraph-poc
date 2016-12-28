@@ -11,7 +11,7 @@ class FormContacts(QDialog):
         vbox = QVBoxLayout()
         vbox.addStretch(1)
 
-        self.contacts = QTableWidget(0,1)
+        self.contacts = QTableWidget(0,2)
         self.contacts.verticalHeader().setVisible(False)
         self.contacts.horizontalHeader().setVisible(False)
         self.contacts.setMinimumWidth(200)
@@ -36,6 +36,10 @@ class FormContacts(QDialog):
             wi.setData(1, contact)
             self.contacts.setItem(row,0, wi)
 
+            wi = QTableWidgetItem('Is encrypted' if contact.ishistorygraph else 'Not encrypted')
+            wi.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled )
+            wi.setData(1, contact)
+            self.contacts.setItem(row,1, wi)
         
 
 
