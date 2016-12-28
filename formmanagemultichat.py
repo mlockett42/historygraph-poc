@@ -13,6 +13,8 @@ class FormManageMultiChat(QDialog):
         self.demux = demux
         self.multichatapp = parent.multichatapp
 
+        self.setWindowTitle("Manage Multichats")
+
         vbox = QVBoxLayout()
         self.setLayout(vbox)
         self.multichats = QTableWidget(0,1)
