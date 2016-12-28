@@ -209,10 +209,11 @@ def When_I_close_the_message_window_in_main_window(step, window_index):
     formmain = getattr(world, 'formmain' + window_index)
     formmain.formviewmessage.close()
 
-@step(u'there is 1 (contact|checkers game|trello board|multichat) in main window (\d+) (contact|manage checkers games|manage trello boards|manage multichats) window and the (contacts|checkers game|trello board|multichat) name is \'([^\']*)\'( and the contact is encrypted|)')
-def there_is_one_contact_in_main_window_contact_window(step, object_type, window_index, window_name, object_type2, object_name, is_encrypted):
+@step(u'there is 1 (contact|checkers game|trello board|multichat) in main window (\d+) (contact|manage checkers games|manage trello boards|manage multichats) window and the (contacts|checkers game|trello board|multichat) name is \'([^\']*)\'( and the contact is encrypted| and the contact is not encrypted|)')
+def there_is_one_contact_in_main_window_contact_window(step, object_type, window_index, window_name, object_type2, object_name, is_encrypted_in):
     formmain = getattr(world, 'formmain' + window_index)
-    is_encrypted = is_encrypted == ' and the contact is encrypted'
+    is_encrypted = is_encrypted_in == ' and the contact is encrypted'
+    is_not_encrypted = is_encrypted_in == ' and the contact is not encrypted'
     #assert object_type == object_type2
     if object_type == 'contact':
         l = formmain.formcontacts.contacts
@@ -231,6 +232,8 @@ def there_is_one_contact_in_main_window_contact_window(step, object_type, window
     assert control_name == object_name, object_type + " name does not match " + str(control_name) + " vs " + str(object_name)
     if is_encrypted:
         assert l.item(0,1).text() == 'Is encrypted', 'The ' + object_type + ' is not encrypted'
+    if is_not_encrypted:
+        assert l.item(0,1).text() == 'Not encrypted', 'The ' + object_type + ' is not encrypted'
 
 @step(u'The contact \'([^\']*)\' in main window (\d+) has the same public key as main window (\d+) private key')
 def the_contact_group1_in_main_window_2_has_the_same_public_key_as_main_window_1_private_key(step, contact_name, window_index1, window_index2):

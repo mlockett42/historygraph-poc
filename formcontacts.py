@@ -39,7 +39,7 @@ class FormContacts(QDialog):
             wi.setData(1, contact)
             self.contacts.setItem(row,0, wi)
 
-            wi = QTableWidgetItem('Is encrypted' if contact.ishistorygraph else 'Not encrypted')
+            wi = QTableWidgetItem('Is encrypted' if contact.ishistorygraph and contact.publickey != '' else 'Not encrypted')
             wi.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled )
             wi.setData(1, contact)
             self.contacts.setItem(row,1, wi)
