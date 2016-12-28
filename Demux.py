@@ -227,27 +227,29 @@ HistoryGraph enabled emailer http://wwww.historygraph.io (""" + self.myemail + "
                         dc.LoadFromJSON(d["dcjson"])
                 elif d["class"] == "edges": #Some edges we should apply
                     if self.is_verified(fromemail, l, sig):
-                        #Silently ignore unverified edges
-                        dc = self.registeredapps[d["appname"]].GetDocumentCollectionByID(d["dcid"])
-                        #utils.log_output("received edges = " + str(d["edges"]))
-                        #print "Calling LoadfromJSON from Demux = ",self.myemail
-                        dc.LoadFromJSON(d["edges"])
+                        if d["dcid"] in self.registeredapps[d["appname"]].dcdict:
+                            #Silently ignore unverified edges
+                            dc = self.registeredapps[d["appname"]].GetDocumentCollectionByID(d["dcid"])
+                            #utils.log_output("received edges = " + str(d["edges"]))
+                            #print "Calling LoadfromJSON from Demux = ",self.myemail
+                            dc.LoadFromJSON(d["edges"])
                 elif d["class"] == "immutableobject": #immutableobject to create
                     if not self.is_verified(fromemail, l, sig):
                         #Silently ignore unverified messages
-                        dc = self.registeredapps[d["appname"]].GetDocumentCollectionByID(d["dcid"])
-                        d2 = d["immutableobject"]
-                        classname = d2["classname"]
-                        theclass = dc.classes[classname]
-                        assert issubclass(theclass, ImmutableObject)
-                
-                        thehash = d2["hash"]
-                        del d2["classname"]
-                        del d2["hash"]
+                        if d["dcid"] in self.registeredapps[d["appname"]].dcdict:
+                            dc = self.registeredapps[d["appname"]].GetDocumentCollectionByID(d["dcid"])
+                            d2 = d["immutableobject"]
+                            classname = d2["classname"]
+                            theclass = dc.classes[classname]
+                            assert issubclass(theclass, ImmutableObject)
+                    
+                            thehash = d2["hash"]
+                            del d2["classname"]
+                            del d2["hash"]
 
-                        io = theclass(**d2)
-                        if io.GetHash() not in dc.objects[classname]:
-                            dc.objects[classname][io.GetHash()] = io
+                            io = theclass(**d2)
+                            if io.GetHash() not in dc.objects[classname]:
+                                dc.objects[classname][io.GetHash()] = io
                 elif d["class"] == "encryptedemail": #Some edges we should apply
                     message2 = Message()
                     message2.body = d["message"]
