@@ -462,7 +462,7 @@ def given_the_main_window_1_edit_multichat_displayed_matches(step, window_index)
     #utils.log_output("gridtext = ",gridtext)
     assert len(cells) == len(gridtext), "cells = " + str(cells) + ", gridtext = " + str(gridtext)
     assert set(cells) == set(gridtext), "set(cells) = " + str(set(cells) ) + ", set(gridtext) = " + str(set(gridtext))
-    cell_content = dict([(k, v.lContent.text()) for (k, v) in cells.iteritems()])
+    cell_content = dict([(k, v) for (k, v) in cells.iteritems()])
     #utils.log_output("cell_content = ",cell_content)
     #utils.log_output("gridtext = ",gridtext)
     for (k, v) in cell_content.iteritems():

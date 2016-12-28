@@ -5,11 +5,17 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 from formmain import *
 from Demux import Demux
+import os
 
 # Create the Qt Application
 app = QApplication(sys.argv)
 # Create and show the form
-form = FormMain(parent = None, demux=Demux(fromfile = 'historygraph.db'))
+appdir = os.path.join(os.getcwd(), 'demux')
+try:
+    os.mkdir(appdir)
+except:
+    pass
+form = FormMain(parent = None, demux=Demux(fromfile = 'historygraph.db', appdir=appdir))
 form.show()
 
 # Run the main Qt loop

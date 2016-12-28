@@ -172,6 +172,14 @@ class FormMain(QMainWindow):
             wi3.setData(1, message)
             self.messageheaders.setItem(row, 3, wi3)
 
+        #for i in range(100):
+        #    self.messageheaders.setRowCount(self.messageheaders.rowCount() + 1)
+        #    row = self.messageheaders.rowCount() - 1
+        #    wi = QTableWidgetItem('Blah')
+        #    wi.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled )
+        #    wi.setData(1, 'lll')
+        #    self.messageheaders.setItem(row,0, wi)
+
     def messagedoubleclicked(self, mi):
         row = mi.row()
         column = mi.column()
