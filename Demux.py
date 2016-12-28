@@ -301,7 +301,7 @@ HistoryGraph enabled emailer http://wwww.historygraph.io (""" + self.myemail + "
         contacts = [c for c in self.contactstore.GetContacts() if CleanedEmailAddress(c.emailaddress) == CleanedEmailAddress(fromemail)]
         if len(contacts) != 1:
             #print "is_verified contacts = ",contacts
-            assert False, "Demux for " + self.myemail + " fromemail = " + str(fromemail)
+            print "is_verified failed for " + self.myemail + " fromemail = " + str(fromemail)
             return False
         contact = contacts[0]
         public_key = RSA.importKey(contact.publickey)
