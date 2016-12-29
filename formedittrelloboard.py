@@ -70,6 +70,7 @@ class FormEditTrelloBoard(QDialog):
             trellolist.name = self.teContent.toPlainText()
             #utils.log_output('trellolist.name=',trellolist.name)
             self.owner.RefreshGrid()
+            self.owner.demux.SaveAllDCs()
             self.trelloapp.UpdateShares()
 
         def add_item(self):
