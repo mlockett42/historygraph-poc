@@ -84,21 +84,21 @@ class FormCheckers(QDialog):
 
     def LayoutBoard(self):
         boardPieces = self.game.GetCurrentPieces()
-        for i in range(8):
-            for j in range(8):
-                if (i,j) not in boardPieces:
-                    if (i + j) % 2 == 0:
-                        self.boardScreen.setCellWidget(i,j, ImgWhiteSquare(self, (j,i)))
+        for y in range(8):
+            for x in range(8):
+                if (x,y) not in boardPieces:
+                    if (x + y) % 2 == 0:
+                        self.boardScreen.setCellWidget(y,x, ImgWhiteSquare(self, (x,y)))
                     else:
-                        self.boardScreen.setCellWidget(i,j, ImgBlackSquare(self, (j,i)))
-                elif boardPieces[(i,j)].pieceside == "W" and boardPieces[(i,j)].piecetype == "":
-                    self.boardScreen.setCellWidget(i,j, ImgWhiteOnBlack(self, (j,i)))
-                elif boardPieces[(i,j)].pieceside == "B" and boardPieces[(i,j)].piecetype == "":
-                    self.boardScreen.setCellWidget(i,j, ImgBlackOnBlack(self, (j,i)))
-                elif boardPieces[(i,j)].pieceside == "W" and boardPieces[(i,j)].piecetype == "K":
-                    self.boardScreen.setCellWidget(i,j, ImgWhiteKingOnBlack(self, (j,i)))
-                elif boardPieces[(i,j)].pieceside == "B" and boardPieces[(i,j)].piecetype == "K":
-                    self.boardScreen.setCellWidget(i,j, ImgBlackKingOnBlack(self, (j,i)))
+                        self.boardScreen.setCellWidget(y,x, ImgBlackSquare(self, (x,y)))
+                elif boardPieces[(x,y)].pieceside == "W" and boardPieces[(x,y)].piecetype == "":
+                    self.boardScreen.setCellWidget(y,x, ImgWhiteOnBlack(self, (x,y)))
+                elif boardPieces[(x,y)].pieceside == "B" and boardPieces[(x,y)].piecetype == "":
+                    self.boardScreen.setCellWidget(y,x, ImgBlackOnBlack(self, (x,y)))
+                elif boardPieces[(x,y)].pieceside == "W" and boardPieces[(x,y)].piecetype == "K":
+                    self.boardScreen.setCellWidget(y,x, ImgWhiteKingOnBlack(self, (x,y)))
+                elif boardPieces[(x,y)].pieceside == "B" and boardPieces[(x,y)].piecetype == "K":
+                    self.boardScreen.setCellWidget(y,z, ImgBlackKingOnBlack(self, (x,y)))
                 else:
                     assert False
 
@@ -141,7 +141,9 @@ class FormCheckers(QDialog):
                 self.game.turn.add(1)
             #utils.log_output("LabelClicked updating shares")
             self.parent().checkersapp.UpdateShares()
-            self.parent().checkersapp.SaveDC(self.dc, "/run/shm/demux2")
+            #self.parent().checkersapp.SaveDC(self.dc, self.demux.appdir)
+            self.demux.SaveAllDCs()
+
             self.UpdateStatus(status)
             self.DisplayCurrentPlayer()
             self.LayoutBoard()
