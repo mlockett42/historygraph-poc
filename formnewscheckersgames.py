@@ -10,17 +10,29 @@ class FormNewsCheckersGames(QDialog):
         super(FormNewsCheckersGames, self).__init__(parent)
         self.demux = demux
         vbox = QVBoxLayout()
+        hbox = QHBoxLayout()
+        hbox.addWidget(QLabel('Email address'))
         self.teEmailAddress = QTextEdit("")
         self.teEmailAddress.setMaximumHeight(27)
-        vbox.addWidget(self.teEmailAddress)
+        hbox.addWidget(self.teEmailAddress)
+        vbox.addLayout(hbox)
+        hbox = QHBoxLayout()
+        hbox.addWidget(QLabel('Checkers Board name'))
         self.teGameName = QTextEdit("")
         self.teGameName.setMaximumHeight(27)
-        vbox.addWidget(self.teGameName)
+        hbox.addWidget(self.teGameName)
+        vbox.addLayout(hbox)
 
+        hbox = QHBoxLayout()
         self.bnOK = QPushButton("OK")
-        vbox.addWidget(self.bnOK)
+        hbox.addWidget(self.bnOK)
+        bnCancel = QPushButton("Cancel")
+        hbox.addWidget(bnCancel)
+
+        vbox.addLayout(hbox)
 
         self.bnOK.clicked.connect(self.OK)
+        bnCancel.clicked.connect(self.close)
 
         self.setLayout(vbox)
 

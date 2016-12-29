@@ -118,6 +118,6 @@ class FormEditMultiChat(QDialog):
         self.demux.CheckEmail()
         self.demux.SaveAllDCs()
         self.multichatapp.LoadDocumentCollectionFromDisk(self.demux.appdir)
-        self.dc = self.trelloapp.GetDocumentCollectionByID(dc.id)
+        #self.dc = self.multichatapp.GetDocumentCollectionByID(dc.id)
         self.RefreshGrid()
 

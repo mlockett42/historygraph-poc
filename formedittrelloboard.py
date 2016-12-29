@@ -273,7 +273,7 @@ class FormEditTrelloBoard(QDialog):
         self.demux.CheckEmail()
         self.demux.SaveAllDCs()
         self.trelloapp.LoadDocumentCollectionFromDisk(self.demux.appdir)
-        self.dc = self.trelloapp.GetDocumentCollectionByID(dc.id)
+        #self.dc = self.trelloapp.GetDocumentCollectionByID(dc.id)
         self.RefreshGrid()
 
 
