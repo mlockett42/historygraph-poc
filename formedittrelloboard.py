@@ -77,7 +77,9 @@ class FormEditTrelloBoard(QDialog):
             trellolist = self.dc.objects[TrelloList.__name__][self.trellolistlink.list_id]
 
             ti = TrelloItem(None)
+            print "ListHeaderCell before len(trellolist.items)=",len(trellolist.items)
             trellolist.items.insert(len(trellolist.items), ti)
+            print "ListHeaderCell after len(trellolist.items)=",len(trellolist.items)
             ti.content = "Item 1"
 
             self.owner.RefreshGrid()
@@ -127,7 +129,7 @@ class FormEditTrelloBoard(QDialog):
             self.trelloitem.content = self.teContent.toPlainText()
             self.owner.RefreshGrid()
             utils.log_output("ListContentCell saving content - updating shares")
-            #self.owner.demux.SaveAllDCs()
+            self.owner.demux.SaveAllDCs()
             self.owner.trelloapp.UpdateShares()
 
     class AddListCell(QHBoxLayout):
@@ -210,6 +212,7 @@ class FormEditTrelloBoard(QDialog):
             row = 1
             trellolist = self.dc.objects[TrelloList.__name__][tll.list_id]
             #utils.log_output("LayoutGrid len(trellolist.items)= ", len(trellolist.items))
+            print "FormEditTrelloBoard LayoutGrid column = ",column," len( trellolist.items) =", len(trellolist.items)
             for ti in trellolist.items:
                 cell = FormEditTrelloBoard.ListContentCell(self.dc, ti, self)
                 self.gridlayout.addLayout(cell, row, column)
