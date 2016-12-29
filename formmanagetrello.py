@@ -28,7 +28,7 @@ class FormManageTrello(QDialog):
         vbox.addWidget(self.boards)
         self.bnNewBoard = QPushButton("New Board")
         vbox.addWidget(self.bnNewBoard)
-        self.bnEditBoard = QPushButton("Play Game")
+        self.bnEditBoard = QPushButton("Edit Board")
         vbox.addWidget(self.bnEditBoard)
         self.refresh_board_list()
 

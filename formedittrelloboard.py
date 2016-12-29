@@ -17,16 +17,52 @@ class FormEditTrelloBoard(QDialog):
             self.owner = owner
             self.trellolistlink = trellolistlink
             trellolist = dc.objects[TrelloList.__name__][trellolistlink.list_id]
+            sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+            sizePolicy.setHorizontalStretch(0)
+            sizePolicy.setVerticalStretch(0)
+            hbox = QHBoxLayout()
             self.teContent =  QTextEdit(trellolist.name)
-            self.addWidget(self.teContent)
+            self.teContent.setSizePolicy(sizePolicy)
+            self.teContent.setMaximumHeight(50)
+            self.teContent.setMaximumWidth(300)
+            self.teContent.setMinimumHeight(50)
+            self.teContent.setMinimumWidth(300)
+            hbox.addWidget(self.teContent)
             self.bnSave = QPushButton("Save")
+            self.bnSave.setSizePolicy(sizePolicy)
+            self.bnSave.setMaximumHeight(25)
+            self.bnSave.setMaximumWidth(80)
+            self.bnSave.setMinimumHeight(25)
+            self.bnSave.setMinimumWidth(80)
             self.bnSave.clicked.connect(self.save_list_name)
-            self.addWidget(self.bnSave)
+            hbox.addWidget(self.bnSave)
             self.bnAddItem = QPushButton("Add Item")
-            self.addWidget(self.bnAddItem)
+            self.bnAddItem.setSizePolicy(sizePolicy)
+            self.bnAddItem.setMaximumHeight(25)
+            self.bnAddItem.setMaximumWidth(80)
+            self.bnAddItem.setMinimumHeight(25)
+            self.bnAddItem.setMinimumWidth(80)
+            hbox.addWidget(self.bnAddItem)
             self.bnAddItem.clicked.connect(self.add_item)
             self.bnMoveRight = QPushButton("Move Right")
-            self.addWidget(self.bnMoveRight)
+            self.bnMoveRight.setSizePolicy(sizePolicy)
+            self.bnMoveRight.setMaximumHeight(25)
+            self.bnMoveRight.setMaximumWidth(80)
+            self.bnMoveRight.setMinimumHeight(25)
+            self.bnMoveRight.setMinimumWidth(80)
+            hbox.addWidget(self.bnMoveRight)
+            #self.setSizePolicy(sizePolicy)
+            #self.setMaximumWidth(100)
+            #self.setMaximumHeight(50)
+
+            sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+            sizePolicy.setHorizontalStretch(0)
+            sizePolicy.setVerticalStretch(0)
+            widget = QWidget()
+            widget.setLayout(hbox)
+            widget.setSizePolicy(sizePolicy)
+            self.addWidget(widget)
+
    
         def save_list_name(self):
             trellolist = self.dc.objects[TrelloList.__name__][self.trellolistlink.list_id]
@@ -55,11 +91,37 @@ class FormEditTrelloBoard(QDialog):
             super(FormEditTrelloBoard.ListContentCell, self).__init__()
             self.trelloitem = trelloitem
             self.owner = owner
+            sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+            sizePolicy.setHorizontalStretch(0)
+            sizePolicy.setVerticalStretch(0)
+            hbox = QHBoxLayout()
             self.teContent =  QTextEdit(trelloitem.content)
-            self.addWidget(self.teContent)
+            self.teContent.setSizePolicy(sizePolicy)
+            self.teContent.setMaximumHeight(50)
+            self.teContent.setMaximumWidth(300)
+            self.teContent.setMinimumHeight(50)
+            self.teContent.setMinimumWidth(300)
+            hbox.addWidget(self.teContent)
             self.bnSave = QPushButton("Save")
+            self.bnSave.setSizePolicy(sizePolicy)
+            self.bnSave.setMaximumHeight(25)
+            self.bnSave.setMaximumWidth(80)
+            self.bnSave.setMinimumHeight(25)
+            self.bnSave.setMinimumWidth(80)
             self.bnSave.clicked.connect(self.save_content)
-            self.addWidget(self.bnSave)
+            hbox.addWidget(self.bnSave)
+            sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+            sizePolicy.setHorizontalStretch(0)
+            sizePolicy.setVerticalStretch(0)
+            #self.setSizePolicy(sizePolicy)
+
+            sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+            sizePolicy.setHorizontalStretch(0)
+            sizePolicy.setVerticalStretch(0)
+            widget = QWidget()
+            widget.setLayout(hbox)
+            widget.setSizePolicy(sizePolicy)
+            self.addWidget(widget)
 
         def save_content(self):
             self.trelloitem.content = self.teContent.toPlainText()
@@ -71,11 +133,39 @@ class FormEditTrelloBoard(QDialog):
     class AddListCell(QHBoxLayout):
         def __init__(self, owner, trelloboard):
             super(FormEditTrelloBoard.AddListCell, self).__init__()
+            sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+            sizePolicy.setHorizontalStretch(0)
+            sizePolicy.setVerticalStretch(0)
             self.bnAddList = QPushButton("Add List")
+            self.bnAddList.setSizePolicy(sizePolicy)
+            self.bnAddList.setMaximumHeight(25)
+            self.bnAddList.setMaximumWidth(80)
+            self.bnAddList.setMinimumHeight(25)
+            self.bnAddList.setMinimumWidth(80)
             self.bnAddList.clicked.connect(owner.addlist)
             self.addWidget(self.bnAddList)
+            sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+            sizePolicy.setHorizontalStretch(0)
+            sizePolicy.setVerticalStretch(0)
+            #self.setSizePolicy(sizePolicy)
             
    
+    class DummyContentCell(QHBoxLayout):
+        def __init__(self):
+            super(FormEditTrelloBoard.DummyContentCell, self).__init__()
+            sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+            sizePolicy.setHorizontalStretch(0)
+            sizePolicy.setVerticalStretch(0)
+            self.label =  QLabel('')
+            self.label.setSizePolicy(sizePolicy)
+            self.label.setMaximumHeight(50)
+            self.label.setMaximumWidth(300)
+            self.label.setMinimumHeight(50)
+            self.label.setMinimumWidth(300)
+            self.addWidget(self.label)
+
+
+
     def __init__(self, parent, demux, dc, board, trelloapp):
         super(FormEditTrelloBoard, self).__init__(parent)
         self.board = board
@@ -111,6 +201,7 @@ class FormEditTrelloBoard(QDialog):
         #utils.log_output("LayoutGrid started")
         self.cells = dict()
         column = 0    
+        maxrow = 0
         for tll in self.board.lists:
             #utils.log_output("LayoutGrid column ", column)
             cell = FormEditTrelloBoard.ListHeaderCell(self.dc, self.trelloapp, tll, self)
@@ -125,10 +216,18 @@ class FormEditTrelloBoard(QDialog):
                 self.cells[(row, column)] = cell
                 #utils.log_output("LayoutGrid cell at ", (row, column), " = ", cell)
                 row = row + 1
+                maxrow = max(maxrow, row)
             column = column + 1
 
         cell = FormEditTrelloBoard.AddListCell(self, self.board)
         self.cells[(0, len(self.board.lists))] = cell
+        self.gridlayout.addLayout(cell, 0, len(self.board.lists))
+
+        for i in range(12 - maxrow):
+            self.gridlayout.addLayout(FormEditTrelloBoard.DummyContentCell(), i, 0)
+
+        #for i in range(column + 1):
+        #    self.gridlayout.setColumnStretch(i, 0)
 
         scrollablearea = QScrollArea()
         self.vbox.addWidget(scrollablearea)
