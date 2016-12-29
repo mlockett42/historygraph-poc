@@ -74,3 +74,4 @@ class FormManageMultiChat(QDialog):
                 wi.setData(1, dc.id)
                 self.multichats.setItem(row,0, wi)
 
+

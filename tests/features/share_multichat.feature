@@ -100,12 +100,12 @@ Feature: Open up 2 main windows and edit a multichat
           | Message 3  | 
 
         When I wait for the email server to run
-        When I choose Send/Receive from the File menu on main window 2
+        When I choose Send/Receive from the File menu on edit multichat window belonging to main window 2
 
-        When I choose MultiChat from the Apps menu on main window 2
-        Then there is 1 multichat in main window 2 manage multichats window and the multichat name is 'MultiChat1'
-        Given I select multichat 1 in main window 2 manage multichats window and press 'bnEditMultiChat'
-        Then the main window 2 edit multichat window has the title 'MultiChat1'
+        #When I choose MultiChat from the Apps menu on main window 2
+        #Then there is 1 multichat in main window 2 manage multichats window and the multichat name is 'MultiChat1'
+        #Given I select multichat 1 in main window 2 manage multichats window and press 'bnEditMultiChat'
+        #Then the main window 2 edit multichat window has the title 'MultiChat1'
 
         Given the main window 2 edit multichat displayed matches
           | 0          | 
@@ -114,7 +114,7 @@ Feature: Open up 2 main windows and edit a multichat
           | Message 3  | 
 
         When I wait for the email server to run
-        When I choose Send/Receive from the File menu on main window 1
+        When I choose Send/Receive from the File menu on edit multichat window belonging to main window 1
 
         When I choose MultiChat from the Apps menu on main window 1
         Then there is 1 multichat in main window 1 manage multichats window and the multichat name is 'MultiChat1'

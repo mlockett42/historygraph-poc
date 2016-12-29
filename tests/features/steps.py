@@ -508,4 +508,34 @@ def then_demux_1_has_the_following_types(step, demux_index):
         else:
             assert False, 'Unknown type for ' + k
 
+@step(u'I choose (\w+|New Message|Send/Receive) from the (\w+) menu on edit multichat window belonging to main window (\d+)')
+def I_choose_Settings_from_the_Options_menu(step, menu_item_name, menu_name, window_index):
+    menu_name = menu_name.upper()
+    menu_item_name = menu_item_name.upper()
+    menu_found = None
+    formmain = getattr(world, 'formmain' + window_index)
+    for menu in formmain.form_multichat.form_edit_multi_chat.menubar.children():
+        if type(menu) == QMenu and (menu.title().upper() == menu_name or menu.title().upper() == '&' + menu_name):
+            menu_found = menu
+    assert menu_found is not None, "No matching menu was found"
+    
+    menu_item_found = None
+    for menu_item in menu_found.actions():
+        if type(menu_item) == QAction and (menu_item.text().upper() == menu_item_name or menu_item.text().upper() == '&' + menu_item_name):
+            menu_item_found = menu_item
+    assert menu_item_found is not None, "No matching menu item was found"
+    with patch.object(FormSettings, 'show') as mock_show1:
+        with patch.object(FormNewMessage, 'show') as mock_show2:
+            with patch.object(FormViewMessage, 'show') as mock_show3:
+                with patch.object(FormContacts, 'show') as mock_show4:
+                    with patch.object(FormManageCheckersGames, 'show') as mock_show5:
+                        mock_show1.return_value = None
+                        mock_show2.return_value = None
+                        mock_show3.return_value = None
+                        mock_show4.return_value = None
+                        mock_show5.return_value = None
+                        menu_item_found.trigger()
+                        if hasattr(formmain, "formsettings"):
+                            world.formsettings = formmain.formsettings
+
 
