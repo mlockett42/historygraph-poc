@@ -128,11 +128,12 @@ Feature: Open up 2 main windows and play a shared checkers games
           | B  |    | B  |    | B  |    | B  |    |
         Given the main window 2 play checkers window current player is 'White'
 
-        When I choose Send/Receive from the File menu on main window 1
-        When I choose Checkers from the Apps menu on main window 2
+        When I choose Send/Receive from the File menu on edit checkers window belonging to main window 1
+        #When I choose Send/Receive from the File menu on main window 1
+        #When I choose Checkers from the Apps menu on main window 2
 
-        Then there is 1 checkers game in main window 1 manage checkers games window and the checkers game name is 'Checkers1'
-        Given I select checkers game 1 in main window 1 manage checkers games window and press 'bnPlayGame'
+        #Then there is 1 checkers game in main window 1 manage checkers games window and the checkers game name is 'Checkers1'
+        #Given I select checkers game 1 in main window 1 manage checkers games window and press 'bnPlayGame'
         Then the main window 1 play checkers window has the title 'Play Checkers: Checkers1'
         Given the main window 1 play checkers window board displayed matches
           | 0  | 1  | 2  | 3  | 4  | 5  | 6  | 7  |

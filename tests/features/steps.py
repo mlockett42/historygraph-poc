@@ -508,13 +508,19 @@ def then_demux_1_has_the_following_types(step, demux_index):
         else:
             assert False, 'Unknown type for ' + k
 
-@step(u'I choose (\w+|New Message|Send/Receive) from the (\w+) menu on edit multichat window belonging to main window (\d+)')
-def I_choose_Settings_from_the_Options_menu(step, menu_item_name, menu_name, window_index):
+@step(u'I choose (\w+|New Message|Send/Receive) from the (\w+) menu on edit (multichat|checkers) window belonging to main window (\d+)')
+def I_choose_Settings_from_the_Options_menu(step, menu_item_name, menu_name, target_window_name, window_index):
     menu_name = menu_name.upper()
     menu_item_name = menu_item_name.upper()
     menu_found = None
     formmain = getattr(world, 'formmain' + window_index)
-    for menu in formmain.form_multichat.form_edit_multi_chat.menubar.children():
+    if target_window_name == 'multichat':
+        target_window = formmain.form_multichat.form_edit_multi_chat
+    elif target_window_name == 'checkers':
+        target_window = formmain.form_manage_checkers_games.form_play_checkers
+    else:
+        assert False, 'Unknown target window'
+    for menu in target_window.menubar.children():
         if type(menu) == QMenu and (menu.title().upper() == menu_name or menu.title().upper() == '&' + menu_name):
             menu_found = menu
     assert menu_found is not None, "No matching menu was found"

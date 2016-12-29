@@ -40,6 +40,7 @@ class FormCheckers(QDialog):
         super(FormCheckers, self).__init__(parent)
         self.game = game
         self.dc = dc
+        self.demux = demux
         self.setWindowTitle("Play Checkers: " + game.name)
         self.showMaximized()
         self.gridlayout = QGridLayout()
@@ -61,6 +62,22 @@ class FormCheckers(QDialog):
             self.boardScreen.setRowHeight(i, 100)
         #The selected piece ie the one we are moving
         self.selected_piece = None
+
+        sendreceiverAction = QAction('&Send/Receive', self)
+        sendreceiverAction.setShortcut('F5')
+        sendreceiverAction.setStatusTip('Send and receive messages')
+        sendreceiverAction.triggered.connect(self.sendreceive)
+
+        closeAction = QAction('&Close', self)
+        closeAction.setStatusTip('Close')
+        closeAction.triggered.connect(self.close)
+
+        self.menubar = QMenuBar()
+        fileMenu = self.menubar.addMenu('&File')
+        fileMenu.addAction(sendreceiverAction)
+        fileMenu.addAction(closeAction)
+
+        self.gridlayout.setMenuBar(self.menubar)
 
         self.LayoutBoard()  
         self.DisplayCurrentPlayer()      
@@ -142,4 +159,10 @@ class FormCheckers(QDialog):
             self.UpdateStatus(("White" if self.game.GetTurnColour() == "W" else "Black") + " has won")
             
         
+    def sendreceive(self):
+        self.demux.CheckEmail()
+        self.demux.SaveAllDCs()
+        self.parent().checkersapp.LoadDocumentCollectionFromDisk(self.demux.appdir)
+        self.DisplayCurrentPlayer()
+        self.LayoutBoard()
 
