@@ -38,14 +38,6 @@ class FormEditMultiChat(QDialog):
         self.bnNewMessage.clicked.connect(self.newmessage)
 
         self.vbox = QVBoxLayout()
-        vbox2.addLayout(self.vbox)
-        self.setLayout(vbox2)
-
-        self.messagegrid = QTableWidget(0,1)
-        self.vbox.addWidget(self.messagegrid)
-
-        self.LayoutGrid()
-
         sendreceiverAction = QAction('&Send/Receive', self)
         sendreceiverAction.setShortcut('F5')
         sendreceiverAction.setStatusTip('Send and receive messages')
@@ -61,6 +53,14 @@ class FormEditMultiChat(QDialog):
         fileMenu.addAction(closeAction)
 
         self.vbox.setMenuBar(self.menubar)
+
+        vbox2.addLayout(self.vbox)
+        self.setLayout(vbox2)
+
+        self.messagegrid = QTableWidget(0,1)
+        self.vbox.addWidget(self.messagegrid)
+
+        self.LayoutGrid()
 
     def LayoutGrid(self):
         self.messagegrid.verticalHeader().setVisible(False)
