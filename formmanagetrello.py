@@ -54,7 +54,7 @@ class FormManageTrello(QDialog):
         #utils.log_output("FormManageTrello board.shares = ",list(board.shares), " self.demux.myemail=",self.demux.myemail)
         for share in board.shares:
             if share.email != self.demux.myemail:
-                utils.log_output("sharing to ", share.email, " dc2.id=",dc2.id)
+                print "sharing to ", share.email, " dc2.id=",dc2.id
                 self.trelloapp.Share(dc2, share.email)
 
         self.form_edit_board = FormEditTrelloBoard(self, self.demux, dc, board, self.trelloapp)
