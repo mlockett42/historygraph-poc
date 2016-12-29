@@ -88,6 +88,22 @@ class FormEditTrelloBoard(QDialog):
         self.vbox = QVBoxLayout()
         self.setLayout(self.vbox)
 
+        sendreceiverAction = QAction('&Send/Receive', self)
+        sendreceiverAction.setShortcut('F5')
+        sendreceiverAction.setStatusTip('Send and receive messages')
+        sendreceiverAction.triggered.connect(self.sendreceive)
+
+        closeAction = QAction('&Close', self)
+        closeAction.setStatusTip('Close')
+        closeAction.triggered.connect(self.close)
+
+        self.menubar = QMenuBar()
+        fileMenu = self.menubar.addMenu('&File')
+        fileMenu.addAction(sendreceiverAction)
+        fileMenu.addAction(closeAction)
+
+        self.vbox.setMenuBar(self.menubar)
+
         self.LayoutGrid()
 
     def LayoutGrid(self):
@@ -149,5 +165,11 @@ class FormEditTrelloBoard(QDialog):
 
         self.LayoutGrid()
         
+        
+    def sendreceive(self):
+        self.demux.CheckEmail()
+        self.demux.SaveAllDCs()
+        self.trelloapp.LoadDocumentCollectionFromDisk(self.demux.appdir)
+        self.RefreshGrid()
 
 

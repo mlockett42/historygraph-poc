@@ -118,11 +118,12 @@ Feature: Open up 2 main windows and edit a shared trello board
           | User 2 Item 1 |         |
 
         When I wait for the email server to run
-        When I choose Send/Receive from the File menu on main window 1
+        When I choose Send/Receive from the File menu on edit trello board window belonging to main window 1
+        #When I choose Send/Receive from the File menu on main window 1
 
-        When I choose Trello from the Apps menu on main window 1
-        Then there is 1 trello board in main window 1 manage trello boards window and the trello board name is 'Trello1'
-        Given I select trello board 1 in main window 1 manage trello boards window and press 'bnEditBoard'
+        #When I choose Trello from the Apps menu on main window 1
+        #Then there is 1 trello board in main window 1 manage trello boards window and the trello board name is 'Trello1'
+        #Given I select trello board 1 in main window 1 manage trello boards window and press 'bnEditBoard'
         Then the main window 1 edit trello board window has the title 'Trello1'
 
         Given the main window 1 trello board double option displayed match
@@ -136,11 +137,12 @@ Feature: Open up 2 main windows and edit a shared trello board
           | User 2 Item 1 |         |
         
         When I wait for the email server to run
-        When I choose Send/Receive from the File menu on main window 2
+        When I choose Send/Receive from the File menu on edit trello board window belonging to main window 2
+        #When I choose Send/Receive from the File menu on main window 2
 
-        When I choose Trello from the Apps menu on main window 2
-        Then there is 1 trello board in main window 2 manage trello boards window and the trello board name is 'Trello1'
-        Given I select trello board 1 in main window 2 manage trello boards window and press 'bnEditBoard'
+        #When I choose Trello from the Apps menu on main window 2
+        #Then there is 1 trello board in main window 2 manage trello boards window and the trello board name is 'Trello1'
+        #Given I select trello board 1 in main window 2 manage trello boards window and press 'bnEditBoard'
         Then the main window 2 edit trello board window has the title 'Trello1'
 
         Given the main window 1 trello board double option displayed match
