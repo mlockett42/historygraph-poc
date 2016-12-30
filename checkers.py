@@ -65,6 +65,12 @@ class CheckersPiece(DocumentObject):
             self.parent.remove(self.parent.parent.GetPieceAt(captured_piece_position[0],captured_piece_position[1]).id)
         self.x = x
         self.y = y
+        #Should this piece be made into a king?
+        backrow = 7 if self.pieceside == 'W' else 0 # Which row is the back row depends on which colour we are
+        if y == backrow:
+            # If the piece was made it to the back row it should be made a king
+            self.piecetype = 'K'
+        
 
 class CheckersGame(Document):
     name = FieldText()
@@ -147,6 +153,7 @@ class CheckersGame(Document):
                 if s == "":
                     assert p is None, "x = " + str(x) + ", y = " + str(y)
                 else:
+                    assert p is not None, "x = " + str(x) + ", y = " + str(y)
                     assert p.pieceside == s[0], "x = " + str(x) + ", y = " + str(y)
                     assert p.piecetype == s[1:], "x = " + str(x) + ", y = " + str(y)
                 x = x + 1

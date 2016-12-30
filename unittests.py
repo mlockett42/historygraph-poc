@@ -2613,6 +2613,31 @@ class CheckersBoardValidMovesTestCase(unittest.TestCase):
                                   ['','','','','','','',''],
                                   ['','','','','','','',''],
                                   ])
+        #Check moving a piece to the back row makes it into a king
+        # Check we can capture multiple pieces
+        checkersgame = CheckersGame(None)
+        checkersgame.CreateBoard([['','','','','','','',''],
+                                  ['','','','','','','',''],
+
+                                  ['','','','','','','',''],
+                                  ['','','B','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','W','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ])
+        w = checkersgame.GetPieceAt(1, 6)
+        w.MoveTo(0,7)
+        checkersgame.assertBoardEquals([['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','B','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['','','','','','','',''],
+                                  ['WK','','','','','','',''],
+                                  ])
+
 
 
     
@@ -3925,6 +3950,7 @@ def suite():
 
     suite = unittest.TestSuite()
 
+    """
     suite.addTest(SimpleCoversTestCase())
     suite.addTest(MergeHistoryCoverTestCase())
     suite.addTest(MergeHistorySendEdgeCoverTestCase())
@@ -3975,7 +4001,9 @@ def suite():
 
     suite.addTest(CheckersBoardSquareColourTestCase())
     suite.addTest(CheckersBoardInitialValidityTestCase())
+    """
     suite.addTest(CheckersBoardValidMovesTestCase())
+    """
     suite.addTest(CheckersBoardVictoryConditionTestCase())
 
     suite.addTest(TrelloBuildAndEditTestCase())
@@ -4009,6 +4037,7 @@ def suite():
     suite.addTest(MultiChatViaEncryptedEmailTestCase())
 
     suite.addTest(StopTestingMailServerDummyTest())
+    """
 
     return suite
 

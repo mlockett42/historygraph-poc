@@ -128,10 +128,10 @@ class FormEditTrelloBoard(QDialog):
 
         def save_content(self):
             self.trelloitem.content = self.teContent.toPlainText()
-            self.owner.RefreshGrid()
             utils.log_output("ListContentCell saving content - updating shares")
             self.owner.demux.SaveAllDCs()
             self.owner.trelloapp.UpdateShares()
+            self.owner.RefreshGrid()
 
     class AddListCell(QHBoxLayout):
         def __init__(self, owner, trelloboard):
@@ -272,7 +272,7 @@ class FormEditTrelloBoard(QDialog):
     def sendreceive(self):
         self.demux.CheckEmail()
         self.demux.SaveAllDCs()
-        self.trelloapp.LoadDocumentCollectionFromDisk(self.demux.appdir)
+        #self.trelloapp.LoadDocumentCollectionFromDisk(self.demux.appdir)
         #self.dc = self.trelloapp.GetDocumentCollectionByID(dc.id)
         self.RefreshGrid()
 

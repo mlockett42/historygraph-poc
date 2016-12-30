@@ -295,6 +295,7 @@ HistoryGraph enabled emailer http://wwww.historygraph.io (""" + self.myemail + "
         for i in range(numMessages):
             M.dele(i + 1)
         M.quit()
+        self.SaveAllDCs()
 
     def is_verified(self, fromemail, l, sig):
         if self.myemail == fromemail:

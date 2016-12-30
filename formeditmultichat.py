@@ -117,7 +117,7 @@ class FormEditMultiChat(QDialog):
     def sendreceive(self):
         self.demux.CheckEmail()
         self.demux.SaveAllDCs()
-        self.multichatapp.LoadDocumentCollectionFromDisk(self.demux.appdir)
+        #self.multichatapp.LoadDocumentCollectionFromDisk(self.demux.appdir)
         #self.dc = self.multichatapp.GetDocumentCollectionByID(dc.id)
         self.RefreshGrid()
 

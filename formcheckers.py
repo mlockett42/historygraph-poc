@@ -104,8 +104,20 @@ class FormCheckers(QDialog):
 
         self.setLayout(self.gridlayout)
 
+    def GetMyColour(self):
+        # Return the colour of the current user
+        if self.demux.myemail == self.game.player_w:
+            return 'W'
+        elif self.demux.myemail == self.game.player_b:
+            return 'B'
+        else:
+            assert False
+
     def DisplayCurrentPlayer(self):
-        self.labelCurrentPlayer.setText("Current Player: " + ("White" if self.game.GetTurnColour() == "W" else "Black"))
+        label_text = "Current Player: " + ("White" if self.game.GetTurnColour() == "W" else "Black") + \
+            " You are: " + ("White" if self.GetMyColour() == "W" else "Black")
+        print "label_text=",label_text
+        self.labelCurrentPlayer.setText(label_text)
 
     def UpdateStatus(self, message):
         self.labelStatus.setText(message)
@@ -139,6 +151,9 @@ class FormCheckers(QDialog):
             if len(piece.GetValidCaptures()[0]) == 0:
                 #utils.log_output("LabelClicked incrementing turn")
                 self.game.turn.add(1)
+            else:
+                self.buttonEndTurn.setVisible(True)
+                self.selected_piece = location
             #utils.log_output("LabelClicked updating shares")
             self.parent().checkersapp.UpdateShares()
             #self.parent().checkersapp.SaveDC(self.dc, self.demux.appdir)
@@ -164,7 +179,7 @@ class FormCheckers(QDialog):
     def sendreceive(self):
         self.demux.CheckEmail()
         self.demux.SaveAllDCs()
-        self.parent().checkersapp.LoadDocumentCollectionFromDisk(self.demux.appdir)
+        #self.parent().checkersapp.LoadDocumentCollectionFromDisk(self.demux.appdir)
         self.DisplayCurrentPlayer()
         self.LayoutBoard()
 
