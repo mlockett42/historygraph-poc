@@ -132,6 +132,9 @@ class FormCheckers(QDialog):
             if self.game.GetTurnColour() != boardPieces[location].pieceside:
                 #Not the current player piece
                 return
+            if self.game.GetTurnColour() != self.GetMyColour():
+                #Not my turn
+                return
             allowed_moves = boardPieces[location].GetValidMoves()
             if len(allowed_moves) == 0:
                 #If there are no allowed moves this piece cannot be selected
