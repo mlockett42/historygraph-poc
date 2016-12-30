@@ -147,11 +147,11 @@ class FormCheckers(QDialog):
                 self.UpdateStatus("Invalid move.")
                 self.selected_piece = None
                 return
+            wascapture = location in piece.GetValidCaptures()[0]
+            capturing_move_dict = piece.GetValidCaptures()[1]
             x = location[0]
             y = location[1]
             piece.MoveTo(x, y)
-            wascapture = location in piece.GetValidCaptures()[0]
-            capturing_move_dict = piece.GetValidCaptures()[1]
             status = "Piece moved from " + str(self.selected_piece) + " to " + str(location) + (" capturing a piece at " + str(capturing_move_dict[location]) if wascapture else "")
             if len(piece.GetValidCaptures()[0]) > 0 and wascapture:
                 self.buttonEndTurn.setVisible(True)
