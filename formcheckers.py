@@ -103,6 +103,7 @@ class FormCheckers(QDialog):
                     assert False
 
         self.setLayout(self.gridlayout)
+        self.CheckForWinner()
 
     def GetMyColour(self):
         # Return the colour of the current user
@@ -181,8 +182,10 @@ class FormCheckers(QDialog):
         self.buttonEndTurn.setVisible(False)
 
     def CheckForWinner(self):
-        if self.game.HasPlayerWon(self.game.GetTurnColour()):
-            self.UpdateStatus(("White" if self.game.GetTurnColour() == "W" else "Black") + " has won")
+        if self.game.HasPlayerWon('W'):
+            self.UpdateStatus("White has won")
+        if self.game.HasPlayerWon('B'):
+            self.UpdateStatus("Black has won")
             
         
     def sendreceive(self):
