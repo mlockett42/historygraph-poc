@@ -175,7 +175,8 @@ class FormCheckers(QDialog):
         self.game.turn.add(1)
         self.selected_piece = None
         self.demux.SaveAllDCs()
-        self.UpdateStatus(status)
+        self.parent().checkersapp.UpdateShares()
+        self.UpdateStatus("Turn ended manually")
         self.DisplayCurrentPlayer()
         self.buttonEndTurn.setVisible(False)
 
