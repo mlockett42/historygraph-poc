@@ -170,7 +170,7 @@ class FormCheckers(QDialog):
 
     def EndTurn(self):
         #In certain circumstances we can manually end our turn
-        self.next_player = self.GetOppositeColour()
+        self.game.turn.add(1)
         self.selected_piece = None
         self.DisplayCurrentPlayer()
         self.buttonEndTurn.setVisible(False)
