@@ -38,6 +38,7 @@ class FormNewTrelloBoard(QDialog):
         self.setLayout(vbox)
 
     def OK(self):
+        self.bnOK.clicked.disconnect()
         dc = self.parent().trelloapp.CreateNewDocumentCollection(None)
         self.parent().trelloapp.Share(dc, self.teEmailAddress.toPlainText())
         trelloboard = TrelloBoard(None)

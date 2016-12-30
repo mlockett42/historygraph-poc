@@ -39,6 +39,7 @@ class FormNewMultiChat(QDialog):
         self.setLayout(vbox)
 
     def OK(self):
+        self.bnOK.clicked.disconnect()
         dc = self.parent().multichatapp.CreateNewDocumentCollection(None)
         self.parent().multichatapp.Share(dc, self.teEmailAddress.toPlainText())
         multichat = MultiChatChat(None)

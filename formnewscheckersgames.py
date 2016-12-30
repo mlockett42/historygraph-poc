@@ -38,6 +38,7 @@ class FormNewsCheckersGames(QDialog):
         self.setLayout(vbox)
 
     def OK(self):
+        self.bnOK.clicked.disconnect()
         dc = self.parent().checkersapp.CreateNewDocumentCollection(None)
         #self.parent().checkersapp.SaveDC(dc, "/run/shm/demux1")
         self.parent().checkersapp.Share(dc, self.teEmailAddress.toPlainText())
