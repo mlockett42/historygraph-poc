@@ -150,14 +150,14 @@ class FormCheckers(QDialog):
             x = location[0]
             y = location[1]
             piece.MoveTo(x, y)
-            status = "Piece moved from " + str(self.selected_piece) + " to " + str(location)
-            if len(piece.GetValidCaptures()[0]) == 0:
-                #utils.log_output("LabelClicked incrementing turn")
-                self.game.turn.add(1)
-                self.selected_piece = None
-            else:
+            wascapture = location in piece.GetValidCaptures()
+            status = "Piece moved from " + str(self.selected_piece) + " to " + str(location) + (" capturing a piece " if wascapture else "")
+            if len(piece.GetValidCaptures()[0]) > 0 and wascapture:
                 self.buttonEndTurn.setVisible(True)
                 self.selected_piece = location
+            else:
+                self.game.turn.add(1)
+                self.selected_piece = None
             #utils.log_output("LabelClicked updating shares")
             self.parent().checkersapp.UpdateShares()
             #self.parent().checkersapp.SaveDC(self.dc, self.demux.appdir)
