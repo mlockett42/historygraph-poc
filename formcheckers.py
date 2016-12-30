@@ -183,6 +183,8 @@ class FormCheckers(QDialog):
         self.demux.CheckEmail()
         self.demux.SaveAllDCs()
         #self.parent().checkersapp.LoadDocumentCollectionFromDisk(self.demux.appdir)
+        self.selected_piece = None
+        self.UpdateStatus("Send/Receive complete")
         self.DisplayCurrentPlayer()
         self.LayoutBoard()
 
