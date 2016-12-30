@@ -48,14 +48,14 @@ class FormManageMultiChat(QDialog):
         for dc2 in self.multichatapp.GetDocumentCollections():
             if dc2.id == dcid:
                 dc = dc2
-        multichats = dc2.GetByClass(MultiChatChat)
+        multichats = dc.GetByClass(MultiChatChat)
         assert len(multichats) == 1
         multichat = multichats[0]
         #utils.log_output("FormManageTrello board.shares = ",list(board.shares), " self.demux.myemail=",self.demux.myemail)
         for share in multichat.shares:
             if share.email != self.demux.myemail:
                 #utils.log_output("sharing to ", share.email, " dc2.id=",dc2.id)
-                self.multichatapp.Share(dc2, share.email)
+                self.multichatapp.Share(dc, share.email)
 
         self.form_edit_multi_chat = FormEditMultiChat(self, self.demux, dc, multichat, self.multichatapp)
         self.form_edit_multi_chat.show()

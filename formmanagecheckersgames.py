@@ -48,13 +48,13 @@ class FormManageCheckersGames(QDialog):
         for dc2 in self.checkersapp.GetDocumentCollections():
             if dc2.id == dcid:
                 dc = dc2
-        games = dc2.GetByClass(CheckersGame)
+        games = dc.GetByClass(CheckersGame)
         assert len(games) == 1
         game = games[0]
         if game.player_w != self.demux.myemail:
-            self.checkersapp.Share(dc2, game.player_w)
+            self.checkersapp.Share(dc, game.player_w)
         if game.player_b != self.demux.myemail:
-            self.checkersapp.Share(dc2, game.player_b)
+            self.checkersapp.Share(dc, game.player_b)
 
         #utils.log_output("output = " + str(game.GetCurrentPieces()))
         self.form_play_checkers = FormCheckers(self, self.demux, dc, game)

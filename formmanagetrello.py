@@ -50,14 +50,14 @@ class FormManageTrello(QDialog):
         for dc2 in self.trelloapp.GetDocumentCollections():
             if dc2.id == dcid:
                 dc = dc2
-        boards = dc2.GetByClass(TrelloBoard)
+        boards = dc.GetByClass(TrelloBoard)
         assert len(boards) == 1
         board = boards[0]
         #utils.log_output("FormManageTrello board.shares = ",list(board.shares), " self.demux.myemail=",self.demux.myemail)
         for share in board.shares:
             if share.email != self.demux.myemail:
-                print "sharing to ", share.email, " dc2.id=",dc2.id
-                self.trelloapp.Share(dc2, share.email)
+                print "sharing to ", share.email, " dc.id=",dc2.id
+                self.trelloapp.Share(dc, share.email)
 
         self.form_edit_board = FormEditTrelloBoard(self, self.demux, dc, board, self.trelloapp)
         self.form_edit_board.show()
