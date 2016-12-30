@@ -157,6 +157,7 @@ class FormCheckers(QDialog):
                 self.buttonEndTurn.setVisible(True)
                 self.selected_piece = location
             else:
+                self.buttonEndTurn.setVisible(False)
                 self.game.turn.add(1)
                 self.selected_piece = None
             #utils.log_output("LabelClicked updating shares")
