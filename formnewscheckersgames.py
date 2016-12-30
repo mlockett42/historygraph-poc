@@ -9,6 +9,7 @@ class FormNewsCheckersGames(QDialog):
     def __init__(self, parent, demux):
         super(FormNewsCheckersGames, self).__init__(parent)
         self.demux = demux
+        self.setWindowTitle("New checkers game " + self.demux.myemail)
         vbox = QVBoxLayout()
         hbox = QHBoxLayout()
         hbox.addWidget(QLabel('Email address'))

@@ -13,7 +13,7 @@ class FormManageMultiChat(QDialog):
         self.demux = demux
         self.multichatapp = parent.multichatapp
 
-        self.setWindowTitle("Manage Multichats")
+        self.setWindowTitle("Manage Multichats " + self.demux.myemail)
 
         vbox = QVBoxLayout()
         self.setLayout(vbox)

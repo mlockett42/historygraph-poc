@@ -22,7 +22,7 @@ class FormMain(QMainWindow):
     def __init__(self, parent, demux):
         super(FormMain, self).__init__(parent)
         self.demux = demux
-        self.setWindowTitle("HistoryGraph Communicator")
+        self.setWindowTitle("HistoryGraph Communicator " + self.demux.myemail)
         
         hbox = QHBoxLayout()
         hbox.addStretch(0)

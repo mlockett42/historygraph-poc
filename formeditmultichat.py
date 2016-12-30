@@ -29,7 +29,7 @@ class FormEditMultiChat(QDialog):
         self.multichatapp = multichatapp
         self.dc = dc
         self.demux = demux
-        self.setWindowTitle(multichat.name)
+        self.setWindowTitle("Multichat " + multichat.name + " " + self.demux.myemail)
         self.showMaximized()
 
         vbox2 = QVBoxLayout()

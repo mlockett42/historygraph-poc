@@ -6,7 +6,7 @@ from messagestore import *
 class FormViewMessage(QDialog):
     def __init__(self, message, parent = None):
         super(FormViewMessage, self).__init__(parent)
-        self.setWindowTitle("View Message")
+        self.setWindowTitle("View Message " + self.demux.myemail)
         self.message = message
 
         vbox = QVBoxLayout()

@@ -11,7 +11,7 @@ class FormContacts(QDialog):
         vbox = QVBoxLayout()
         vbox.addStretch(1)
 
-        self.setWindowTitle("Contacts")
+        self.setWindowTitle("Contacts " + self.demux.myemail)
 
         self.contacts = QTableWidget(0,2)
         self.contacts.verticalHeader().setVisible(False)

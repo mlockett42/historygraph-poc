@@ -11,7 +11,7 @@ class FormNewMessage(QDialog):
     def __init__(self, parent, demux):
         super(FormNewMessage, self).__init__(parent)
         self.demux = demux
-        self.setWindowTitle("New Message")
+        self.setWindowTitle("New Message " + self.demux.myemail)
 
         vbox = QVBoxLayout()
 

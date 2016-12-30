@@ -15,6 +15,8 @@ class FormManageTrello(QDialog):
         self.demux = demux
         self.trelloapp = parent.trelloapp
 
+        self.setWindowTitle("Manage Trello Boards " + self.demux.myemail)
+
         vbox = QVBoxLayout()
         self.setLayout(vbox)
         self.boards = QTableWidget(0,1)

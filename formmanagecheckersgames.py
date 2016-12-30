@@ -13,6 +13,8 @@ class FormManageCheckersGames(QDialog):
         self.demux = demux
         self.checkersapp = parent.checkersapp
 
+        self.setWindowTitle("Manage checkers games  " + self.demux.myemail)
+
         vbox = QVBoxLayout()
         self.setLayout(vbox)
         self.games = QTableWidget(0,1)

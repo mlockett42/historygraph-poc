@@ -175,7 +175,7 @@ class FormEditTrelloBoard(QDialog):
         self.trelloapp = trelloapp
         self.dc = dc
         self.demux = demux
-        self.setWindowTitle(board.name)
+        self.setWindowTitle("Trello Board " + board.name + " " + self.demux.myemail)
         self.showMaximized()
 
         self.vbox = QVBoxLayout()

@@ -10,6 +10,8 @@ class FormSettings(QDialog):
 
         self.demux = demux
 
+        self.setWindowTitle("Settings " + self.demux.myemail)
+
         hbox = QHBoxLayout()
         hbox.addStretch(0)
 

@@ -41,7 +41,7 @@ class FormCheckers(QDialog):
         self.game = game
         self.dc = dc
         self.demux = demux
-        self.setWindowTitle("Play Checkers: " + game.name)
+        self.setWindowTitle("Play Checkers: " + game.name + " " + self.demux.myemail)
         self.showMaximized()
         self.gridlayout = QGridLayout()
         self.boardScreen = QTableWidget(8,8)

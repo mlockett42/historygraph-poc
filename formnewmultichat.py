@@ -10,7 +10,7 @@ class FormNewMultiChat(QDialog):
         super(FormNewMultiChat, self).__init__(parent)
         self.demux = demux
 
-        self.setWindowTitle("New Multichats")
+        self.setWindowTitle("New Multichats " + self.demux.myemail)
 
         vbox = QVBoxLayout()
         hbox = QHBoxLayout()
