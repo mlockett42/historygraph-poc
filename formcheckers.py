@@ -174,6 +174,8 @@ class FormCheckers(QDialog):
         #In certain circumstances we can manually end our turn
         self.game.turn.add(1)
         self.selected_piece = None
+        self.demux.SaveAllDCs()
+        self.UpdateStatus(status)
         self.DisplayCurrentPlayer()
         self.buttonEndTurn.setVisible(False)
 
