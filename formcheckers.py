@@ -154,6 +154,7 @@ class FormCheckers(QDialog):
             if len(piece.GetValidCaptures()[0]) == 0:
                 #utils.log_output("LabelClicked incrementing turn")
                 self.game.turn.add(1)
+                self.selected_piece = None
             else:
                 self.buttonEndTurn.setVisible(True)
                 self.selected_piece = location
