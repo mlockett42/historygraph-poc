@@ -35,4 +35,6 @@ include/
 lib/
 local/
 historygraph
+Scripts/
+tcl/
 

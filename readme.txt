@@ -5,6 +5,7 @@ Installation
 ------------
 
 Under Ubuntu
+------------
 
 Checkout the historygraph libary
 git clone https://github.com/mlockett42/historygraph.git
@@ -32,10 +33,50 @@ pip install -r requirements.txt
 
 pyside will take a long time to install.
 
-Running Tests
+Under Windows
 -------------
 
+Note only tested under Windows 7. Thanks to http://timmyreilly.azurewebsites.net/python-pip-virtualenv-installation-on-windows/
+Download and install the git-scm tools for Windows
+Also install Python 2.7.13 for Windows
+Also install VC++ for Python compiler from http://aka.ms/vcpython27
+
+Start up Git Bash shell
+
+Type in
+cd c:\
+mkdir hg
+cd hg
+
+We will make all of our directories in here
+
+Checkout the historygraph libary
+git clone https://github.com/mlockett42/historygraph.git
+
+Checkout the historygraph-poc library
+git clone https://github.com/mlockett42/historygraph-poc.git
+
+Link the historygraph library into the correct place
+cd historygraph-poc
+ln -s ../historygraph/historygraph historygraph
+cd ..
+
+pip install virtualenv
+
+virtualenv .
+Scripts\activate
+pip install pip --upgrade
+pip install setuptools
+pip install urllib3[secure]
+pip install -r requirements.txt
+
+
+Running Tests (Linux)
+---------------------
+
 To run the unittests (TDD) run ./unittests
+I had to turn off UAC and Windows Firewall to get the tests to run
+
 
 To run the BDD functional tests 
 from the historygraph-poc directory
@@ -44,6 +85,10 @@ export PYTHONPATH=$PWD
 cd tests
 lettuce
 
+Running Tests (Windows)
+---------------------
+
+The tests fail under Windows because files get stored in non-portable locations
 
 Running the Application
 -----------------------
