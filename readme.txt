@@ -47,15 +47,25 @@ lettuce
 
 Running the Application
 -----------------------
+From the historygraph-poc directory
 source bin/activate
 python main.py
 
+Running the Application in IDLE
+-------------------------------
+From the historygraph-poc directory
+source bin/activate
+python -m idlelib.idle main.py
+(From this stackoverflow answer https://stackoverflow.com/a/38104835)
 
 Testing for yourself
 --------------------
 
 Test under Ubuntu Linux
 -----------------------
+
+Set up a real test email server in AWS
+--------------------------------------
 
 In this section we shall test HistoryGraph-poc with two seperate fake accounts on our own email server.
 This will involve setting up a test server in AWS you will need a domain you can test against and an SSH key
@@ -264,3 +274,26 @@ Open the game and make the first move then choose Send/Receive from the menu
 IN test2 communicator window run Send/Receive and then look at the list of checkers games
 
 You need to choose send/receive from the menus immediately after or before any move. This is automatic (yet)
+
+Test using a simulator local email server
+-----------------------------------------
+Open another console window
+source bin/activate
+python
+This will start the python prompt next type in
+import testingmailserver
+testingmailserver.StartTestingMailServer("historygraph.io", {"username":"password","username1":"","username2":""})
+
+The SMTP port is 10025 to POP3 port is 10026. The the server address is the first parameter. The second parameter
+is a dict of usernames and passwords. You will also need to change the mypoplib.py and mysmtplib.py files to set
+the testingmode variable to True, because we are emulating the test server
+
+This will start the emailer running in another thread. Don't quit the Python iterpreter that will close down the
+email server.
+Type in
+testingmailserver.ResetMailDict()
+
+
+
+
+
