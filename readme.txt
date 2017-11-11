@@ -75,8 +75,6 @@ Running Tests (Linux)
 ---------------------
 
 To run the unittests (TDD) run ./unittests
-I had to turn off UAC and Windows Firewall to get the tests to run
-
 
 To run the BDD functional tests 
 from the historygraph-poc directory
