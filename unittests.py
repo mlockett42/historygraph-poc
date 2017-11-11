@@ -1825,11 +1825,13 @@ class CoversApp(App):
 class DemuxTestCase(unittest.TestCase):
     def setUp(self):
         #testingmailserver.ResetMailDict()
+        utils.setup_app_dir("/run/shm/demux1")
+        utils.setup_app_dir("/run/shm/demux2")
         self.assertEqual(testingmailserver.GetTotalEmailCount(), 0, 'Email spool not empty')
         self.demux1 = Demux(myemail='mlockett1@historygraph.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett1',smtppass='',
-                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
+                       popuser='mlockett1',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/run/shm/demux1")
         self.demux2 = Demux(myemail='mlockett2@historygraph.io', smtpserver='localhost',smtpport=10025,smtpuser='mlockett2',smtppass='',
-                       popuser='mlockett2',poppass='',popport=10026, popserver='localhost', fromfile=':memory:')
+                       popuser='mlockett2',poppass='',popport=10026, popserver='localhost', fromfile=':memory:', appdir = "/run/shm/demux2")
 
         message = """
 Frist post!!!!!!
