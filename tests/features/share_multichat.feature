@@ -51,7 +51,7 @@ Feature: Open up 2 main windows and edit a multichat
         When I press the bnOK button on main window 1 new multichat window
         Then there is 1 multichat in main window 1 manage multichats window and the multichat name is 'MultiChat1'
         Given I select multichat 1 in main window 1 manage multichats window and press 'bnEditMultiChat'
-        Then the main window 1 edit multichat window has the title 'MultiChat1'
+        Then the main window 1 edit multichat window has the title 'Multichat MultiChat1 mlockett1@historygraph.io'
 
         Given the main window 1 edit multichat displayed matches
           | 0      | 
@@ -68,7 +68,7 @@ Feature: Open up 2 main windows and edit a multichat
         When I choose MultiChat from the Apps menu on main window 2
         Then there is 1 multichat in main window 2 manage multichats window and the multichat name is 'MultiChat1'
         Given I select multichat 1 in main window 2 manage multichats window and press 'bnEditMultiChat'
-        Then the main window 2 edit multichat window has the title 'MultiChat1'
+        Then the main window 2 edit multichat window has the title 'Multichat MultiChat1 mlockett2@historygraph.io'
 
         Then I wait for 2 seconds
 
@@ -105,7 +105,7 @@ Feature: Open up 2 main windows and edit a multichat
         #When I choose MultiChat from the Apps menu on main window 2
         #Then there is 1 multichat in main window 2 manage multichats window and the multichat name is 'MultiChat1'
         #Given I select multichat 1 in main window 2 manage multichats window and press 'bnEditMultiChat'
-        #Then the main window 2 edit multichat window has the title 'MultiChat1'
+        #Then the main window 2 edit multichat window has the title 'Multichat MultiChat1 mlockett2@historygraph.io'
 
         Given the main window 2 edit multichat displayed matches
           | 0          | 
@@ -119,7 +119,7 @@ Feature: Open up 2 main windows and edit a multichat
         When I choose MultiChat from the Apps menu on main window 1
         Then there is 1 multichat in main window 1 manage multichats window and the multichat name is 'MultiChat1'
         Given I select multichat 1 in main window 1 manage multichats window and press 'bnEditMultiChat'
-        Then the main window 1 edit multichat window has the title 'MultiChat1'
+        Then the main window 1 edit multichat window has the title 'Multichat MultiChat1 mlockett1@historygraph.io'
 
         Given the main window 1 edit multichat displayed matches
           | 0          | 

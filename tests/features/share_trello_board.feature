@@ -51,7 +51,7 @@ Feature: Open up 2 main windows and edit a shared trello board
         When I press the bnOK button on main window 1 new trello board window
         Then there is 1 trello board in main window 1 manage trello boards window and the trello board name is 'Trello1'
         Given I select trello board 1 in main window 1 manage trello boards window and press 'bnEditBoard'
-        Then the main window 1 edit trello board window has the title 'Trello1'
+        Then the main window 1 edit trello board window has the title 'Trello Board Trello1 mlockett1@historygraph.io'
 
         Given the main window 1 trello board displayed matches
           | 0      | 
@@ -77,7 +77,7 @@ Feature: Open up 2 main windows and edit a shared trello board
         When I choose Trello from the Apps menu on main window 2
         Then there is 1 trello board in main window 2 manage trello boards window and the trello board name is 'Trello1'
         Given I select trello board 1 in main window 2 manage trello boards window and press 'bnEditBoard'
-        Then the main window 2 edit trello board window has the title 'Trello1'
+        Then the main window 2 edit trello board window has the title 'Trello Board Trello1 mlockett2@historygraph.io'
 
         When I reset the email server dict
 
@@ -124,7 +124,7 @@ Feature: Open up 2 main windows and edit a shared trello board
         #When I choose Trello from the Apps menu on main window 1
         #Then there is 1 trello board in main window 1 manage trello boards window and the trello board name is 'Trello1'
         #Given I select trello board 1 in main window 1 manage trello boards window and press 'bnEditBoard'
-        Then the main window 1 edit trello board window has the title 'Trello1'
+        Then the main window 1 edit trello board window has the title 'Trello Board Trello1 mlockett1@historygraph.io'
 
         Given the main window 1 trello board double option displayed match
           | 0             | 1       |
@@ -143,7 +143,7 @@ Feature: Open up 2 main windows and edit a shared trello board
         #When I choose Trello from the Apps menu on main window 2
         #Then there is 1 trello board in main window 2 manage trello boards window and the trello board name is 'Trello1'
         #Given I select trello board 1 in main window 2 manage trello boards window and press 'bnEditBoard'
-        Then the main window 2 edit trello board window has the title 'Trello1'
+        Then the main window 2 edit trello board window has the title 'Trello Board Trello1 mlockett2@historygraph.io'
 
         Given the main window 1 trello board double option displayed match
           | 0             | 1       |

@@ -291,7 +291,7 @@ def given_the_main_window_1_play_checkers_window_board_displayed_matches(step, w
             l.append(control_values[str(k)])
     for y in range(8):
         for x in range(8):
-            piece = pieces[y][x]
+            piece = pieces[x][y]
             cellwidget = formtarget.boardScreen.cellWidget(x,y)
             if piece == "":
                 assert isinstance(cellwidget, ImgWhiteSquare) or isinstance(cellwidget, ImgBlackSquare), "piece == '', cellwidget = " + str(cellwidget) + "x = " + str(x) + " y = " + str(y)
@@ -332,7 +332,7 @@ def given_the_main_window_1_trello_board_displayed_matches(step, window_index):
 def then_the_main_window_1_play_checkers_window_current_player_is_group1(step, window_index, player_colour):
     formmain = getattr(world, 'formmain' + window_index, None)
     formtarget = formmain.form_manage_checkers_games.form_play_checkers
-    assert formtarget.labelCurrentPlayer.text() == "Current Player: " + player_colour, "label says = " + formtarget.labelCurrentPlayer.text() + " expected " + "Current Player: " + player_colour
+    assert formtarget.labelCurrentPlayer.text().startswith("Current Player: " + player_colour), "label says = " + formtarget.labelCurrentPlayer.text() + " expected " + "Current Player: " + player_colour
 
 @step(u'Then click on square (\d+) (\d+) in checkers window for main window (\d+)')
 def then_click_on_square_x_y(step, x, y, window_index):

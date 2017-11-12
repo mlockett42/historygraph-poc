@@ -222,7 +222,7 @@ def LoadDocumentCollection(dc, filenameedges, filenamedata):
         elif propertytypestr == "FieldText" or propertytypestr == "basestring":
             propertytype = basestring
             propertyvalue = str(propertyvaluestr)
-        elif propertytypestr == "" and edgeclassname == "HistoryEdgeNull":
+        elif propertytypestr == "" and edgeclassname == "HistoryEdgeMerge":
             propertytype = None
             propertyvalue = ""
         else:
