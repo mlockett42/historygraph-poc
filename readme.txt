@@ -155,6 +155,10 @@ pyside will take a long time to install.
 Create the test emailer in the cloud
 ------------------------------------
 
+First we won't use SSL for this test so turn it off
+
+Edit the 
+
 Point your domain's DNS server's at AWS's
 This page will have useful information on this
 http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/MigratingDNS.html
@@ -163,11 +167,13 @@ Load your SSH public key into AWS under EC2 Dashboard -> Security and Network
 ->Key Pairs
 
 Create an EC2 instance using the Ubuntu 16.04 Operating System and to be accessed
-Getting an Elastic IP might make your server slight more reliable
+Getting an Elastic IP might make your server slightly more reliable
 A t2.nano instance should be fine, if you have Free-tier on a t2.micro feel free
 to use it
 
 Launch the instance and wait for it to start
+
+Be careful with the security group I normally give only my IP access to ports 25, 80 and 110
 
 Connect to it with ssh
 
@@ -246,17 +252,21 @@ Type in the following to restart the services
 sudo service postfix restart
 sudo service dovecot restart
 
-Add the following line to rc.local
+Add the following line to /etc/rc.local (before the exit 0 of course)
 iptables -t nat -I PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 25
 
-Maby ISP block port 25 so we can also use port 80
+Maybe ISP block port 25 so we can also use port 80
 Then reboot
+
+Type sudo reboot
 
 Reconnect then create some new users
 sudo adduser test1
 sudo adduser test2
 
-On you computer open the mypoplib.pu and mysmtplib.py files and set testing_mode=True in both of them
+Don't forget the passwords you create for them
+
+On you computer open the mypoplib.py and mysmtplib.py files and set testing_mode=True in both of them
 For both the number 1 and 2 directories
 
 -------------------------------------------
@@ -273,13 +283,13 @@ POP Server port=110
 POP User Name=test1
 POP Password=<password>
 SMTP Server = mydomain.com
-SMTP Server port=110
+SMTP Server port=80 (or maybe 25)
 SMTP User Name=test1
 SMTP Password=<password>
 
 
 Next start up historygraph communcator in
-the ~/1/historygraph-poc directory
+the ~/2/historygraph-poc directory
 
 python main.py
 
@@ -291,7 +301,7 @@ POP Server port=110
 POP User Name=test2
 POP Password=<password>
 SMTP Server = mydomain.com
-SMTP Server port=110
+SMTP Server port=80 (or maybe 25)
 SMTP User Name=test2
 SMTP Password=<password>
 
@@ -303,38 +313,43 @@ Open up the window for test1 and send a message to test 2
 
 Go to the window for test2 do send and Receive the message from test1 should have arrive
 
-Send a message to test1
+Go to the window for test1 and choose Send/Receive
 
-In both communicators look at the contacts list they should see the other one
+Go to the window for test2 and choose Send/Receive
+
+
+In both communicators look at the contacts list they should see the other one and list them as 'Is encrypted'
+If it says not encrypted they have not finished exchanging keys with each other
 
 The two communicator will now have each others keys
 
 In test1's communicator start a new checkers game and invite test2
 
-Open the game and make the first move then choose Send/Receive from the menu
+Open the game and make the first move then choose Send/Receive from the menu. Note you need to make the first move to share the game
 
+In test2 communicator window run Send/Receive and then look at the list of checkers games
 
-IN test2 communicator window run Send/Receive and then look at the list of checkers games
-
-You need to choose send/receive from the menus immediately after or before any move. This is automatic (yet)
+You need to choose send/receive from the menus immediately after or before any move. This is not automatic (yet)
 
 Test using a simulator local email server
 -----------------------------------------
 Open another console window
+cd ~/1/historygraph-poc
 source bin/activate
 python
 This will start the python prompt next type in
 import testingmailserver
-testingmailserver.StartTestingMailServer("historygraph.io", {"username":"password","username1":"","username2":""})
+testingmailserver.StartTestingMailServer("historygraph.io", {"username":"password","username1":"password","username2":"password"})
 
 The SMTP port is 10025 to POP3 port is 10026. The the server address is the first parameter. The second parameter
 is a dict of usernames and passwords. You will also need to change the mypoplib.py and mysmtplib.py files to set
 the testingmode variable to True, because we are emulating the test server
 
-This will start the emailer running in another thread. Don't quit the Python iterpreter that will close down the
+This will start the emailer running in another thread. Don't quit the Python interpreter that will close down the
 email server.
 Type in
 testingmailserver.ResetMailDict()
+if you wish to clear out all emails on this in memory server
 
 
 
