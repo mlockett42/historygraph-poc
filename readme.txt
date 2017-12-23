@@ -307,6 +307,12 @@ SMTP Password=<password>
 
 -------------------------------------
 
+You may find to useful to setup an email client such as Thunderbird to watch the email traffic and
+see what is going on. Use the same connection settings as above and dont forget to config the
+email not to delete emails it has downloaded. The HistoryGraph-poc also will not delete them.
+
+-------------------------------------
+
 Shut down and restart the communicator after enter the settings - this updates the window titles
 
 Open up the window for test1 and send a message to test 2
